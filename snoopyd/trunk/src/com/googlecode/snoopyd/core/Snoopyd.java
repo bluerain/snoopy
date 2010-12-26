@@ -14,20 +14,33 @@
  * limitations under the License.
  */
 
-package com.googlecode.snoopyd;
+package com.googlecode.snoopyd.core;
 
-import com.googlecode.snoopyd.core.Snoopyd;
+import org.apache.log4j.Logger;
 
-public class Launcher {
+import com.googlecode.snoopyd.Defaults;
 
-	public static void main(String[] args) {
+public class Snoopyd extends Ice.Application {
+	
+	public static final int EXIT_SUCCESS = 0;
+	public static final int EXIT_FAILURE = 999;
+	
+	private static Logger logger = Logger.getLogger(Snoopyd.class);
 
-		Snoopyd snoopyd = new Snoopyd();
-
-		int status = snoopyd.main(Defaults.APP_NAME, args,
-				Defaults.ICE_CONFIG_PATH);
-
-		System.exit(status);
+	public Snoopyd() {
+		
 	}
-
+	
+	public void terminate() {
+		logger.info("terminating " + Defaults.APP_NAME + " " + Defaults.APP_VER);
+		
+	}
+	
+	@Override
+	public int run(String[] args) {
+		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
+		
+		return EXIT_SUCCESS;
+	}
+	
 }

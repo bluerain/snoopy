@@ -16,18 +16,11 @@
 
 package com.googlecode.snoopyd;
 
-import com.googlecode.snoopyd.core.Snoopyd;
-
-public class Launcher {
-
-	public static void main(String[] args) {
-
-		Snoopyd snoopyd = new Snoopyd();
-
-		int status = snoopyd.main(Defaults.APP_NAME, args,
-				Defaults.ICE_CONFIG_PATH);
-
-		System.exit(status);
-	}
+public final class Defaults {
+	
+	public static final String APP_NAME = "snoopyd";
+	public static final String APP_VER = "0.0.0";
+	
+	public static final String ICE_CONFIG_PATH = "snoopyd.conf";
 
 }
