@@ -1,4 +1,4 @@
-package com.googlecode.snoopy;
+package com.googlecode.snoopyd;
 
 public class Launcher {
 
