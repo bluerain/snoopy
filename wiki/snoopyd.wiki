@@ -1,8 +1,8 @@
 #summary One-sentence summary of this page.
 
-= Introduction =
+= Arch =
 
-snoopyd arch
+http://snoopy.googlecode.com/svn-history/r19/wiki/img/model.png
 
 
 = Details =
