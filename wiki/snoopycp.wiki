@@ -1,13 +1,20 @@
-#summary One-sentence summary of this page.
+#summary Snoopy Control Panel overview;
+#labels snopycp
 
-= Introduction =
+== Requirement ==
 
-Snoopy CP
+=== General ===
 
+ * Full MVC implementation;
+ * Independence code form IDE;
+ * Nice Look&Feel at any OS;
+ * Usability;
 
-= Details =
+=== Specific ===
+ 
+ * List of attached snoopy nodes;
+ * Graph of snoopy domain;
+ * General information about each of node (machine info, os specific and etc);
+ * Specific information about each of node (rate, something else);
+ * Control of snoopy nodes (shutdown, balance)
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
