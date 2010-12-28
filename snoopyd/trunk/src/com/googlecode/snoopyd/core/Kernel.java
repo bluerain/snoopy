@@ -16,35 +16,36 @@
 
 package com.googlecode.snoopyd.core;
 
-import org.apache.log4j.Logger;
+import com.googlecode.snoopyd.driver.Connector;
+import com.googlecode.snoopyd.driver.Controller;
+import com.googlecode.snoopyd.driver.Discoverer;
 
-import com.googlecode.snoopyd.Defaults;
+import Ice.Current;
 
-public class Snoopyd extends Ice.Application {
+public class Kernel extends _IKernelDisp {
 	
-	public static final int EXIT_SUCCESS = 0;
-	public static final int EXIT_FAILURE = 999;
+	private DriverManager driverManager;
 	
-	private static Logger logger = Logger.getLogger(Snoopyd.class);
-	
-	private Kernel kernel;
-	
-	public Snoopyd() {
-		
-		kernel = new Kernel();
-		
+	public Kernel() {
+		driverManager = new DriverManager();
 	}
-	
-	public void terminate() {
-		logger.info("terminating " + Defaults.APP_NAME + " " + Defaults.APP_VER);
-		
-	}
-	
+
 	@Override
-	public int run(String[] args) {
-		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
-		
-		return EXIT_SUCCESS;
+	public Controller controller(Current __current) {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
+
+	@Override
+	public Connector connector(Current __current) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Discoverer discoverer(Current __current) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

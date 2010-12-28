@@ -16,35 +16,6 @@
 
 package com.googlecode.snoopyd.core;
 
-import org.apache.log4j.Logger;
+public class DriverManager {
 
-import com.googlecode.snoopyd.Defaults;
-
-public class Snoopyd extends Ice.Application {
-	
-	public static final int EXIT_SUCCESS = 0;
-	public static final int EXIT_FAILURE = 999;
-	
-	private static Logger logger = Logger.getLogger(Snoopyd.class);
-	
-	private Kernel kernel;
-	
-	public Snoopyd() {
-		
-		kernel = new Kernel();
-		
-	}
-	
-	public void terminate() {
-		logger.info("terminating " + Defaults.APP_NAME + " " + Defaults.APP_VER);
-		
-	}
-	
-	@Override
-	public int run(String[] args) {
-		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
-		
-		return EXIT_SUCCESS;
-	}
-	
 }

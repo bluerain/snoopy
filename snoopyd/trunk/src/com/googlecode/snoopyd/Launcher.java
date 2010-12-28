@@ -18,6 +18,7 @@ package com.googlecode.snoopyd;
 
 import com.googlecode.snoopyd.core.Snoopyd;
 
+
 public class Launcher {
 
 	public static void main(String[] args) {
