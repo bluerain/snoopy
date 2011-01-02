@@ -16,7 +16,7 @@ public class DiscovererAdapter extends _IDiscovererDisp {
 	@Override
 	public void discover(Current __current) {
 		
-		discoverer.discover(new Id);
+		//discoverer.discover(new Id);
 		
 		System.out.println("i am here2");
 	}
