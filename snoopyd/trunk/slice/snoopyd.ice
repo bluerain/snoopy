@@ -21,41 +21,51 @@ module com { module googlecode { module snoopyd {
 
 	module driver
 	{
-		class AbstractDriver 
- 		{
- 			string name;	
- 		};
- 		
- 		class Controller extends AbstractDriver
+ 		interface IController
  		{
  			int rate();
  			void shutdown(); 		
  		};
  		
- 		class Connector extends AbstractDriver
+ 		interface IConnector 
  		{
  			void connect();
  			void disconnect();
  		};
  		
- 		class Discoverer extends AbstractDriver
+ 		interface IDiscoverer 
  		{
  			void discover();
  			void request();
  			void offer();
  			void pack();
- 		
  		};
-	
+ 		
 	}; 
 
 	module core 
 	{
-		interface IKernel
+	
+		interface ISession
 		{                                              
-			driver::Controller controller();
-			driver::Connector connector();
-			driver::Discoverer discoverer();
+			
+		};
+		
+		interface IKernelSession extends ISession
+		{
+			driver::IConnector connector();
+		};
+		
+		interface IUserSession extends ISession
+		{
+			driver::IController controller();
+		};
+		
+		interface ISessionManager 
+		{
+			IKernelSession createKernelSession();
+			IUserSession createUserSession();
+		
 		};
 	};
 	
