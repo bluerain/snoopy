@@ -24,9 +24,9 @@ public class Launcher {
 	public static void main(String[] args) {
 
 		Snoopyd snoopyd = new Snoopyd();
-
+		
 		int status = snoopyd.main(Defaults.APP_NAME, args,
-				Defaults.ICE_CONFIG_PATH);
+				System.getProperty("snoopyd.configuration", Defaults.DEFAULT_CONFIGURATION));
 
 		System.exit(status);
 	}

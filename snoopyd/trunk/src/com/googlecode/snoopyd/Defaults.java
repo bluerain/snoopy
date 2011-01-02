@@ -21,6 +21,6 @@ public final class Defaults {
 	public static final String APP_NAME = "snoopyd";
 	public static final String APP_VER = "0.0.0";
 	
-	public static final String ICE_CONFIG_PATH = "snoopyd.conf";
+	public static final String DEFAULT_CONFIGURATION = "snoopyd.conf";
 
 }
