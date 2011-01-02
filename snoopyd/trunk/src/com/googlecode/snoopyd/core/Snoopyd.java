@@ -16,25 +16,18 @@
 
 package com.googlecode.snoopyd.core;
 
+
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
 
 public class Snoopyd extends Ice.Application {
 	
+	private static Logger logger = Logger.getLogger(Snoopyd.class);
+
 	public static final int EXIT_SUCCESS = 0;
 	public static final int EXIT_FAILURE = 999;
-	
-	private static Logger logger = Logger.getLogger(Snoopyd.class);
-	
-	private Kernel kernel;
-	
-	public Snoopyd() {
-		
-		kernel = new Kernel();
-		
-	}
-	
+
 	public void terminate() {
 		logger.info("terminating " + Defaults.APP_NAME + " " + Defaults.APP_VER);
 		
@@ -44,7 +37,14 @@ public class Snoopyd extends Ice.Application {
 	public int run(String[] args) {
 		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
 		
+		Kernel kernel = new Kernel(communicator());
+		logger.info("loading kernel ( UUID = \"" + kernel.UUID() + "\")"); 
+		
+		logger.info("loading kernel modules ()");
+		kernel.load();
+		logger.info("activating kernel modules ()");
+		kernel.activate();
+		
 		return EXIT_SUCCESS;
 	}
-	
 }

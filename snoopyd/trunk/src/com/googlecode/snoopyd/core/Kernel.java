@@ -16,36 +16,80 @@
 
 package com.googlecode.snoopyd.core;
 
-import com.googlecode.snoopyd.driver.Connector;
-import com.googlecode.snoopyd.driver.Controller;
+import org.apache.log4j.Logger;
+
+import Ice.Communicator;
+
+import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Discoverer;
+import com.googlecode.snoopyd.driver.DiscovererAdapter;
+import com.googlecode.snoopyd.driver.Loadable;
 
-import Ice.Current;
+public class Kernel implements Loadable, Activable {
 
-public class Kernel extends _IKernelDisp {
-	
+	private static Logger logger = Logger.getLogger(Kernel.class);
+
+	private Communicator communicator;
+
+	private Identity uuid;
+
+	private Ice.ObjectAdapter udpAdapter;
+	private Ice.ObjectAdapter tcpAdapter;
+
 	private DriverManager driverManager;
+	private AdapterManager adapterManager;
+
+	public Kernel(Ice.Communicator communicator) {
+
+		this.communicator = communicator;
+
+		this.uuid = new Identity(communicator.getProperties().getProperty(
+				"Snoopy.Domain"));
+
+		this.driverManager = new DriverManager();
+		this.driverManager.add(Discoverer.class, new Discoverer(this));
+
+		this.adapterManager = new AdapterManager(this);
+
+		this.udpAdapter = communicator.createObjectAdapter("UDPAdapter");
+		//this.tcpAdapter = communicator.createObjectAdapter("TCPAdapter");
+
+		this.udpAdapter.add(
+				new DiscovererAdapter(new Discoverer(this)), communicator
+						.stringToIdentity("discoverer"));
+	}
+
+	public Identity UUID() {
+		return uuid;
+	}
 	
-	public Kernel() {
-		driverManager = new DriverManager();
+	public Communicator communicator() {
+		return communicator;
+	}
+	
+	public void load() {
+		driverManager.load();
+	}
+	
+	public void unload() {
+		
 	}
 
-	@Override
-	public Controller controller(Current __current) {
-		// TODO Auto-generated method stub
-		return null;
+	public void activate() {
+
+		driverManager.activate();
+		
+		udpAdapter.activate();
+		// tcpAdapter.activate();
+
+		communicator.waitForShutdown();
 	}
 
-	@Override
-	public Connector connector(Current __current) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public void deactivate() {
+		udpAdapter.deactivate();
+		// tcpAdapter.deactivate();
 
-	@Override
-	public Discoverer discoverer(Current __current) {
-		// TODO Auto-generated method stub
-		return null;
+		communicator.destroy();
 	}
 
 }

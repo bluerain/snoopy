@@ -16,6 +16,54 @@
 
 package com.googlecode.snoopyd.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import com.googlecode.snoopyd.driver.Activable;
+import com.googlecode.snoopyd.driver.Driver;
+import com.googlecode.snoopyd.driver.Loadable;
+
 public class DriverManager {
 
+	private static Logger logger = Logger.getLogger(DriverManager.class);
+
+	private Map<Class<?>, Driver> drivers;
+
+	public DriverManager() {
+		this.drivers = new HashMap<Class<?>, Driver>();
+	}
+
+	public void add(Class<?> clazz, Driver driver) {
+		drivers.put(clazz, driver);
+		
+	}
+
+	public void remove(Class<?> clazz) {
+		drivers.remove(clazz);
+	}
+
+	public Driver fetch(Class<?> clazz) {
+		return drivers.get(clazz);
+	}
+
+	public void load() {
+		for (Driver drv: drivers.values()) {
+			try {
+				((Loadable) drv).load();
+			} catch (ClassCastException ex) {}
+			
+		}
+	}
+	
+	public void activate() {
+		for (Driver drv: drivers.values()) {
+			try {
+			((Activable) drv).activate();
+			} catch (ClassCastException ex) {}
+		}
+	}
+	
+	
 }
