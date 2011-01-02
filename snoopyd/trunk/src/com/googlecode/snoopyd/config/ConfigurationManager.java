@@ -17,5 +17,9 @@
 package com.googlecode.snoopyd.config;
 
 public class ConfigurationManager {
+	
+	public ConfigurationManager() {
 
+	}
+	
 }
