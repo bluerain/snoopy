@@ -30,7 +30,6 @@ public class Snoopyd extends Ice.Application {
 
 	public void terminate() {
 		logger.info("terminating " + Defaults.APP_NAME + " " + Defaults.APP_VER);
-		
 	}
 	
 	@Override

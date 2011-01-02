@@ -20,9 +20,12 @@ import org.apache.log4j.Logger;
 
 import Ice.Communicator;
 
+import com.googlecode.snoopyd.config.Configuration;
+import com.googlecode.snoopyd.config.Configuration.ConfigurationBuilder;
 import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.DiscovererAdapter;
+import com.googlecode.snoopyd.driver.DriverManager;
 import com.googlecode.snoopyd.driver.Loadable;
 
 public class Kernel implements Loadable, Activable {
@@ -40,6 +43,9 @@ public class Kernel implements Loadable, Activable {
 	private AdapterManager adapterManager;
 
 	public Kernel(Ice.Communicator communicator) {
+		
+		ConfigurationBuilder builder = new ConfigurationBuilder();
+		Configuration configuration = builder.rate(10).build();
 
 		this.communicator = communicator;
 
