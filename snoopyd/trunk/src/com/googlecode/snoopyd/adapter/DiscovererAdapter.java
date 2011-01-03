@@ -22,22 +22,26 @@ import Ice.Current;
 import Ice.Identity;
 import Ice.ObjectAdapter;
 
+import com.googlecode.snoopyd.core.Kernel.KernelInfo;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver._IDiscovererDisp;
+import com.googlecode.snoopyd.util.Identities;
 
-public class DiscovererAdapter extends _IDiscovererDisp implements DriverAdapter {
+public class DiscovererAdapter extends _IDiscovererDisp implements
+		DriverAdapter {
 
 	private static Logger logger = Logger.getLogger(DiscovererAdapter.class);
-	
+
 	public static final String NAME = "discoverer";
-	
+
 	private String name;
 	private Ice.Identity identity;
-	
+
 	private Discoverer discoverer;
-	
-	public DiscovererAdapter(String name, Ice.Identity identity, Discoverer discoverer) {
+
+	public DiscovererAdapter(String name, Ice.Identity identity,
+			Discoverer discoverer) {
 		this.discoverer = discoverer;
 		this.name = name;
 		this.identity = identity;
@@ -45,27 +49,19 @@ public class DiscovererAdapter extends _IDiscovererDisp implements DriverAdapter
 
 	@Override
 	public void discover(Current __current) {
-		
-		// __current.ctx
-		// identity
-		// rate
-		// proxy
-		//
-		
-		//logger.info("current adapter " + __current.adapter.getName());
-		logger.info("endpoints " + __current.adapter.getPublishedEndpoints()[0]);
-		logger.info("..identity = " + __current.ctx.get("identity"));
-		logger.info("..rate = " + __current.ctx.get("rate"));
-		logger.info("..primary = " + __current.ctx.get("primary"));
-		logger.info("..secaondary = " + __current.ctx.get("secondary"));
-		
-		//logger.info("current con " + __current.con.toString());
+
+		KernelInfo info = new KernelInfo(
+				Identities.stringToIdentity(__current.ctx.get("identity")),
+				Integer.valueOf(__current.ctx.get("rate")), __current.ctx.get("primary"),
+				__current.ctx.get("secondary"));
+
+		discoverer.discover(info);
 	}
 
 	@Override
 	public void request(Current __current) {
 
-	}		
+	}
 
 	@Override
 	public void offer(Current __current) {
@@ -74,7 +70,7 @@ public class DiscovererAdapter extends _IDiscovererDisp implements DriverAdapter
 
 	@Override
 	public void pack(Current __current) {
-		
+
 	}
 
 	@Override

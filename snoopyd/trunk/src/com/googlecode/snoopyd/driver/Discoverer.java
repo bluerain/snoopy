@@ -33,15 +33,21 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 	public static final String NAME = "discoverer";
 	public static final int DISCOVER_INTERVAL = 5000;
 
+	private Map<Ice.Identity, Kernel.KernelInfo> cache;
+	
 	private Thread self;
 
 	public Discoverer(String name, Kernel kernel) {
 		super(name, kernel);
+		
 		this.self = new Thread(this);
+		this.cache = new HashMap<Identity, Kernel.KernelInfo>();
 	}
 
-	public void discover(Identity identity) {
-		logger.info("discover recived by " + Identities.toString(identity));
+	public void discover(Kernel.KernelInfo info) {
+		cache.put(info.identity, info);
+		
+		logger.info("recive discover with info = " +  info); 
 	}
 
 	@Override
@@ -82,7 +88,5 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 			logger.error("something went wrong with " + Discoverer.class);
 			logger.error(ex.getMessage());
 		}
-
 	}
-
 }
