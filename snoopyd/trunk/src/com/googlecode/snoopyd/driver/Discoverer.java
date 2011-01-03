@@ -16,26 +16,32 @@
 
 package com.googlecode.snoopyd.driver;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 
-import com.googlecode.snoopyd.core.Identity;
+import Ice.Identity;
+
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.util.Identities;
 
 public class Discoverer extends AbstractDriver implements Driver, Activable, Runnable {
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
+	public static final String NAME = "discoverer";
 	public static final int DISCOVER_INTERVAL = 5000;
 
 	private Thread self;
 
-	public Discoverer(Kernel kernel) {
-		super(kernel);
+	public Discoverer(String name, Kernel kernel) {
+		super(name, kernel);
 		this.self = new Thread(this);
 	}
 
-	public void discover(Identity uuid) {
-		logger.info("discover recived by " + uuid);
+	public void discover(Identity identity) {
+		logger.info("discover recived by " + Identities.toString(identity));
 	}
 
 	@Override
@@ -54,17 +60,27 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 		IDiscovererPrx multicast = IDiscovererPrxHelper.uncheckedCast(kernel
 				.communicator().propertyToProxy("Discoverer.Multicast"));
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
+		
+		Map<String, String> context = new HashMap<String, String>();
+		
+		context.put("identity", Identities.toString(kernel.identity()));
+		context.put("rate", String.valueOf(kernel.rate()));
+		context.put("primary", kernel.primaryEndpoins());
+		context.put("secondary", kernel.secondaryEndpoints());
 
 		try {
 			while(true) {
 
 				logger.info("sending discover");
-				multicast.discover();
+				
+				multicast.discover(context);
+				
 				self.sleep(DISCOVER_INTERVAL);
 			}
 
 		} catch (Exception ex) {
-
+			logger.error("something went wrong with " + Discoverer.class);
+			logger.error(ex.getMessage());
 		}
 
 	}

@@ -16,6 +16,8 @@
 
 package com.googlecode.snoopyd.driver;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,33 +36,65 @@ public class DriverManager {
 
 	public void add(Class<?> clazz, Driver driver) {
 		drivers.put(clazz, driver);
-		
 	}
 
 	public void remove(Class<?> clazz) {
 		drivers.remove(clazz);
 	}
 
-	public Driver fetch(Class<?> clazz) {
+	public Driver get(Class<?> clazz) {
 		return drivers.get(clazz);
 	}
+	
+	public Collection<Driver> getAll() {
+		return Collections.unmodifiableCollection(drivers.values());
+	}
+	
+	public void load(Class<?> clazz) {
+		
+	}
 
-	public void load() {
+	public void loadAll() {
 		for (Driver drv: drivers.values()) {
-			try {
+			if (drv instanceof Loadable) {
 				((Loadable) drv).load();
-			} catch (ClassCastException ex) {}
-			
+			}
 		}
 	}
 	
-	public void activate() {
+	public void unload(Class<?> clazz) {
+		
+	}
+	
+	public void unloadAll() {
 		for (Driver drv: drivers.values()) {
-			try {
-			((Activable) drv).activate();
-			} catch (ClassCastException ex) {}
+			if (drv instanceof Loadable) {
+				((Loadable) drv).unload();
+			}
 		}
 	}
 	
+	public void activate(Class<?> clazz) {
+		
+	}
 	
+	public void activateAll() {
+		for (Driver drv: drivers.values()) {
+			if (drv instanceof Activable) {
+				((Activable) drv).activate();
+			}
+		}
+	}
+	
+	public void deactivate(Class<?> clazz) {
+		
+	}
+	
+	public void deactivateAll() {
+		for (Driver drv: drivers.values()) {
+			if (drv instanceof Activable) {
+				((Activable) drv).deactivate();
+			}
+		}
+	}
 }

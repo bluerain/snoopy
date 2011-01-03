@@ -21,9 +21,20 @@ import com.googlecode.snoopyd.core.Kernel;
 public abstract class AbstractDriver implements Driver {
 	
 	protected Kernel kernel;
+	protected String name;
 	
-	public AbstractDriver(Kernel kernel) {
+	public AbstractDriver(String name, Kernel kernel) {
+		this.name = name;
 		this.kernel = kernel;
 	}
 
+	@Override
+	public Kernel kernel() {
+		return kernel;
+	}
+
+	@Override
+	public String name() {
+		return name;
+	}
 }

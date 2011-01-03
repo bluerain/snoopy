@@ -20,6 +20,8 @@ package com.googlecode.snoopyd.core;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
+import com.googlecode.snoopyd.driver.Driver;
+import com.googlecode.snoopyd.util.Identities;
 
 public class Snoopyd extends Ice.Application {
 	
@@ -37,12 +39,23 @@ public class Snoopyd extends Ice.Application {
 		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
 		
 		Kernel kernel = new Kernel(communicator());
-		logger.info("loading kernel ( UUID = \"" + kernel.UUID() + "\")"); 
+		logger.info("loading kernel (identity = " + Identities.toString(kernel.identity()) + ")"); 
 		
-		logger.info("loading kernel modules ()");
 		kernel.load();
-		logger.info("activating kernel modules ()");
+		
+		logger.info("loading kernel drivers:");
+		for (Driver drv: kernel.drivers()) {
+				logger.info("... " + drv.name());
+		}
+
+
 		kernel.activate();
+
+		logger.info("activating kernel drivers: ");
+		
+		logger.info("statring kernel");
+		
+		kernel.start();
 		
 		return EXIT_SUCCESS;
 	}

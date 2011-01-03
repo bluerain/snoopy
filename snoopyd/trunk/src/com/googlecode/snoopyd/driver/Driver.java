@@ -16,8 +16,9 @@
 
 package com.googlecode.snoopyd.driver;
 
-public interface Driver {
-	
-	
+import com.googlecode.snoopyd.core.Kernel;
 
+public interface Driver {
+	public Kernel kernel();
+	public String name();
 }

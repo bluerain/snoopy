@@ -16,87 +16,156 @@
 
 package com.googlecode.snoopyd.core;
 
+import java.util.Collection;
+
 import org.apache.log4j.Logger;
 
-import Ice.Communicator;
+import Ice.Identity;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.AdapterManager;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.config.Configuration;
-import com.googlecode.snoopyd.config.Configuration.ConfigurationBuilder;
 import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Discoverer;
+import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.DriverManager;
 import com.googlecode.snoopyd.driver.Loadable;
+import com.googlecode.snoopyd.util.Identities;
 
 public class Kernel implements Loadable, Activable {
 
 	private static Logger logger = Logger.getLogger(Kernel.class);
 
-	private Communicator communicator;
+	private Identity identity;
 
-	private Identity uuid;
+	private Ice.Communicator communicator;
+	private Ice.Properties properties;
 
-	private Ice.ObjectAdapter udpAdapter;
-	private Ice.ObjectAdapter tcpAdapter;
+	private Ice.ObjectAdapter primary;
+	private Ice.ObjectAdapter secondary;
+
+	private Configuration configuration;
 
 	private DriverManager driverManager;
 	private AdapterManager adapterManager;
 
 	public Kernel(Ice.Communicator communicator) {
-		
-		ConfigurationBuilder builder = new ConfigurationBuilder();
-		Configuration configuration = builder.rate(10).build();
+
+		// ConfigurationBuilder builder = new ConfigurationBuilder();
+		// Configuration configuration = builder.rate(10).build();
 
 		this.communicator = communicator;
+		this.properties = communicator.getProperties();
 
-		this.uuid = new Identity(communicator.getProperties().getProperty(
-				"Snoopy.Domain"));
+		this.identity = Identities.randomIdentity(properties
+				.getProperty("Snoopy.Domain"));
 
-		this.driverManager = new DriverManager();
-		this.driverManager.add(Discoverer.class, new Discoverer(this));
+		logger.info("init driver manager");
+		initDriverManager();
+		
+		logger.info("init adapter manager");
+		initAdapterManager();
 
-		this.adapterManager = new AdapterManager(this);
-
-		this.udpAdapter = communicator.createObjectAdapter("UDPAdapter");
-		//this.tcpAdapter = communicator.createObjectAdapter("TCPAdapter");
-
-		this.udpAdapter.add(
-				new DiscovererAdapter(new Discoverer(this)), communicator
-						.stringToIdentity("discoverer"));
+		logger.info("init primary adapter");
+		initPrimaryAdapter();
+		logger.info("primary adapter endpoints is a \"" + primaryEndpoins() + "\"");
+		
+		logger.info("init secondary adapter");
+		initSecondaryAdapter();
+		logger.info("primary secondary endpoints is a \"" + secondaryEndpoints() + "\"");
 	}
 
-	public Identity UUID() {
-		return uuid;
+	public Identity identity() {
+		return identity;
+	}
+
+	public int rate() {
+		return properties.getPropertyAsInt("Snoopy.Rate");
 	}
 	
-	public Communicator communicator() {
+	public String primaryEndpoins() {
+		return primary.getPublishedEndpoints()[primary.getPublishedEndpoints().length - 1]._toString();
+	}
+	
+	public String secondaryEndpoints() {
+		return secondary.getPublishedEndpoints()[secondary.getPublishedEndpoints().length - 1]._toString();
+	}
+
+	public Ice.Communicator communicator() {
 		return communicator;
 	}
-	
-	public void load() {
-		driverManager.load();
+
+	public Ice.Properties properties() {
+		return properties;
 	}
-	
+
+	public void load() {
+		driverManager.loadAll();
+	}
+
 	public void unload() {
-		
+		driverManager.unloadAll();
 	}
 
 	public void activate() {
-
-		driverManager.activate();
+		driverManager.activateAll();
+		adapterManager.activateAll();
 		
-		udpAdapter.activate();
-		// tcpAdapter.activate();
-
-		communicator.waitForShutdown();
+		primary.activate();
+		secondary.activate();
 	}
 
 	public void deactivate() {
-		udpAdapter.deactivate();
-		// tcpAdapter.deactivate();
+		driverManager.deactivateAll();
+		adapterManager.deactivateAll();
+		
+		primary.deactivate();
+		primary.deactivate();
+	}
 
+	public void start() {
+		communicator.waitForShutdown();
+	}
+
+	public void stop() {
 		communicator.destroy();
+	}
+
+	public Collection<Driver> drivers() {
+		return driverManager.getAll();
+	}
+
+	private void initDriverManager() {
+		driverManager = new DriverManager();
+
+		driverManager.add(Discoverer.class, new Discoverer(Discoverer.NAME,
+				this));
+	}
+
+	private void initAdapterManager() {
+		adapterManager = new AdapterManager();
+
+		adapterManager.add(
+				DiscovererAdapter.class,
+				new DiscovererAdapter(DiscovererAdapter.NAME, Identities
+						.stringToIdentity(DiscovererAdapter.NAME),
+						(Discoverer) driverManager.get(Discoverer.class)));
+
+	}
+
+	private void initPrimaryAdapter() {
+		primary = communicator
+				.createObjectAdapter(Defaults.DEFAULT_PRIMARY_ADAPTER_NAME);
+
+	}
+
+	private void initSecondaryAdapter() {
+		secondary = communicator
+				.createObjectAdapter(Defaults.DEFAULT_SECONDARY_ADAPTER_NAME);
+
+		secondary.add((Ice.Object) adapterManager.get(DiscovererAdapter.class),
+				adapterManager.get(DiscovererAdapter.class).identity());
 	}
 
 }
