@@ -26,7 +26,7 @@ import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver._IDiscovererDisp;
 
-public class DiscovererAdapter extends _IDiscovererDisp implements DriverAdapter, Servantable {
+public class DiscovererAdapter extends _IDiscovererDisp implements DriverAdapter {
 
 	private static Logger logger = Logger.getLogger(DiscovererAdapter.class);
 	
@@ -88,18 +88,7 @@ public class DiscovererAdapter extends _IDiscovererDisp implements DriverAdapter
 	}
 
 	@Override
-	public Ice.ObjectPrx bind(ObjectAdapter adapter) {
-		return adapter.add(this, identity);
-	}
-
-	@Override
-	public Ice.Object unbind(ObjectAdapter adapter) {
-		return adapter.remove(identity);
-	}
-
-	@Override
 	public Identity identity() {
 		return identity;
 	}
-
 }
