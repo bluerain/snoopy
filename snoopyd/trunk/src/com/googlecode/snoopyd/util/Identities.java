@@ -34,10 +34,42 @@ public final class Identities {
 	
 	public static Identity stringToIdentity(String identity) {
 		String args[] = identity.split("/");
-		return new Identity(args[0], args.length > 1 ? args[1] : "");
+		if (args.length > 1) {
+			return new Identity(args[1], args[0]);
+		} else {
+			return new Identity(args[0], "");
+		}
 	}
 	
-	public static boolean isEquals(Identity id1, Identity id2) {
+	public static boolean equals(Identity id1, Identity id2) {
 		return id1.name.equals(id2.name) && id1.category.equals(id2.category);
+	}
+	
+	public static Identity xor(Identity id1, Identity id2) {
+		// ex: 154d2630-fafd-4bcb-9cac-dec42ec4ba9c
+
+		if (!id1.category.equals(id2.category)) {
+			throw new IllegalArgumentException("both identies must belong one domain");
+		}
+		
+		String id1Part[] = id1.name.split("-");
+		String id2Part[] = id2.name.split("-");
+		
+		String resultPart[] = new String[5];
+		
+		resultPart[0] = Long.toHexString(Long.valueOf(id1Part[0], 16) ^ Long.valueOf(id2Part[0], 16));
+		while (resultPart[0].length() < 8) { resultPart[0] = "0" + resultPart[0]; }
+		resultPart[1] = Long.toHexString(Long.valueOf(id1Part[1], 16) ^ Long.valueOf(id2Part[1], 16));
+		while (resultPart[1].length() < 4) { resultPart[1] = "0" + resultPart[1]; }
+		resultPart[2] = Long.toHexString(Long.valueOf(id1Part[2], 16) ^ Long.valueOf(id2Part[2], 16));
+		while (resultPart[2].length() < 4) { resultPart[2] = "0" + resultPart[2]; }
+		resultPart[3] = Long.toHexString(Long.valueOf(id1Part[3], 16) ^ Long.valueOf(id2Part[3], 16));
+		while (resultPart[3].length() < 4) { resultPart[3] = "0" + resultPart[3]; }
+		resultPart[4] = Long.toHexString(Long.valueOf(id1Part[4], 16) ^ Long.valueOf(id2Part[4], 16));
+		while (resultPart[4].length() < 12) { resultPart[4] = "0" + resultPart[4]; }
+		
+		String result = resultPart[0] + "-" + resultPart[1] + "-" + resultPart[2] + "-" + resultPart[3] + "-" + resultPart[4];
+		
+		return new Identity(result, id1.category);
 	}
 }
