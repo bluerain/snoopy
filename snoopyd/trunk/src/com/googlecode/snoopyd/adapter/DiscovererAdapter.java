@@ -48,12 +48,12 @@ public class DiscovererAdapter extends _IDiscovererDisp implements
 	}
 
 	@Override
-	public void discover(Current __current) {
+	public void discover(Ice.Identity identity, Current __current) {
 
-		KernelInfo info = new KernelInfo(
-				Identities.stringToIdentity(__current.ctx.get("identity")),
-				Integer.valueOf(__current.ctx.get("rate")), __current.ctx.get("primary"),
-				__current.ctx.get("secondary"));
+		KernelInfo info = new KernelInfo(identity,
+				Integer.valueOf(__current.ctx.get("rate")),
+				__current.ctx.get("primary"), __current.ctx.get("secondary"),
+				__current.ctx.get("state"), __current.ctx.get("mode"));
 
 		discoverer.discover(info);
 	}
