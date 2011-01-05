@@ -16,8 +16,11 @@
 
 package com.googlecode.snoopyd.driver;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
 
@@ -33,7 +36,7 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 	public static final String NAME = "discoverer";
 	public static final int DISCOVER_INTERVAL = 5000;
 
-	private Map<Ice.Identity, Kernel.KernelInfo> cache;
+	private ConcurrentMap<Ice.Identity, Kernel.KernelInfo> cache;
 	
 	private Thread self;
 
@@ -41,13 +44,17 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 		super(name, kernel);
 		
 		this.self = new Thread(this);
-		this.cache = new HashMap<Identity, Kernel.KernelInfo>();
+		this.cache = new ConcurrentHashMap<Identity, Kernel.KernelInfo>();
 	}
 
 	public void discover(Kernel.KernelInfo info) {
 		cache.put(info.identity, info);
 		
 		logger.info("recive discover with info = " +  info); 
+	}
+	
+	public Map<Ice.Identity, Kernel.KernelInfo> cache() {
+		return Collections.unmodifiableMap(cache);
 	}
 
 	@Override
@@ -67,19 +74,20 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 				.communicator().propertyToProxy("Discoverer.Multicast"));
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
 		
-		Map<String, String> context = new HashMap<String, String>();
-		
-		context.put("identity", Identities.toString(kernel.identity()));
-		context.put("rate", String.valueOf(kernel.rate()));
-		context.put("primary", kernel.primaryEndpoins());
-		context.put("secondary", kernel.secondaryEndpoints());
-
 		try {
+	
 			while(true) {
 
-				logger.info("sending discover");
+				Map<String, String> context = new HashMap<String, String>();
 				
-				multicast.discover(context);
+				context.put("identity", Identities.toString(kernel.identity()));
+				context.put("rate", String.valueOf(kernel.rate()));
+				context.put("primary", kernel.primaryEndpoins());
+				context.put("secondary", kernel.secondaryEndpoints());
+				context.put("state", kernel.state().getClass().getSimpleName());
+				context.put("mode", kernel.mode().getClass().getSimpleName());
+				
+				multicast.discover(kernel.identity(), context);
 				
 				self.sleep(DISCOVER_INTERVAL);
 			}
