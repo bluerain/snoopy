@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.driver.Driver;
-import com.googlecode.snoopyd.util.Identities;
 
 public class Snoopyd extends Ice.Application {
 	
@@ -38,23 +37,19 @@ public class Snoopyd extends Ice.Application {
 	public int run(String[] args) {
 		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
 		
+		logger.info("creating kernel"); 
 		Kernel kernel = new Kernel(communicator());
-		logger.info("loading kernel (identity = " + Identities.toString(kernel.identity()) + ")"); 
-		
-		kernel.load();
 		
 		logger.info("loading kernel drivers:");
+		kernel.load();
 		for (Driver drv: kernel.drivers()) {
 				logger.info("... " + drv.name());
 		}
 
-
+		logger.info("activating kernel drivers: ");
 		kernel.activate();
 
-		logger.info("activating kernel drivers: ");
-		
-		logger.info("statring kernel");
-		
+		logger.info("statring kernel " + kernel.kernelInfo());
 		kernel.start();
 		
 		return EXIT_SUCCESS;
