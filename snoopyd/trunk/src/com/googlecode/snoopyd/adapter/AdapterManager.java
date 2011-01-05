@@ -21,11 +21,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AdapterManager {
+import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.driver.Resetable;
+import com.googlecode.snoopyd.manager.AbstractManager;
+import com.googlecode.snoopyd.manager.Manager;
+
+public class AdapterManager extends AbstractManager implements Manager, Resetable {
+	
+	public static final String NAME = "adaptermanager";
 	
 	private Map<Class<?>, DriverAdapter> adapters;
 	
-	public AdapterManager() {
+	public AdapterManager(String name, Kernel kernel) {
+		super(name, kernel);
 		this.adapters = new HashMap<Class<?>, DriverAdapter>();
 	}
 	
@@ -45,5 +53,10 @@ public class AdapterManager {
 	}
 	
 	public void deactivateAll() {
+	}
+
+	@Override
+	public void reset() {
+
 	}
 }
