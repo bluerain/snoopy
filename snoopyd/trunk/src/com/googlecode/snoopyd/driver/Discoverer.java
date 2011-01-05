@@ -29,7 +29,8 @@ import Ice.Identity;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Discoverer extends AbstractDriver implements Driver, Activable, Runnable {
+public class Discoverer extends AbstractDriver implements Driver, Activable,
+		Runnable, Resetable {
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
@@ -37,22 +38,22 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 	public static final int DISCOVER_INTERVAL = 5000;
 
 	private ConcurrentMap<Ice.Identity, Kernel.KernelInfo> cache;
-	
+
 	private Thread self;
 
 	public Discoverer(String name, Kernel kernel) {
 		super(name, kernel);
-		
+
 		this.self = new Thread(this);
 		this.cache = new ConcurrentHashMap<Identity, Kernel.KernelInfo>();
 	}
 
 	public void discover(Kernel.KernelInfo info) {
 		cache.put(info.identity, info);
-		
-		logger.info("recive discover with info = " +  info); 
+
+		logger.debug("recive discover with info = " + info);
 	}
-	
+
 	public Map<Ice.Identity, Kernel.KernelInfo> cache() {
 		return Collections.unmodifiableMap(cache);
 	}
@@ -64,37 +65,70 @@ public class Discoverer extends AbstractDriver implements Driver, Activable, Run
 
 	@Override
 	public void deactivate() {
-		//self.destroy();
+
+	}
+	
+	@Override
+	public void reset() {
+		cache.clear();
 	}
 
 	@Override
 	public void run() {
+		
+		boolean isNetworkDown = false;
 
 		IDiscovererPrx multicast = IDiscovererPrxHelper.uncheckedCast(kernel
 				.communicator().propertyToProxy("Discoverer.Multicast"));
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
-		
-		try {
-	
-			while(true) {
+
+		while (true) {
+			try {
+
+				Thread.sleep(DISCOVER_INTERVAL);
+
+				cache.clear();
 
 				Map<String, String> context = new HashMap<String, String>();
-				
+
 				context.put("identity", Identities.toString(kernel.identity()));
 				context.put("rate", String.valueOf(kernel.rate()));
-				context.put("primary", kernel.primaryEndpoins());
-				context.put("secondary", kernel.secondaryEndpoints());
+				context.put("primary", kernel.primaryPublishedEndpoints());
+				context.put("secondary", kernel.secondaryPublishedEndpoints());
 				context.put("state", kernel.state().getClass().getSimpleName());
 				context.put("mode", kernel.mode().getClass().getSimpleName());
-				
+
 				multicast.discover(kernel.identity(), context);
 				
-				self.sleep(DISCOVER_INTERVAL);
-			}
+				if (isNetworkDown) {
 
-		} catch (Exception ex) {
-			logger.error("something went wrong with " + Discoverer.class);
-			logger.error(ex.getMessage());
+					isNetworkDown = false;
+					
+					kernel.toogle(new Kernel.PassiveMode(kernel));
+					kernel.toogle(new Kernel.WaitingState(kernel));
+					
+					kernel.reset();
+					
+				}
+				
+
+			} catch (Exception ex) {
+
+				logger.debug("something went wrong with " + Discoverer.class);
+
+				cache.clear();
+
+				Kernel.KernelInfo localhost = new Kernel.KernelInfo(
+						kernel.identity(), kernel.rate(),
+						kernel.primaryEndpoints(), kernel.secondaryEndpoints(),
+						kernel.state().getClass().getSimpleName(), kernel
+								.mode().getClass().getSimpleName());
+
+				cache.put(kernel.identity(), localhost);
+				
+				isNetworkDown = true;
+			}
 		}
+
 	}
 }

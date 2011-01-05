@@ -23,14 +23,22 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.manager.AbstractManager;
+import com.googlecode.snoopyd.manager.Manager;
 
-public class DriverManager {
 
+public class DriverManager extends AbstractManager implements Manager, Resetable {
+	
+	public static final String NAME = "drivermanager";
+	
 	private static Logger logger = Logger.getLogger(DriverManager.class);
 
 	private Map<Class<?>, Driver> drivers;
 
-	public DriverManager() {
+	public DriverManager(String name, Kernel kernel) {
+		super(name, kernel);
+		
 		this.drivers = new HashMap<Class<?>, Driver>();
 	}
 
@@ -97,4 +105,14 @@ public class DriverManager {
 			}
 		}
 	}
+
+	@Override
+	public void reset() {
+		for (Driver drv: drivers.values()) {
+			if (drv instanceof Resetable) {
+				((Resetable) drv).reset();
+			}
+		}
+	}
+	
 }
