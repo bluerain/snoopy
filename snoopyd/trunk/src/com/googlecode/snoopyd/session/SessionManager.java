@@ -23,7 +23,6 @@ import java.util.Map;
 import Ice.Identity;
 
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.util.Identities;
 
 public class SessionManager {
 	
@@ -41,8 +40,12 @@ public class SessionManager {
 		
 		childs.put(identity, selfSession);
 		
-		Identity sessionIdentity = Identities.xor(kernel.identity(), identity);
-		IKernelSessionPrx prx = IKernelSessionPrxHelper.uncheckedCast(kernel.primary().add(new KernelSessionAdapter(new KernelSession()), sessionIdentity));
+		IKernelSessionPrx prx = IKernelSessionPrxHelper.uncheckedCast(kernel.primary().addWithUUID(new KernelSessionAdapter(new KernelSession(kernel))));
+		
+		kernel.toogle(new Kernel.ActiveMode(kernel));
+		kernel.toogle(new Kernel.SeveringState(kernel));
+		
+		kernel.reset();
 		
 		return prx;
 	}

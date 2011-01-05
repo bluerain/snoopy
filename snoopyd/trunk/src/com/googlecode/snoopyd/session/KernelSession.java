@@ -16,7 +16,15 @@
 
 package com.googlecode.snoopyd.session;
 
+import com.googlecode.snoopyd.core.Kernel;
+
 public class KernelSession {
+	
+	private Kernel kernel;
+	
+	public KernelSession(Kernel kernel) {
+		this.kernel = kernel;
+	}
 
 	public void helloKernel() {
 		System.out.println("HELO KERNEL!");		
