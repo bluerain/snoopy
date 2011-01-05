@@ -20,61 +20,99 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import Ice.Identity;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.driver.Resetable;
+import com.googlecode.snoopyd.manager.AbstractManager;
+import com.googlecode.snoopyd.manager.Manager;
 
-public class SessionManager {
-	
-	private Kernel kernel;
+public class SessionManager extends AbstractManager implements Manager,
+		Resetable {
 
-	private ISessionPrx parent;
+	private static Logger logger = Logger.getLogger(SessionManager.class);
+
+	public static final String NAME = "sessionmanager";
+
+	private Map<Ice.Identity, ISessionPrx> parents;
+
 	private Map<Ice.Identity, ISessionPrx> childs;
 
-	public SessionManager(Kernel kernel) {
-		this.kernel = kernel;
+	public SessionManager(String name, Kernel kernel) {
+		super(name, kernel);
+
 		this.childs = new HashMap<Identity, ISessionPrx>();
+		this.parents = new HashMap<Identity, ISessionPrx>();
 	}
-	
-	public IKernelSessionPrx createKernelSession(Ice.Identity identity, IKernelSessionPrx selfSession) {
-		
+
+	public IKernelSessionPrx createKernelSession(Ice.Identity identity,
+			IKernelSessionPrx selfSession) {
+
 		childs.put(identity, selfSession);
-		
-		IKernelSessionPrx prx = IKernelSessionPrxHelper.uncheckedCast(kernel.primary().addWithUUID(new KernelSessionAdapter(new KernelSession(kernel))));
-		
+
+		IKernelSessionPrx prx = IKernelSessionPrxHelper.uncheckedCast(kernel
+				.primary().addWithUUID(
+						new KernelSessionAdapter(new KernelSession(kernel))));
+
 		kernel.toogle(new Kernel.ActiveMode(kernel));
 		kernel.toogle(new Kernel.SeveringState(kernel));
-		
-		kernel.reset();
-		
+
+		kernel.restart();
+
 		return prx;
 	}
-	
-	public IUserSessionPrx createUserSession(Ice.Identity identity, IUserSessionPrx swap) {
-		
+
+	public IUserSessionPrx createUserSession(Ice.Identity identity,
+			IUserSessionPrx selfSession) {
+
 		// childs <- swap
-		
-		//Identity sessionIdentity = Identities.or(kernel.identity(), swap);
-		
-		
-		//IUserSessionPrx prx = IUserSessionPrxHelper.uncheckedCast(kernel.primary().add(new UserSession(), sessionIdentity));
-		//childs.add(prx);
-		
-		//return prx;
-		
+
+		// Identity sessionIdentity = Identities.or(kernel.identity(), swap);
+
+		// IUserSessionPrx prx =
+		// IUserSessionPrxHelper.uncheckedCast(kernel.primary().add(new
+		// UserSession(), sessionIdentity));
+		// childs.add(prx);
+
+		// return prx;
+
 		return null;
 	}
 	
+	@Override
+	public void reset() {
+		parents.clear();
+		childs.clear();
+	}
+
 	public Map<Ice.Identity, ISessionPrx> childs() {
 		return Collections.unmodifiableMap(childs);
 	}
-	
+
 	public ISessionPrx child(Ice.Identity identity) {
 		return childs.get(identity);
 	}
-	
-	public ISessionPrx parent() {
-		return parent;
+
+	public Map<Ice.Identity, ISessionPrx> parents() {
+		return Collections.unmodifiableMap(parents);
 	}
-	
+
+	public ISessionPrx parent(Ice.Identity identity) {
+		return parents.get(identity);
+	}
+
+	public void add(Ice.Identity identity, ISessionPrx parent) {
+		parents.put(identity, parent);
+	}
+
+	public void removeChild(Ice.Identity identity) {
+		childs.remove(identity);
+	}
+
+	public void removeParent(Ice.Identity identity) {
+		parents.remove(identity);
+	}
+
 }
