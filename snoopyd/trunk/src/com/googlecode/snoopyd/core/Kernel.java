@@ -55,7 +55,8 @@ public class Kernel implements Loadable, Activable {
 		public void waiting();
 
 		public void severing();
-		// public void terminating();
+		
+		public void terminating();
 
 	}
 
@@ -75,9 +76,14 @@ public class Kernel implements Loadable, Activable {
 
 		@Override
 		public void severing() {
-		
+
 			kernel.await();
-		
+
+		}
+
+		@Override
+		public void terminating() {
+			
 		}
 	}
 
@@ -104,15 +110,15 @@ public class Kernel implements Loadable, Activable {
 				Discoverer discoverer = (Discoverer) kernel
 						.driver(Discoverer.class);
 				Map<Ice.Identity, KernelInfo> cache = discoverer.cache();
-				
+
 				if (cache.size() == 0) {
-					
+
 					try {
 						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 						logger.info(e.getMessage());
 					}
-					
+
 					continue;
 				}
 
@@ -133,7 +139,6 @@ public class Kernel implements Loadable, Activable {
 				ISessionManagerPrx prx = ISessionManagerPrxHelper
 						.checkedCast(kernel.communicator().stringToProxy(proxy));
 
-
 				IKernelSessionPrx selfSession = IKernelSessionPrxHelper
 						.uncheckedCast(kernel.primary().addWithUUID(
 								new KernelSessionAdapter(new KernelSession(
@@ -142,10 +147,10 @@ public class Kernel implements Loadable, Activable {
 				IKernelSessionPrx remoteSession = prx.createKernelSession(
 						kernel.identity(), selfSession);
 
-				// TODO: add remote to session manager in parent
+				// TODO: add remote to session manager as parent
 
 				kernel.toogle(new SeveringState(kernel));
-				
+
 				stateChanged = true;
 			}
 		}
@@ -155,6 +160,11 @@ public class Kernel implements Loadable, Activable {
 
 			kernel.await();
 
+		}
+
+		@Override
+		public void terminating() {
+			
 		}
 	}
 
@@ -190,19 +200,19 @@ public class Kernel implements Loadable, Activable {
 		}
 	}
 
-	// public static class TerminatingState implements KernelState {
-	//
-	// private Kernel kernel;
-	//
-	// public TerminatingState(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void run() {
-	//
-	// }
-	// }
+	public static class TerminatingState implements KernelState {
+
+		private Kernel kernel;
+
+		public TerminatingState(Kernel kernel) {
+			this.kernel = kernel;
+		}
+
+		@Override
+		public void run() {
+			
+		}
+	}
 
 	/**
 	 * TODO: impl builder for this class
@@ -298,8 +308,8 @@ public class Kernel implements Loadable, Activable {
 				+ secondaryEndpoints() + "\"");
 
 		this.info = new KernelInfo(identity(), rate(), primaryEndpoins(),
-				secondaryEndpoints(), String.valueOf(state().getClass().getSimpleName()), mode()
-						.getClass().getSimpleName());
+				secondaryEndpoints(), String.valueOf(state().getClass()
+						.getSimpleName()), mode().getClass().getSimpleName());
 	}
 
 	public Identity identity() {
@@ -357,13 +367,19 @@ public class Kernel implements Loadable, Activable {
 	}
 
 	public synchronized void toogle(KernelState kernelState) {
-		logger.info("changing kernel state on " + kernelState.getClass().getSimpleName());
-		this.kernelState = kernelState;
+		if (this.kernelState.getClass() != kernelState.getClass()) {
+			logger.info("changing kernel state on "
+					+ kernelState.getClass().getSimpleName());
+			this.kernelState = kernelState;
+		}
 	}
 
 	public synchronized void toogle(KernelMode kernelMode) {
-		logger.info("changing kernel mode on " + kernelMode.getClass().getSimpleName());
-		this.kernelMode = kernelMode;
+		if (this.kernelMode.getClass() != kernelMode.getClass()) {
+			logger.info("changing kernel mode on "
+					+ kernelMode.getClass().getSimpleName());
+			this.kernelMode = kernelMode;
+		}
 	}
 
 	public synchronized void reset() {
@@ -371,6 +387,17 @@ public class Kernel implements Loadable, Activable {
 			notify();
 		} catch (IllegalMonitorStateException e) {
 			logger.warn("can not reset kernel: " + e.getMessage());
+		}
+	}
+
+	public synchronized void await() {
+		try {
+
+			wait();
+
+		} catch (InterruptedException e) {
+			logger.error("something went wrong while kernel waits: "
+					+ e.getMessage());
 		}
 	}
 
@@ -391,29 +418,27 @@ public class Kernel implements Loadable, Activable {
 	}
 
 	public void start() {
-		for (; true; ) {
-			loop();
-		}
+
+		do {
+			loop();			
+		} while (!(kernelState instanceof TerminatingState));
+
 	}
 
 	public void stop() {
+
+		toogle(new TerminatingState(this));
+		reset();
+
 		communicator.destroy();
-	}
-
-	public synchronized void await() {
-		try {
-
-			wait();
-
-		} catch (InterruptedException e) {
-			logger.error("something went wrong while kernel waits: " + e.getMessage());
-		}
 	}
 
 	public void loop() {
 		try {
-			
-			logger.info("new kernel loop: " + kernelState.getClass().getSimpleName() + ", " + kernelMode.getClass().getSimpleName());
+
+			logger.info("new kernel loop: "
+					+ kernelState.getClass().getSimpleName() + ", "
+					+ kernelMode.getClass().getSimpleName());
 
 			self = new Thread(kernelState);
 
@@ -422,7 +447,8 @@ public class Kernel implements Loadable, Activable {
 			self.join();
 
 		} catch (InterruptedException e) {
-			logger.error("something went wrong while kernel loop: " + e.getMessage());
+			logger.error("something went wrong while kernel loop: "
+					+ e.getMessage());
 		}
 	}
 

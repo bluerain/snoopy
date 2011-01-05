@@ -28,6 +28,27 @@ public class Snoopyd extends Ice.Application {
 
 	public static final int EXIT_SUCCESS = 0;
 	public static final int EXIT_FAILURE = 999;
+	
+    public static class ShutdownHook extends Thread  {
+    	
+    	private Kernel kernel;
+    	
+        public ShutdownHook(Kernel kernel) {
+        	this.kernel = kernel;
+        }
+
+		public void run() {
+            try {
+            	
+            	kernel.unload();
+            	kernel.deactivate();
+            	kernel.stop();
+            	
+            } catch(Ice.LocalException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 
 	public void terminate() {
 		logger.info("terminating " + Defaults.APP_NAME + " " + Defaults.APP_VER);
@@ -39,6 +60,9 @@ public class Snoopyd extends Ice.Application {
 		
 		logger.info("creating kernel"); 
 		Kernel kernel = new Kernel(communicator());
+		
+		logger.info("setting shutdown hook for kernel");
+		setInterruptHook(new ShutdownHook(kernel));
 		
 		logger.info("loading kernel drivers:");
 		kernel.load();
