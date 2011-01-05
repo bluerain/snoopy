@@ -17,6 +17,9 @@
 package com.googlecode.snoopyd.core;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -27,11 +30,13 @@ import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.AdapterManager;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.driver.Activable;
+import com.googlecode.snoopyd.driver.Aliver;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.DriverManager;
 import com.googlecode.snoopyd.driver.Loadable;
-import com.googlecode.snoopyd.driver.Sessionier;
+import com.googlecode.snoopyd.driver.Resetable;
+import com.googlecode.snoopyd.manager.Manager;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.ISessionManagerPrx;
@@ -50,12 +55,14 @@ public class Kernel implements Loadable, Activable {
 	public static final int WAITING_STATE = 0;
 	public static final int SEVERING_STATE = 1;
 
+	public static final int KERNEL_TOOGLE_DELAY = 10000;
+
 	public static interface KernelMode {
 
 		public void waiting();
 
 		public void severing();
-		
+
 		public void terminating();
 
 	}
@@ -83,7 +90,7 @@ public class Kernel implements Loadable, Activable {
 
 		@Override
 		public void terminating() {
-			
+
 		}
 	}
 
@@ -147,7 +154,8 @@ public class Kernel implements Loadable, Activable {
 				IKernelSessionPrx remoteSession = prx.createKernelSession(
 						kernel.identity(), selfSession);
 
-				// TODO: add remote to session manager as parent
+				((SessionManager) kernel.manager(SessionManager.class)).add(
+						targetId, remoteSession);
 
 				kernel.toogle(new SeveringState(kernel));
 
@@ -164,7 +172,7 @@ public class Kernel implements Loadable, Activable {
 
 		@Override
 		public void terminating() {
-			
+
 		}
 	}
 
@@ -210,7 +218,7 @@ public class Kernel implements Loadable, Activable {
 
 		@Override
 		public void run() {
-			
+
 		}
 	}
 
@@ -265,9 +273,7 @@ public class Kernel implements Loadable, Activable {
 
 	// private Configuration configuration;
 
-	private DriverManager driverManager;
-	private AdapterManager adapterManager;
-	private SessionManager sessionManager;
+	private Map<Class<?>, Manager> managers;
 
 	private Thread self;
 
@@ -288,6 +294,8 @@ public class Kernel implements Loadable, Activable {
 		this.identity = Identities.randomIdentity(properties
 				.getProperty("Snoopy.Domain"));
 
+		this.managers = new HashMap<Class<?>, Manager>();
+
 		logger.info("init driver manager");
 		initDriverManager();
 
@@ -299,17 +307,18 @@ public class Kernel implements Loadable, Activable {
 
 		logger.info("init primary adapter");
 		initPrimaryAdapter();
-		logger.info("primary adapter endpoints is a \"" + primaryEndpoins()
-				+ "\"");
+		logger.info("primary adapter endpoints is a \""
+				+ primaryPublishedEndpoints() + "\"");
 
 		logger.info("init secondary adapter");
 		initSecondaryAdapter();
 		logger.info("primary secondary endpoints is a \""
-				+ secondaryEndpoints() + "\"");
+				+ secondaryPublishedEndpoints() + "\"");
 
-		this.info = new KernelInfo(identity(), rate(), primaryEndpoins(),
-				secondaryEndpoints(), String.valueOf(state().getClass()
-						.getSimpleName()), mode().getClass().getSimpleName());
+		this.info = new KernelInfo(identity(), rate(),
+				primaryPublishedEndpoints(), secondaryPublishedEndpoints(),
+				String.valueOf(state().getClass().getSimpleName()), mode()
+						.getClass().getSimpleName());
 	}
 
 	public Identity identity() {
@@ -320,14 +329,24 @@ public class Kernel implements Loadable, Activable {
 		return properties.getPropertyAsInt("Snoopy.Rate");
 	}
 
-	public String primaryEndpoins() {
+	public String primaryPublishedEndpoints() {
 		return primary.getPublishedEndpoints()[primary.getPublishedEndpoints().length - 1]
 				._toString();
 	}
 
-	public String secondaryEndpoints() {
+	public String secondaryPublishedEndpoints() {
 		return secondary.getPublishedEndpoints()[secondary
 				.getPublishedEndpoints().length - 1]._toString();
+	}
+
+	public String primaryEndpoints() {
+		return primary.getEndpoints()[primary.getEndpoints().length - 1]
+				._toString();
+	}
+
+	public String secondaryEndpoints() {
+		return secondary.getEndpoints()[secondary.getEndpoints().length - 1]
+				._toString();
 	}
 
 	public KernelInfo kernelInfo() {
@@ -359,11 +378,11 @@ public class Kernel implements Loadable, Activable {
 	}
 
 	public void load() {
-		driverManager.loadAll();
+		((DriverManager) managers.get(DriverManager.class)).loadAll();
 	}
 
 	public void unload() {
-		driverManager.unloadAll();
+		((DriverManager) managers.get(DriverManager.class)).unloadAll();
 	}
 
 	public synchronized void toogle(KernelState kernelState) {
@@ -381,8 +400,20 @@ public class Kernel implements Loadable, Activable {
 			this.kernelMode = kernelMode;
 		}
 	}
-
+	
 	public synchronized void reset() {
+	
+		logger.debug("reseting kernel");
+
+		((Resetable) managers.get(SessionManager.class)).reset();
+		((Resetable) managers.get(DriverManager.class)).reset();
+		((Resetable) managers.get(AdapterManager.class)).reset();
+
+		restart();
+		
+	}
+
+	public synchronized void restart() {
 		try {
 			notify();
 		} catch (IllegalMonitorStateException e) {
@@ -402,16 +433,16 @@ public class Kernel implements Loadable, Activable {
 	}
 
 	public void activate() {
-		driverManager.activateAll();
-		adapterManager.activateAll();
+		((DriverManager) managers.get(DriverManager.class)).activateAll();
+		((AdapterManager) managers.get(AdapterManager.class)).activateAll();
 
 		primary.activate();
 		secondary.activate();
 	}
 
 	public void deactivate() {
-		driverManager.deactivateAll();
-		adapterManager.deactivateAll();
+		((DriverManager) managers.get(DriverManager.class)).deactivateAll();
+		((AdapterManager) managers.get(AdapterManager.class)).deactivateAll();
 
 		primary.deactivate();
 		primary.deactivate();
@@ -420,7 +451,14 @@ public class Kernel implements Loadable, Activable {
 	public void start() {
 
 		do {
-			loop();			
+
+			loop();
+
+			try {
+				Thread.sleep(KERNEL_TOOGLE_DELAY);
+			} catch (InterruptedException e) {
+			}
+
 		} while (!(kernelState instanceof TerminatingState));
 
 	}
@@ -428,7 +466,7 @@ public class Kernel implements Loadable, Activable {
 	public void stop() {
 
 		toogle(new TerminatingState(this));
-		reset();
+		restart();
 
 		communicator.destroy();
 	}
@@ -453,52 +491,73 @@ public class Kernel implements Loadable, Activable {
 	}
 
 	public Driver driver(Class<?> clazz) {
-		return driverManager.get(clazz);
+		return ((DriverManager) managers.get(DriverManager.class)).get(clazz);
 	}
 
 	public Collection<Driver> drivers() {
-		return driverManager.getAll();
+		return ((DriverManager) managers.get(DriverManager.class)).getAll();
+	}
+
+	public Manager manager(Class<?> clazz) {
+		return managers.get(clazz);
+	}
+
+	public Collection<Manager> managers() {
+		return Collections.unmodifiableCollection(managers.values());
 	}
 
 	private void initDriverManager() {
-		driverManager = new DriverManager();
+		DriverManager driverManager = new DriverManager(DriverManager.NAME,
+				this);
 
 		driverManager.add(Discoverer.class, new Discoverer(Discoverer.NAME,
 				this));
 
-		driverManager.add(Sessionier.class, new Sessionier(Sessionier.NAME,
-				this));
+		driverManager.add(Aliver.class, new Aliver(Aliver.NAME, this));
 
+		managers.put(DriverManager.class, driverManager);
 	}
 
 	private void initAdapterManager() {
-		adapterManager = new AdapterManager();
+		AdapterManager adapterManager = new AdapterManager(AdapterManager.NAME,
+				this);
 
 		adapterManager.add(
 				DiscovererAdapter.class,
 				new DiscovererAdapter(DiscovererAdapter.NAME, Identities
 						.stringToIdentity(DiscovererAdapter.NAME),
-						(Discoverer) driverManager.get(Discoverer.class)));
+						(Discoverer) ((DriverManager) managers
+								.get(DriverManager.class))
+								.get(Discoverer.class)));
 
+		managers.put(AdapterManager.class, adapterManager);
 	}
 
 	private void initSessionManager() {
-		sessionManager = new SessionManager(this);
+		SessionManager sessionManager = new SessionManager(SessionManager.NAME,
+				this);
+
+		managers.put(SessionManager.class, sessionManager);
 	}
 
 	private void initPrimaryAdapter() {
 		primary = communicator
 				.createObjectAdapter(Defaults.DEFAULT_PRIMARY_ADAPTER_NAME);
 
-		primary.add(new SessionManagerAdapter(sessionManager), identity());
-
+		primary.add(
+				new SessionManagerAdapter((SessionManager) managers
+						.get(SessionManager.class)), identity());
 	}
 
 	private void initSecondaryAdapter() {
 		secondary = communicator
 				.createObjectAdapter(Defaults.DEFAULT_SECONDARY_ADAPTER_NAME);
 
-		secondary.add((Ice.Object) adapterManager.get(DiscovererAdapter.class),
-				adapterManager.get(DiscovererAdapter.class).identity());
+		secondary.add(
+				(Ice.Object) ((AdapterManager) managers
+						.get(AdapterManager.class))
+						.get(DiscovererAdapter.class),
+				((AdapterManager) managers.get(AdapterManager.class)).get(
+						DiscovererAdapter.class).identity());
 	}
 }

@@ -61,7 +61,7 @@ public class Snoopyd extends Ice.Application {
 		logger.info("creating kernel"); 
 		Kernel kernel = new Kernel(communicator());
 		
-		logger.info("setting shutdown hook for kernel");
+		logger.info("setting shutdown hook for snoopyd");
 		setInterruptHook(new ShutdownHook(kernel));
 		
 		logger.info("loading kernel drivers:");
