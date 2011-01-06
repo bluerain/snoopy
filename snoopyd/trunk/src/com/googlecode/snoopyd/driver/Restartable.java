@@ -16,8 +16,8 @@
 
 package com.googlecode.snoopyd.driver;
 
-public interface Resetable {
-	
-	public void reset();
+public interface Restartable {
+
+	public void restart();
 
 }

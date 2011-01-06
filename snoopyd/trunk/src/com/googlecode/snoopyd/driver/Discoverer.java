@@ -30,7 +30,7 @@ import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Discoverer extends AbstractDriver implements Driver, Activable,
-		Runnable, Resetable {
+		Runnable, Restartable {
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
@@ -44,7 +44,6 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 	public Discoverer(String name, Kernel kernel) {
 		super(name, kernel);
 
-		this.self = new Thread(this);
 		this.cache = new ConcurrentHashMap<Identity, Kernel.KernelInfo>();
 	}
 
@@ -60,75 +59,50 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 
 	@Override
 	public void activate() {
+		self = new Thread(this);
 		self.start();
 	}
 
 	@Override
 	public void deactivate() {
-
+		self.interrupt();
 	}
-	
+
 	@Override
-	public void reset() {
+	public void restart() {
 		cache.clear();
+
+		deactivate();
+		activate();
 	}
 
 	@Override
 	public void run() {
-		
-		boolean isNetworkDown = false;
 
 		IDiscovererPrx multicast = IDiscovererPrxHelper.uncheckedCast(kernel
 				.communicator().propertyToProxy("Discoverer.Multicast"));
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
 
-		while (true) {
+		for (;self.isAlive();) {
+
+			Map<String, String> context = new HashMap<String, String>();
+
+			context.put("identity", Identities.toString(kernel.identity()));
+			context.put("rate", String.valueOf(kernel.rate()));
+			context.put("primary", kernel.primaryPublishedEndpoints());
+			context.put("secondary", kernel.secondaryPublishedEndpoints());
+			context.put("state", kernel.state().getClass().getSimpleName());
+			context.put("mode", kernel.mode().getClass().getSimpleName());
+
 			try {
 
-				Thread.sleep(DISCOVER_INTERVAL);
-
-				cache.clear();
-
-				Map<String, String> context = new HashMap<String, String>();
-
-				context.put("identity", Identities.toString(kernel.identity()));
-				context.put("rate", String.valueOf(kernel.rate()));
-				context.put("primary", kernel.primaryPublishedEndpoints());
-				context.put("secondary", kernel.secondaryPublishedEndpoints());
-				context.put("state", kernel.state().getClass().getSimpleName());
-				context.put("mode", kernel.mode().getClass().getSimpleName());
-
 				multicast.discover(kernel.identity(), context);
-				
-				if (isNetworkDown) {
 
-					isNetworkDown = false;
-					
-					kernel.toogle(new Kernel.PassiveMode(kernel));
-					kernel.toogle(new Kernel.WaitingState(kernel));
-					
-					kernel.reset();
-					
-				}
-				
-
-			} catch (Exception ex) {
-
-				logger.debug("something went wrong with " + Discoverer.class);
-
-				cache.clear();
-
-				Kernel.KernelInfo localhost = new Kernel.KernelInfo(
-						kernel.identity(), kernel.rate(),
-						kernel.primaryEndpoints(), kernel.secondaryEndpoints(),
-						kernel.state().getClass().getSimpleName(), kernel
-								.mode().getClass().getSimpleName());
-
-				cache.put(kernel.identity(), localhost);
-				
-				isNetworkDown = true;
-			}
+			} catch (Exception ignored) { }
+			
+			try {
+				Thread.sleep(Discoverer.DISCOVER_INTERVAL);
+			} catch (InterruptedException ignored) { }
 		}
-
 	}
 }

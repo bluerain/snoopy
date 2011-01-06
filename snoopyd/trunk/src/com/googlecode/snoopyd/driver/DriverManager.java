@@ -28,7 +28,7 @@ import com.googlecode.snoopyd.manager.AbstractManager;
 import com.googlecode.snoopyd.manager.Manager;
 
 
-public class DriverManager extends AbstractManager implements Manager, Resetable {
+public class DriverManager extends AbstractManager implements Manager, Restartable {
 	
 	public static final String NAME = "drivermanager";
 	
@@ -107,10 +107,10 @@ public class DriverManager extends AbstractManager implements Manager, Resetable
 	}
 
 	@Override
-	public void reset() {
+	public void restart() {
 		for (Driver drv: drivers.values()) {
-			if (drv instanceof Resetable) {
-				((Resetable) drv).reset();
+			if (drv instanceof Restartable) {
+				((Restartable) drv).restart();
 			}
 		}
 	}

@@ -29,7 +29,7 @@ import com.googlecode.snoopyd.session.SessionManager;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Aliver extends AbstractDriver implements Driver, Activable,
-		Runnable, Resetable {
+		Runnable, Restartable {
 
 	private static Logger logger = Logger.getLogger(Aliver.class);
 
@@ -40,14 +40,12 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 
 	public Aliver(String name, Kernel kernel) {
 		super(name, kernel);
-
-		this.self = new Thread(this);
 	}
 
 	@Override
 	public void run() {
 
-		while (true) {
+		for (;self.isAlive();) {
 			
 			SessionManager manager = ((SessionManager) kernel
 					.manager(SessionManager.class));
@@ -71,12 +69,10 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 					if (manager.parents().size() - tobeRemoved.size() == 0) {
 						kernel.toogle(new Kernel.PassiveMode(kernel));
 						kernel.toogle(new Kernel.WaitingState(kernel));
-						kernel.restart();
+						kernel.reset();
 					}
 				}
 			}
-			
-			
 			
 			Map<Ice.Identity, ISessionPrx> childs = manager.childs();
 			for (Ice.Identity identity : childs.keySet()) {
@@ -94,6 +90,8 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 				}
 			}
 			
+			// TODO: think, maybe it is not needed
+			
 			for (Ice.Identity identity: tobeRemoved) {
 				manager.removeChild(identity);
 				manager.removeParent(identity);
@@ -109,16 +107,18 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 
 	@Override
 	public void activate() {
+		self = new Thread(this);
 		self.start();
 	}
 
 	@Override
 	public void deactivate() {
-
+		self.interrupt();
 	}
 
 	@Override
-	public void reset() {
-		
+	public void restart() {
+		deactivate();
+		activate();
 	}
 }
