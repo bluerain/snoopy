@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.driver.Resetable;
+import com.googlecode.snoopyd.driver.Restartable;
 import com.googlecode.snoopyd.manager.AbstractManager;
 import com.googlecode.snoopyd.manager.Manager;
 
-public class AdapterManager extends AbstractManager implements Manager, Resetable {
+public class AdapterManager extends AbstractManager implements Manager, Restartable {
 	
 	public static final String NAME = "adaptermanager";
 	
@@ -56,7 +56,7 @@ public class AdapterManager extends AbstractManager implements Manager, Resetabl
 	}
 
 	@Override
-	public void reset() {
+	public void restart() {
 
 	}
 }
