@@ -19,7 +19,6 @@ package com.googlecode.snoopyd.core;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -35,7 +34,8 @@ import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.DriverManager;
 import com.googlecode.snoopyd.driver.Loadable;
-import com.googlecode.snoopyd.driver.Resetable;
+import com.googlecode.snoopyd.driver.Networker;
+import com.googlecode.snoopyd.driver.Restartable;
 import com.googlecode.snoopyd.manager.Manager;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
@@ -47,17 +47,17 @@ import com.googlecode.snoopyd.session.SessionManager;
 import com.googlecode.snoopyd.session.SessionManagerAdapter;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Kernel implements Loadable, Activable {
-
-	public static final int ACTIVE_MODE = 0;
-	public static final int PASSIVE_MODE = 1;
-
-	public static final int WAITING_STATE = 0;
-	public static final int SEVERING_STATE = 1;
+public class Kernel implements Loadable, Activable, Restartable {
 
 	public static final int KERNEL_TOOGLE_DELAY = 10000;
+	
+	public static interface KernelEvent {
+		
+	}
 
 	public static interface KernelMode {
+
+		public void starting();
 
 		public void waiting();
 
@@ -67,46 +67,24 @@ public class Kernel implements Loadable, Activable {
 
 	}
 
-	public static class ActiveMode implements KernelMode {
+	public static class DiscoverMode implements KernelMode {
 
 		private Kernel kernel;
 
-		public ActiveMode(Kernel kernel) {
+		public DiscoverMode(Kernel kernel) {
 			this.kernel = kernel;
+		}
+
+		@Override
+		public void starting() {
+
+			kernel.toogle(new WaitingState(kernel));
+
 		}
 
 		@Override
 		public void waiting() {
 
-			kernel.await();
-		}
-
-		@Override
-		public void severing() {
-
-			kernel.await();
-
-		}
-
-		@Override
-		public void terminating() {
-
-		}
-	}
-
-	public static class PassiveMode implements KernelMode {
-
-		private Kernel kernel;
-
-		public PassiveMode(Kernel kernel) {
-			this.kernel = kernel;
-		}
-
-		@Override
-		public void waiting() {
-			/**
-			 * try to connect to node with max rate
-			 */
 			boolean stateChanged = false;
 
 			while (!stateChanged) {
@@ -157,10 +135,164 @@ public class Kernel implements Loadable, Activable {
 				((SessionManager) kernel.manager(SessionManager.class)).add(
 						targetId, remoteSession);
 
-				kernel.toogle(new SeveringState(kernel));
-
 				stateChanged = true;
+
+				kernel.toogle(new PassiveMode(kernel));
+				kernel.toogle(new SeveringState(kernel));
 			}
+
+		}
+
+		@Override
+		public void severing() {
+
+		}
+
+		@Override
+		public void terminating() {
+
+		}
+	}
+
+	public static class SuspenseMode implements KernelMode {
+
+		private Kernel kernel;
+
+		public SuspenseMode(Kernel kernel) {
+			this.kernel = kernel;
+		}
+
+		@Override
+		public void starting() {
+
+			kernel.toogle(new WaitingState(kernel));
+
+		}
+
+		@Override
+		public void waiting() {
+
+			kernel.await();
+
+		}
+
+		@Override
+		public void severing() {
+
+		}
+
+		@Override
+		public void terminating() {
+
+		}
+	}
+
+	public static class OfflineMode implements KernelMode {
+
+		private Kernel kernel;
+
+		public OfflineMode(Kernel kernel) {
+			this.kernel = kernel;
+		}
+
+		@Override
+		public void starting() {
+			
+			((Restartable) kernel.manager(SessionManager.class)).restart();
+
+			kernel.toogle(new WaitingState(kernel));
+		}
+
+		@Override
+		public void waiting() {
+
+			String proxy = Identities.toString(kernel.identity()) + ": "
+					+ kernel.primaryEndpoints();
+
+			ISessionManagerPrx prx = ISessionManagerPrxHelper
+					.checkedCast(kernel.communicator().stringToProxy(proxy));
+
+			IKernelSessionPrx selfSession = IKernelSessionPrxHelper
+					.uncheckedCast(kernel.primary()
+							.addWithUUID(
+									new KernelSessionAdapter(new KernelSession(
+											kernel))));
+
+			IKernelSessionPrx remoteSession = prx.createKernelSession(
+					kernel.identity(), selfSession);
+
+			((SessionManager) kernel.manager(SessionManager.class)).add(
+					kernel.identity(), remoteSession);
+
+			kernel.toogle(new SeveringState(kernel));
+		}
+
+		@Override
+		public void severing() {
+
+			kernel.await();
+
+		}
+
+		@Override
+		public void terminating() {
+
+		}
+	}
+
+	public static class ActiveMode implements KernelMode {
+
+		private Kernel kernel;
+
+		public ActiveMode(Kernel kernel) {
+			this.kernel = kernel;
+		}
+
+		@Override
+		public void starting() {
+
+			kernel.toogle(new WaitingState(kernel));
+
+		}
+
+		@Override
+		public void waiting() {
+
+			kernel.toogle(new SeveringState(kernel));
+		}
+
+		@Override
+		public void severing() {
+
+			kernel.await();
+
+		}
+
+		@Override
+		public void terminating() {
+
+		}
+	}
+
+	public static class PassiveMode implements KernelMode {
+
+		private Kernel kernel;
+
+		public PassiveMode(Kernel kernel) {
+			this.kernel = kernel;
+		}
+
+		@Override
+		public void starting() {
+
+			kernel.toogle(new WaitingState(kernel));
+
+		}
+
+		@Override
+		public void waiting() {
+
+			kernel.toogle(new SeveringState(kernel));
 		}
 
 		@Override
@@ -178,6 +310,20 @@ public class Kernel implements Loadable, Activable {
 
 	public static interface KernelState extends Runnable {
 		public void run();
+	}
+
+	public static class StartingState implements KernelState {
+
+		private Kernel kernel;
+
+		public StartingState(Kernel kernel) {
+			this.kernel = kernel;
+		}
+
+		@Override
+		public void run() {
+			kernel.mode().starting();
+		}
 	}
 
 	public static class WaitingState implements KernelState {
@@ -218,7 +364,7 @@ public class Kernel implements Loadable, Activable {
 
 		@Override
 		public void run() {
-
+			kernel.mode().terminating();
 		}
 	}
 
@@ -259,6 +405,10 @@ public class Kernel implements Loadable, Activable {
 		}
 	}
 
+	public static class KernelConfiguration {
+
+	}
+
 	private static Logger logger = Logger.getLogger(Kernel.class);
 
 	private KernelInfo info;
@@ -273,6 +423,9 @@ public class Kernel implements Loadable, Activable {
 
 	// private Configuration configuration;
 
+	private boolean stateChanged;
+	private boolean modeChanged;
+
 	private Map<Class<?>, Manager> managers;
 
 	private Thread self;
@@ -285,8 +438,8 @@ public class Kernel implements Loadable, Activable {
 		// ConfigurationBuilder builder = new ConfigurationBuilder();
 		// Configuration configuration = builder.rate(10).build();
 
-		this.kernelState = new WaitingState(this);
-		this.kernelMode = new PassiveMode(this);
+		this.kernelMode = new SuspenseMode(this);
+		this.kernelState = new StartingState(this);
 
 		this.communicator = communicator;
 		this.properties = communicator.getProperties();
@@ -296,23 +449,24 @@ public class Kernel implements Loadable, Activable {
 
 		this.managers = new HashMap<Class<?>, Manager>();
 
-		logger.info("init driver manager");
+		logger.debug("init driver manager");
 		initDriverManager();
 
-		logger.info("init adapter manager");
+		logger.debug("init adapter manager");
 		initAdapterManager();
 
-		logger.info("init session manager");
+		logger.debug("init session manager");
 		initSessionManager();
 
-		logger.info("init primary adapter");
+		logger.debug("init primary adapter");
 		initPrimaryAdapter();
 		logger.info("primary adapter endpoints is a \""
 				+ primaryPublishedEndpoints() + "\"");
 
-		logger.info("init secondary adapter");
+		logger.debug("init secondary adapter");
 		initSecondaryAdapter();
-		logger.info("primary secondary endpoints is a \""
+		
+		logger.debug("primary secondary endpoints is a \""
 				+ secondaryPublishedEndpoints() + "\"");
 
 		this.info = new KernelInfo(identity(), rate(),
@@ -377,43 +531,74 @@ public class Kernel implements Loadable, Activable {
 		return kernelMode;
 	}
 
+	public void recofigure(KernelConfiguration configuration) {
+
+	}
+
+	@Override
 	public void load() {
 		((DriverManager) managers.get(DriverManager.class)).loadAll();
 	}
 
+	@Override
 	public void unload() {
 		((DriverManager) managers.get(DriverManager.class)).unloadAll();
 	}
 
 	public synchronized void toogle(KernelState kernelState) {
-		if (this.kernelState.getClass() != kernelState.getClass()) {
+
+		stateChanged = false;
+		
+		if (!stateChanged
+				&& this.kernelState.getClass() != kernelState.getClass()) {
+			stateChanged = true;
+
 			logger.info("changing kernel state on "
 					+ kernelState.getClass().getSimpleName());
 			this.kernelState = kernelState;
+		} else {
+			logger.debug("can not change state on "
+					+ kernelState.getClass().getSimpleName()
+					+ ", because state already changed in this loop");
 		}
+
 	}
 
 	public synchronized void toogle(KernelMode kernelMode) {
-		if (this.kernelMode.getClass() != kernelMode.getClass()) {
+		
+		if (!modeChanged && this.kernelMode.getClass() != kernelMode.getClass()) {
+			modeChanged = true;
+
 			logger.info("changing kernel mode on "
 					+ kernelMode.getClass().getSimpleName());
+
 			this.kernelMode = kernelMode;
+		} else {
+			logger.debug("can not change mode on "
+					+ kernelState.getClass().getSimpleName()
+					+ ", because model already changed in this loop");
 		}
-	}
-	
-	public synchronized void reset() {
-	
-		logger.debug("reseting kernel");
 
-		((Resetable) managers.get(SessionManager.class)).reset();
-		((Resetable) managers.get(DriverManager.class)).reset();
-		((Resetable) managers.get(AdapterManager.class)).reset();
-
-		restart();
-		
 	}
 
 	public synchronized void restart() {
+
+		logger.debug("reseting kernel");
+
+		((Restartable) managers.get(SessionManager.class)).restart();
+		((Restartable) managers.get(DriverManager.class)).restart();
+		((Restartable) managers.get(AdapterManager.class)).restart();
+
+		stateChanged = false;
+		modeChanged = false;
+
+		kernelMode = new SuspenseMode(this);
+		kernelState = new StartingState(this);
+
+		reset();
+	}
+
+	public synchronized void reset() {
 		try {
 			notify();
 		} catch (IllegalMonitorStateException e) {
@@ -466,7 +651,7 @@ public class Kernel implements Loadable, Activable {
 	public void stop() {
 
 		toogle(new TerminatingState(this));
-		restart();
+		reset();
 
 		communicator.destroy();
 	}
@@ -478,6 +663,9 @@ public class Kernel implements Loadable, Activable {
 					+ kernelState.getClass().getSimpleName() + ", "
 					+ kernelMode.getClass().getSimpleName());
 
+			stateChanged = false;
+			modeChanged = false;
+
 			self = new Thread(kernelState);
 
 			self.start();
@@ -488,6 +676,10 @@ public class Kernel implements Loadable, Activable {
 			logger.error("something went wrong while kernel loop: "
 					+ e.getMessage());
 		}
+	}
+	
+	public void handle(KernelEvent event) {
+		
 	}
 
 	public Driver driver(Class<?> clazz) {
@@ -514,6 +706,8 @@ public class Kernel implements Loadable, Activable {
 				this));
 
 		driverManager.add(Aliver.class, new Aliver(Aliver.NAME, this));
+
+		driverManager.add(Networker.class, new Networker(Networker.NAME, this));
 
 		managers.put(DriverManager.class, driverManager);
 	}
