@@ -19,7 +19,7 @@ package com.googlecode.snoopyd.session;
 import com.googlecode.snoopyd.core.Kernel;
 
 public class KernelSession {
-	
+
 	private Kernel kernel;
 	
 	public KernelSession(Kernel kernel) {

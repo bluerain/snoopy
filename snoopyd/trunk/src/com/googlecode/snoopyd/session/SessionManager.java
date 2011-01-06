@@ -25,12 +25,12 @@ import org.apache.log4j.Logger;
 import Ice.Identity;
 
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.driver.Resetable;
+import com.googlecode.snoopyd.driver.Restartable;
 import com.googlecode.snoopyd.manager.AbstractManager;
 import com.googlecode.snoopyd.manager.Manager;
 
 public class SessionManager extends AbstractManager implements Manager,
-		Resetable {
+		Restartable {
 
 	private static Logger logger = Logger.getLogger(SessionManager.class);
 
@@ -59,7 +59,7 @@ public class SessionManager extends AbstractManager implements Manager,
 		kernel.toogle(new Kernel.ActiveMode(kernel));
 		kernel.toogle(new Kernel.SeveringState(kernel));
 
-		kernel.restart();
+		kernel.reset();
 
 		return prx;
 	}
@@ -82,7 +82,7 @@ public class SessionManager extends AbstractManager implements Manager,
 	}
 	
 	@Override
-	public void reset() {
+	public void restart() {
 		parents.clear();
 		childs.clear();
 	}
