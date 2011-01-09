@@ -29,6 +29,9 @@ import Ice.Identity;
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.AdapterManager;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
+import com.googlecode.snoopyd.core.Kernel.KernelEvent;
+import com.googlecode.snoopyd.core.Kernel.NetworkDisabledEvent;
+import com.googlecode.snoopyd.core.Kernel.NetworkEnabledEvent;
 import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Aliver;
 import com.googlecode.snoopyd.driver.Discoverer;
@@ -53,49 +56,32 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	public static final int KERNEL_TOOGLE_DELAY = 10000;
 
 	public static interface KernelEvent {
-		public KernelEvent self();
+		public void aplly(KernelHandler handler);
 	}
-
-	public static class StateChangedEvent implements KernelEvent {
-
-		@Override
-		public StateChangedEvent self() {
-			return this;
-		}
-	}
-
+	
 	public static class NetworkEnabledEvent implements KernelEvent {
 
 		@Override
-		public NetworkEnabledEvent self() {
-			return this;
+		public void aplly(KernelHandler handler) {
+			handler.handle(this);
 		}
 	}
 
 	public static class NetworkDisabledEvent implements KernelEvent {
 
 		@Override
-		public NetworkDisabledEvent self() {
-			return this;
+		public void aplly(KernelHandler handler) {
+			handler.handle(this);
 		}
 	}
 
-	public static class ChildSessionCreatedEvent implements KernelEvent {
-
-		@Override
-		public ChildSessionCreatedEvent self() {
-			return this;
-		}
-	}
-
-	public static class ParentSessionCreatedEvent implements KernelEvent {
-
-		@Override
-		public ParentSessionCreatedEvent self() {
-			return this;
-		}
-	}
-
+//	public static class ChildSessionCreatedEvent extends AbstractKernelEvent implements KernelEvent {
+//
+//	}
+//
+//	public static class ParentSessionCreatedEvent extends AbstractKernelEvent implements KernelEvent {
+//		
+//	}	
 	// public static interface KernelMode {
 	//
 	// public void starting();
@@ -349,22 +335,28 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	// }
 	// }
 
-	public static interface KernelState {
+	public static interface KernelHandler {
 
+		public void handle(KernelEvent event);
+		
 		public void handle(NetworkEnabledEvent event);
 
 		public void handle(NetworkDisabledEvent event);
-		
-		public void handle(KernelEvent event);
 
 	}
 
-	public static class SuspenseState implements KernelState {
+	public static class SuspenseHandler implements KernelHandler {
 
 		private Kernel kernel;
 
-		public SuspenseState(Kernel kernel) {
+		public SuspenseHandler(Kernel kernel) {
 			this.kernel = kernel;
+		}
+		
+		
+		@Override
+		public void handle(KernelEvent event) {
+			
 		}
 
 		@Override
@@ -394,18 +386,25 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 			((SessionManager) kernel.manager(SessionManager.class)).add(
 					kernel.identity(), remoteSession);
 			
-			kernel.toogle(new OfflineState());
-			kernel.handle(new Kernel.StateChangedEvent());
+			kernel.toogle(new OfflineHandler());
+			//kernel.handle(new Kernel.StateChangedEvent());
 
 		}
 
-		@Override
-		public void handle(KernelEvent event) {
-			logger.debug("not handled " + event.getClass().getSimpleName());
-		}
+//		@Override
+//		public void handle(KernelEvent event) {
+//			logger.debug("not handled " + event.getClass().getSimpleName());
+//		}
 	}
 
-	public static class OfflineState implements KernelState {
+	public static class OfflineHandler implements KernelHandler {
+
+		
+		@Override
+		public void handle(KernelEvent event) {
+			// TODO Auto-generated method stub
+			
+		}
 
 		@Override
 		public void handle(NetworkEnabledEvent event) {
@@ -418,14 +417,21 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 			// TODO Auto-generated method stub
 
 		}
+		
+		
+
+//		@Override
+//		public void handle(KernelEvent event) {
+//			logger.debug("not handled " + event.getClass().getSimpleName());			
+//		}
+	}
+
+	public static class ActiveHandler implements KernelHandler {
 
 		@Override
 		public void handle(KernelEvent event) {
-			logger.debug("not handled " + event.getClass().getSimpleName());			
+			
 		}
-	}
-
-	public static class ActiveState implements KernelState {
 
 		@Override
 		public void handle(NetworkEnabledEvent event) {
@@ -437,30 +443,33 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 		}
 
-		@Override
-		public void handle(KernelEvent event) {
-			logger.debug("not handled " + event.getClass().getSimpleName());
-		}
+//		@Override
+//		public void handle(KernelEvent event) {
+//			logger.debug("not handled " + event.getClass().getSimpleName());
+//		}
 	}
 
-	public static class PassiveState implements KernelState {
+	public static class PassiveHandler implements KernelHandler {
+
+		
+		@Override
+		public void handle(KernelEvent event) {
+			
+		}
 
 		@Override
 		public void handle(NetworkEnabledEvent event) {
-
+			
 		}
 
 		@Override
 		public void handle(NetworkDisabledEvent event) {
-
+			// TODO Auto-generated method stub
+			
 		}
 
-		@Override
-		public void handle(KernelEvent event) {
-			logger.debug("not handled " + event.getClass().getSimpleName());
-		}
 	}
-
+	
 	// public static class StartingState implements KernelState {
 	//
 	// private Kernel kernel;
@@ -579,7 +588,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	private Thread self;
 
-	private KernelState state;
+	private KernelHandler state;
 
 	private ConcurrentLinkedQueue<Kernel.KernelEvent> pool;
 
@@ -590,7 +599,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 		this.pool = new ConcurrentLinkedQueue<Kernel.KernelEvent>();
 
-		this.state = new Kernel.SuspenseState(this);
+		this.state = new Kernel.SuspenseHandler(this);
 
 		this.communicator = communicator;
 		this.properties = communicator.getProperties();
@@ -673,7 +682,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		return secondary;
 	}
 
-	public KernelState state() {
+	public KernelHandler state() {
 		return state;
 	}
 
@@ -695,7 +704,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		((DriverManager) managers.get(DriverManager.class)).unloadAll();
 	}
 
-	public synchronized void toogle(KernelState kernelState) {
+	public synchronized void toogle(KernelHandler kernelState) {
 
 		stateChanged = false;
 
@@ -811,7 +820,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 				
 				logger.debug("handle " + event.getClass().getSimpleName());
 				
-				state.handle(event.self());
+				event.aplly(state);
 			}
 
 			await();
