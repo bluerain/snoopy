@@ -17,6 +17,7 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
@@ -27,7 +28,7 @@ public class OfflineHandler extends AbstractHandler implements
 	private Kernel kernel;
 
 	public OfflineHandler(Kernel kernel) {
-		// TODO Auto-generated constructor stub
+		this.kernel = kernel;
 	}
 
 	@Override
@@ -48,8 +49,9 @@ public class OfflineHandler extends AbstractHandler implements
 
 	}
 
-	// @Override
-	// public void handle(KernelEvent event) {
-	// logger.debug("not handled " + event.getClass().getSimpleName());
-	// }
+	@Override
+	public void handle(ChildSessionSendedEvent event) {
+		
+	}
+	
 }

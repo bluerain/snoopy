@@ -17,14 +17,17 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 
 public class PassiveHandler extends AbstractHandler implements
 		KernelHandler {
 
+	private Kernel kernel;
+	
 	public PassiveHandler(Kernel kernel) {
-		// TODO Auto-generated constructor stub
+		this.kernel = kernel;
 	}
 
 	@Override
@@ -34,8 +37,11 @@ public class PassiveHandler extends AbstractHandler implements
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
-		// TODO Auto-generated method stub
 
 	}
 
+	@Override
+	public void handle(ChildSessionSendedEvent event) {
+		
+	}
 }

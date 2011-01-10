@@ -19,20 +19,24 @@ package com.googlecode.snoopyd.core.handler;
 import java.util.Map;
 
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.Kernel.KernelInfo;
+import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
-import com.googlecode.snoopyd.driver.Discoverer;
+import com.googlecode.snoopyd.core.state.ActiveState;
+import com.googlecode.snoopyd.core.state.OfflineState;
+import com.googlecode.snoopyd.core.state.PassiveState;
+import com.googlecode.snoopyd.driver.ISessionierPrx;
+import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
-import com.googlecode.snoopyd.session.ISessionManagerPrx;
-import com.googlecode.snoopyd.session.ISessionManagerPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
-import com.googlecode.snoopyd.session.SessionManager;
 import com.googlecode.snoopyd.util.Identities;
 
 public class SuspenseHandler extends AbstractHandler implements KernelHandler {
+
+	public static final int TRYS = 3;
+	public static final int SLEEP = 10000;
 
 	private Kernel kernel;
 
@@ -42,21 +46,19 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(NetworkEnabledEvent event) {
-		boolean stateChanged = false;
 
-		while (!stateChanged) {
+		boolean connected = false;
+
+		for (int i = 0; i < TRYS; i++) {
 
 			int targetRate = 0;
 			Ice.Identity targetId = null;
 
-			Discoverer discoverer = (Discoverer) kernel
-					.driver(Discoverer.class);
-			Map<Ice.Identity, KernelInfo> cache = discoverer.cache();
+			Map<Ice.Identity, Map<String, String>> cache = kernel.cache();
 
 			if (cache.size() == 0) {
-
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(SLEEP);
 				} catch (InterruptedException e) {
 
 				}
@@ -65,21 +67,20 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 			}
 
 			for (Ice.Identity identity : cache.keySet()) {
-				KernelInfo info = cache.get(identity);
+				Map<String, String> context = cache.get(identity);
 
-				if (info.rate > targetRate) {
-					targetRate = info.rate;
-					targetId = info.identity;
+				if (Integer.valueOf(context.get("rate")) > targetRate) {
+					targetRate = Integer.valueOf(context.get("rate"));
+					targetId = identity;
 				}
 			}
 
-			KernelInfo targetInfo = cache.get(targetId);
+			Map<String, String> targetInfo = cache.get(targetId);
 
-			String proxy = Identities.toString(targetInfo.identity) + ": "
-					+ targetInfo.primary;
+			String proxy = Identities.toString(targetId) + ": "
+					+ targetInfo.get("primary");
 
-			ISessionManagerPrx prx = ISessionManagerPrxHelper
-					.checkedCast(kernel.communicator().stringToProxy(proxy));
+			ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel.communicator().stringToProxy(proxy));
 
 			IKernelSessionPrx selfSession = IKernelSessionPrxHelper
 					.uncheckedCast(kernel.primary()
@@ -90,15 +91,33 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 			IKernelSessionPrx remoteSession = prx.createKernelSession(
 					kernel.identity(), selfSession);
 
-			((SessionManager) kernel.manager(SessionManager.class)).add(
-					targetId, remoteSession);
+			
+			kernel.parents().put(targetId, remoteSession);
 
-			stateChanged = true;
+			connected = true;
+			kernel.toogle(new PassiveState(kernel));
+			break;
+		}
 
-			// kernel.toogle(new PassiveState(kernel));
+		if (!connected) {
 
-			// kernel.toogle(new PassiveMode(kernel));
-			// kernel.toogle(new SeveringState(kernel));
+			String proxy = Identities.toString(kernel.identity()) + ": "
+					+ kernel.primaryEndpoints();
+
+			ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel.communicator().stringToProxy(proxy));
+
+			IKernelSessionPrx selfSession = IKernelSessionPrxHelper
+					.uncheckedCast(kernel.primary()
+							.addWithUUID(
+									new KernelSessionAdapter(new KernelSession(
+											kernel))));
+
+			IKernelSessionPrx remoteSession = prx.createKernelSession(
+					kernel.identity(), selfSession);
+
+			kernel.parents().put(kernel.identity(), remoteSession);
+			
+			kernel.toogle(new ActiveState(kernel));
 		}
 	}
 
@@ -108,7 +127,7 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 		String proxy = Identities.toString(kernel.identity()) + ": "
 				+ kernel.primaryEndpoints();
 
-		ISessionManagerPrx prx = ISessionManagerPrxHelper.checkedCast(kernel
+		ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel
 				.communicator().stringToProxy(proxy));
 
 		IKernelSessionPrx selfSession = IKernelSessionPrxHelper
@@ -118,16 +137,14 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 		IKernelSessionPrx remoteSession = prx.createKernelSession(
 				kernel.identity(), selfSession);
 
-		((SessionManager) kernel.manager(SessionManager.class)).add(
-				kernel.identity(), remoteSession);
+		kernel.parents().put(kernel.identity(), remoteSession);
 
-		// kernel.toogle(new OfflineHandler());
-		// kernel.handle(new Kernel.StateChangedEvent());
-
+		kernel.toogle(new OfflineState(kernel));
 	}
 
-	// @Override
-	// public void handle(KernelEvent event) {
-	// logger.debug("not handled " + event.getClass().getSimpleName());
-	// }
+	@Override
+	public void handle(ChildSessionSendedEvent event) {
+		
+	}
+	
 }

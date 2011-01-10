@@ -17,6 +17,7 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 
@@ -37,8 +38,9 @@ public class ActiveHandler extends AbstractHandler implements
 
 	}
 
-	// @Override
-	// public void handle(KernelEvent event) {
-	// logger.debug("not handled " + event.getClass().getSimpleName());
-	// }
+	@Override
+	public void handle(ChildSessionSendedEvent event) {
+
+		
+	}
 }
