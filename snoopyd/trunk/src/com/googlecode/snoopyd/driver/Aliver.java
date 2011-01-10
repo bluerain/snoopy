@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.ISessionPrx;
-import com.googlecode.snoopyd.session.SessionManager;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Aliver extends AbstractDriver implements Driver, Activable,
@@ -47,12 +46,9 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 
 		for (;self.isAlive();) {
 			
-			SessionManager manager = ((SessionManager) kernel
-					.manager(SessionManager.class));
-
 			List<Ice.Identity> tobeRemoved = new ArrayList<Ice.Identity>();
 			
-			Map<Ice.Identity, ISessionPrx> parents = manager.parents();
+			Map<Ice.Identity, ISessionPrx> parents = kernel.parents();
 			for (Ice.Identity identity : parents.keySet()) {
 				IKernelSessionPrx parent = (IKernelSessionPrx) parents
 						.get(identity);
@@ -66,7 +62,7 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 					
 					tobeRemoved.add(identity);
 					
-					if (manager.parents().size() - tobeRemoved.size() == 0) {
+					if (kernel.parents().size() - tobeRemoved.size() == 0) {
 
 						//kernel.toogle(new Kernel.PassiveMode(kernel));
 						//kernel.toogle(new Kernel.WaitingState(kernel));
@@ -76,7 +72,7 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 				}
 			}
 			
-			Map<Ice.Identity, ISessionPrx> childs = manager.childs();
+			Map<Ice.Identity, ISessionPrx> childs = kernel.childs();
 			for (Ice.Identity identity : childs.keySet()) {
 				IKernelSessionPrx child = (IKernelSessionPrx) childs
 						.get(identity);
@@ -94,10 +90,10 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 			
 			// TODO: think, maybe it is not needed
 			
-			for (Ice.Identity identity: tobeRemoved) {
-				manager.removeChild(identity);
-				manager.removeParent(identity);
-			}
+//			for (Ice.Identity identity: tobeRemoved) {
+//				//manager.removeChild(identity);
+//				//manager.removeParent(identity);
+//			}
 
 			try {
 				Thread.sleep(Aliver.ALIVE_INTERVAL);

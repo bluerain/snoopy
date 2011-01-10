@@ -16,45 +16,38 @@
 
 package com.googlecode.snoopyd.driver;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
 
-import Ice.Identity;
-
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.state.KernelListener;
+import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Discoverer extends AbstractDriver implements Driver, Activable,
-		Runnable, Restartable {
+		Runnable, Restartable, KernelListener {
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
 	public static final String NAME = "discoverer";
 	public static final int DISCOVER_INTERVAL = 5000;
 
-	private ConcurrentMap<Ice.Identity, Kernel.KernelInfo> cache;
-
 	private Thread self;
 
 	public Discoverer(String name, Kernel kernel) {
 		super(name, kernel);
-
-		this.cache = new ConcurrentHashMap<Identity, Kernel.KernelInfo>();
 	}
 
-	public void discover(Kernel.KernelInfo info) {
-		cache.put(info.identity, info);
+	public void discover(Ice.Identity identity, Map<String, String> context) {
+		logger.debug("recive discover from " + Identities.toString(identity));
 
-		logger.debug("recive discover with info = " + info);
-	}
-
-	public Map<Ice.Identity, Kernel.KernelInfo> cache() {
-		return Collections.unmodifiableMap(cache);
+		if (!Identities.equals(identity, kernel.identity())) {
+			kernel.handle(new DiscoverRecivedEvent(context));
+		}
+		
 	}
 
 	@Override
@@ -70,8 +63,6 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 
 	@Override
 	public void restart() {
-		cache.clear();
-
 		deactivate();
 		activate();
 	}
@@ -91,17 +82,21 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 			context.put("rate", String.valueOf(kernel.rate()));
 			context.put("primary", kernel.primaryPublishedEndpoints());
 			context.put("secondary", kernel.secondaryPublishedEndpoints());
-			context.put("state", kernel.handler().getClass().getSimpleName());
+			context.put("state", kernel.state().getClass().getSimpleName());
 
 			try {
-
 				multicast.discover(kernel.identity(), context);
-
 			} catch (Exception ignored) { }
 			
 			try {
 				Thread.sleep(Discoverer.DISCOVER_INTERVAL);
 			} catch (InterruptedException ignored) { }
 		}
+	}
+
+	@Override
+	public void stateChanged(KernelState currentState) {
+		// TODO Auto-generated method stub
+		
 	}
 }
