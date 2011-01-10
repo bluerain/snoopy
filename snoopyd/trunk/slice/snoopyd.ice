@@ -17,6 +17,8 @@
 #ifndef SNOOPYD_ICE
 #define SNOOPYD_ICE
 
+#include <Ice/Identity.ice>
+
 module com { module googlecode { module snoopyd {
 
 	module driver
@@ -27,15 +29,9 @@ module com { module googlecode { module snoopyd {
  			void shutdown(); 		
  		};
  		
- 		interface IConnector 
- 		{
- 			void connect();
- 			void disconnect();
- 		};
- 		
  		interface IDiscoverer 
  		{
- 			void discover();
+ 			void discover(Ice::Identity identity);
  			void request();
  			void offer();
  			void pack();
@@ -43,29 +39,28 @@ module com { module googlecode { module snoopyd {
  		
 	}; 
 
-	module core 
+	module session 
 	{
 	
-		interface ISession
-		{                                              
-			
+		interface ISession 
+		{
+		
 		};
 		
 		interface IKernelSession extends ISession
 		{
-			driver::IConnector connector();
+			void helloKernel();
 		};
-		
+	
 		interface IUserSession extends ISession
 		{
-			driver::IController controller();
+			void helloUser();
 		};
 		
-		interface ISessionManager 
+		interface ISessionManager
 		{
-			IKernelSession createKernelSession();
-			IUserSession createUserSession();
-		
+			IKernelSession* createKernelSession(Ice::Identity identity, IKernelSession* selfSession);
+			IUserSession* createUserSession(Ice::Identity identity, IUserSession* selfSession);
 		};
 	};
 	
