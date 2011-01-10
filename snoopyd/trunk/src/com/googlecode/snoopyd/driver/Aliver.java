@@ -67,9 +67,11 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 					tobeRemoved.add(identity);
 					
 					if (manager.parents().size() - tobeRemoved.size() == 0) {
-						kernel.toogle(new Kernel.PassiveMode(kernel));
-						kernel.toogle(new Kernel.WaitingState(kernel));
-						kernel.reset();
+
+						//kernel.toogle(new Kernel.PassiveMode(kernel));
+						//kernel.toogle(new Kernel.WaitingState(kernel));
+						
+						//kernel.reset();
 					}
 				}
 			}

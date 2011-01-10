@@ -91,8 +91,7 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 			context.put("rate", String.valueOf(kernel.rate()));
 			context.put("primary", kernel.primaryPublishedEndpoints());
 			context.put("secondary", kernel.secondaryPublishedEndpoints());
-			context.put("state", kernel.state().getClass().getSimpleName());
-			context.put("mode", kernel.mode().getClass().getSimpleName());
+			context.put("state", kernel.handler().getClass().getSimpleName());
 
 			try {
 
