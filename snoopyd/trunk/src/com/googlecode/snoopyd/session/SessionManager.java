@@ -56,8 +56,8 @@ public class SessionManager extends AbstractManager implements Manager,
 				.primary().addWithUUID(
 						new KernelSessionAdapter(new KernelSession(kernel))));
 
-		kernel.toogle(new Kernel.ActiveMode(kernel));
-		kernel.toogle(new Kernel.SeveringState(kernel));
+		//kernel.toogle(new Kernel.ActiveMode(kernel));
+		//kernel.toogle(new Kernel.SeveringState(kernel));
 
 		kernel.reset();
 
