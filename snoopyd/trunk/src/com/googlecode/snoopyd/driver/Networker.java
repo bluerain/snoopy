@@ -23,6 +23,8 @@ import java.util.Enumeration;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
+import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 
 public class Networker extends AbstractDriver implements Driver, Activable,
 		Runnable, Restartable {
@@ -32,8 +34,8 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	public static final String NAME = "networker";
 	
 	public static final int NETWORK_UNDEFINED = -1;
-	public static final int NETWORK_AVALIBLE = 0;
-	public static final int NETWORK_UNAVALIBLE = 1;
+	public static final int NETWORK_ENABLED = 0;
+	public static final int NETWORK_DISABLED = 1;
 
 	public static final int NETWORKER_INTERVAL = 3000;
 
@@ -64,6 +66,8 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 						NetworkInterface nic = interfaces.nextElement();
 						try {
 							
+							logger.debug("checking " + nic.getDisplayName() + " interface :: " + nic.isUp());
+							
 							checker = checker || (nic.isUp() && !nic.isLoopback());
 							
 						} catch (SocketException ignored) { }
@@ -72,74 +76,63 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 					if (networkState == NETWORK_UNDEFINED) {
 						if (checker) {
 							
-							logger.debug("network is avalible");
+							logger.debug("network is enabled");
 							
-							networkState = NETWORK_AVALIBLE;
+							networkState = NETWORK_ENABLED;
+							
+							kernel.handle(new NetworkEnabledEvent());
 
-							kernel.toogle(new Kernel.DiscoverMode(kernel));
-							kernel.toogle(new Kernel.StartingState(kernel));
-							kernel.reset();
-							
 						} else {
 							
-							logger.debug("network is unavalible");
+							logger.debug("network is disabled");
 							
-							networkState = NETWORK_UNAVALIBLE;
+							networkState = NETWORK_DISABLED;
 
-							kernel.toogle(new Kernel.OfflineMode(kernel));
-							kernel.toogle(new Kernel.StartingState(kernel));
-							kernel.reset();
+							kernel.handle(new NetworkDisabledEvent());
 							
 						}
 					
-					} else if (networkState == NETWORK_UNAVALIBLE) {
+					} else if (networkState == NETWORK_DISABLED) {
 						
 						if (checker) {
 							
-							logger.debug("network is avalible");
+							logger.debug("network is enabled");
 							
-							networkState = NETWORK_AVALIBLE;
+							networkState = NETWORK_ENABLED;
 							
-							kernel.toogle(new Kernel.DiscoverMode(kernel));
-							kernel.toogle(new Kernel.StartingState(kernel));
-							kernel.reset();
+							kernel.handle(new NetworkEnabledEvent());
 						
 						} else {
 						
-							logger.debug("network still unavalible");
+							logger.debug("network still disabled");
 							
 						}
 						
-					} else if (networkState == NETWORK_AVALIBLE) {
+					} else if (networkState == NETWORK_ENABLED) {
 						
 						if (!checker) {
 							
-							logger.debug("network is unavalible");
+							logger.debug("network is disabled");
 							
-							networkState = NETWORK_UNAVALIBLE;
+							networkState = NETWORK_DISABLED;
 
-							kernel.toogle(new Kernel.OfflineMode(kernel));
-							kernel.toogle(new Kernel.StartingState(kernel));
-							kernel.reset();
+							kernel.handle(new NetworkDisabledEvent());
 							
 						} else {
 							
-							logger.debug("network still avalible");
+							logger.debug("network still enabled");
 						}
 					}
 					
 				} catch (SocketException ex) {
 
-					if (networkState == NETWORK_UNDEFINED || networkState == NETWORK_AVALIBLE) {
+					if (networkState == NETWORK_UNDEFINED || networkState == NETWORK_ENABLED) {
 						
-						logger.debug("network is unavalible");
+						logger.debug("network is disabled");
 						
-						networkState = NETWORK_UNAVALIBLE;
-						
-						kernel.toogle(new Kernel.OfflineMode(kernel));
-						kernel.toogle(new Kernel.StartingState(kernel));
-						kernel.reset();
-						
+						networkState = NETWORK_DISABLED;
+
+						kernel.handle(new NetworkDisabledEvent());
 					}
 				}
 
