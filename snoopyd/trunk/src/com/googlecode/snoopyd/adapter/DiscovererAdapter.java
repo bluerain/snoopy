@@ -25,22 +25,18 @@ import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver._IDiscovererDisp;
 
-public class DiscovererAdapter extends _IDiscovererDisp implements
-		Adapter {
+public class DiscovererAdapter extends _IDiscovererDisp implements Adapter {
 
 	private static Logger logger = Logger.getLogger(DiscovererAdapter.class);
-
-	public static final String NAME = "discoverer";
 
 	private String name;
 	private Ice.Identity identity;
 
 	private Discoverer discoverer;
 
-	public DiscovererAdapter(String name, Ice.Identity identity,
-			Discoverer discoverer) {
+	public DiscovererAdapter(Ice.Identity identity, Discoverer discoverer) {
 		this.discoverer = discoverer;
-		this.name = name;
+		this.name = DiscovererAdapter.class.getSimpleName();
 		this.identity = identity;
 	}
 

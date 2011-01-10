@@ -15,18 +15,14 @@ public class SessionierAdapter extends _ISessionierDisp implements Adapter {
 
 	private static Logger logger = Logger.getLogger(SessionierAdapter.class);
 
-	public static final String NAME = "sessionier";
-
 	private String name;
 	private Ice.Identity identity;
 
 	private Sessionier sessionier;
-	
-	
-	public SessionierAdapter(String name, Identity identity,
-			Sessionier sessionier) {
 
-		this.name = name;
+	public SessionierAdapter(Identity identity, Sessionier sessionier) {
+
+		this.name = Sessionier.class.getSimpleName();
 		this.identity = identity;
 		this.sessionier = sessionier;
 	}
@@ -34,8 +30,8 @@ public class SessionierAdapter extends _ISessionierDisp implements Adapter {
 	@Override
 	public IKernelSessionPrx createKernelSession(Identity identity,
 			IKernelSessionPrx selfSession, Current __current) {
-		
-		return sessionier.createKernelSession(identity, selfSession); 
+
+		return sessionier.createKernelSession(identity, selfSession);
 	}
 
 	@Override

@@ -32,13 +32,12 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
-	public static final String NAME = "discoverer";
 	public static final int DISCOVER_INTERVAL = 5000;
 
 	private Thread self;
 
-	public Discoverer(String name, Kernel kernel) {
-		super(name, kernel);
+	public Discoverer(Kernel kernel) {
+		super(Discoverer.class.getSimpleName(), kernel);
 	}
 
 	public void discover(Ice.Identity identity, Map<String, String> context) {
@@ -96,7 +95,6 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 
 	@Override
 	public void stateChanged(KernelState currentState) {
-		// TODO Auto-generated method stub
 		
 	}
 }

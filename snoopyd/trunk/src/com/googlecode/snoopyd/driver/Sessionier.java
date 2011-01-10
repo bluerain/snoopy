@@ -16,6 +16,8 @@
 
 package com.googlecode.snoopyd.driver;
 
+import org.apache.log4j.Logger;
+
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
@@ -29,10 +31,10 @@ import com.googlecode.snoopyd.session.KernelSessionAdapter;
 
 public class Sessionier extends AbstractDriver implements Driver, Activable, Restartable, KernelListener {
 	
-	public static final String NAME = "sessionier";
+	private static Logger logger = Logger.getLogger(Sessionier.class);
 	
-	public Sessionier(String name, Kernel kernel) {
-		super(name, kernel);
+	public Sessionier(Kernel kernel) {
+		super(Sessionier.class.getSimpleName(), kernel);
 	}
 	
 	public IKernelSessionPrx createKernelSession(Ice.Identity identity,

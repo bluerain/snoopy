@@ -32,13 +32,12 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 
 	private static Logger logger = Logger.getLogger(Aliver.class);
 
-	public static final String NAME = "aliver";
 	public static final int ALIVE_INTERVAL = 15000;
 
 	private Thread self;
 
-	public Aliver(String name, Kernel kernel) {
-		super(name, kernel);
+	public Aliver(Kernel kernel) {
+		super(Aliver.class.getSimpleName(), kernel);
 	}
 
 	@Override

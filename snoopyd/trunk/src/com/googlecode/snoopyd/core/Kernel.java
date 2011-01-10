@@ -19,6 +19,8 @@ package com.googlecode.snoopyd.core;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -27,22 +29,22 @@ import org.apache.log4j.Logger;
 import Ice.Identity;
 
 import com.googlecode.snoopyd.Defaults;
-import com.googlecode.snoopyd.adapter.AdapterManager;
+import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
+import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Aliver;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
-import com.googlecode.snoopyd.driver.DriverManager;
 import com.googlecode.snoopyd.driver.Loadable;
 import com.googlecode.snoopyd.driver.Networker;
 import com.googlecode.snoopyd.driver.Restartable;
-import com.googlecode.snoopyd.manager.Manager;
-import com.googlecode.snoopyd.session.SessionManager;
-import com.googlecode.snoopyd.session.SessionManagerAdapter;
+import com.googlecode.snoopyd.driver.Sessionier;
+import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Kernel implements Loadable, Activable, Restartable, Runnable {
@@ -99,16 +101,21 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	// private Configuration configuration;
 
-	private boolean stateChanged;
-	private boolean modeChanged;
-
-	private Map<Class<?>, Manager> managers;
-
 	private Thread self;
 
 	private KernelState state;
 
 	private ConcurrentLinkedQueue<KernelEvent> pool;
+
+	private HashMap<Class<?>, Driver> drivers;
+	private HashMap<Class<?>, Adapter> adapters;
+
+	private Map<Ice.Identity, ISessionPrx> parents;
+	private Map<Ice.Identity, ISessionPrx> childs;
+
+	private Map<Ice.Identity, Map<String, String>> cache;
+
+	private List<KernelListener> kernelListeners;
 
 	public Kernel(Ice.Communicator communicator) {
 
@@ -116,6 +123,8 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		// Configuration configuration = builder.rate(10).build();
 
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
+		this.cache = new HashMap<Identity, Map<String,String>>();
+		
 
 		this.state = new SuspenseState(this);
 
@@ -125,31 +134,29 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		this.identity = Identities.randomIdentity(properties
 				.getProperty("Snoopy.Domain"));
 
-		this.managers = new HashMap<Class<?>, Manager>();
+		logger.debug("init kernel drivers");
+		initDrivers();
 
-		logger.debug("init driver manager");
-		initDriverManager();
+		logger.debug("init kernel adapters");
+		initAdapters();
 
-		logger.debug("init adapter manager");
-		initAdapterManager();
-
-		logger.debug("init session manager");
-		initSessionManager();
-
-		logger.debug("init primary adapter");
+		logger.debug("init primary ice adapter");
 		initPrimaryAdapter();
 		logger.info("primary adapter endpoints is a \""
 				+ primaryPublishedEndpoints() + "\"");
 
-		logger.debug("init secondary adapter");
+		logger.debug("init secondary ice adapter");
 		initSecondaryAdapter();
 
 		logger.debug("primary secondary endpoints is a \""
 				+ secondaryPublishedEndpoints() + "\"");
 
+		logger.debug("init kernel listeners");
+		initKernelListeners();
+
 		this.info = new KernelInfo(identity(), rate(),
 				primaryPublishedEndpoints(), secondaryPublishedEndpoints(),
-				handler().getClass().getSimpleName(), "none");
+				state().getClass().getSimpleName(), "none");
 	}
 
 	public Identity identity() {
@@ -200,7 +207,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		return secondary;
 	}
 
-	public KernelState handler() {
+	public KernelState state() {
 		return state;
 	}
 
@@ -214,63 +221,43 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	@Override
 	public void load() {
-		((DriverManager) managers.get(DriverManager.class)).loadAll();
+		for (Driver driver: drivers.values()) {
+			if (driver instanceof Loadable) {
+				((Loadable) driver).load();
+			}
+		}
 	}
 
 	@Override
 	public void unload() {
-		((DriverManager) managers.get(DriverManager.class)).unloadAll();
+		for (Driver driver: drivers.values()) {
+			if (driver instanceof Loadable) {
+				((Loadable) driver).unload();
+			}
+		}
 	}
 
 	public synchronized void toogle(KernelState kernelState) {
 
-		stateChanged = false;
-
-		if (!stateChanged && this.state.getClass() != kernelState.getClass()) {
-			stateChanged = true;
+		if (this.state.getClass() != kernelState.getClass()) {
 
 			logger.info("changing kernel state on "
 					+ kernelState.getClass().getSimpleName());
+
 			this.state = kernelState;
+
+			for (KernelListener listener : kernelListeners) {
+				listener.stateChanged(kernelState);
+			}
+
 		} else {
-			logger.debug("can not change state on "
-					+ kernelState.getClass().getSimpleName()
-					+ ", because state already changed in this loop");
+
 		}
-
 	}
-
-	// public synchronized void toogle(KernelMode kernelMode) {
-	//
-	// if (!modeChanged && this.kernelMode.getClass() != kernelMode.getClass())
-	// {
-	// modeChanged = true;
-	//
-	// logger.info("changing kernel mode on "
-	// + kernelMode.getClass().getSimpleName());
-	//
-	// this.kernelMode = kernelMode;
-	// } else {
-	// logger.debug("can not change mode on "
-	// + state.getClass().getSimpleName()
-	// + ", because model already changed in this loop");
-	// }
-	//
-	// }
 
 	public synchronized void restart() {
 
 		logger.debug("reseting kernel");
-
-		((Restartable) managers.get(SessionManager.class)).restart();
-		((Restartable) managers.get(DriverManager.class)).restart();
-		((Restartable) managers.get(AdapterManager.class)).restart();
-
-		stateChanged = false;
-		modeChanged = false;
-
-		// kernelMode = new SuspenseMode(this);
-		// state = new StartingState(this);
 
 		reset();
 	}
@@ -294,16 +281,24 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	}
 
 	public void activate() {
-		((DriverManager) managers.get(DriverManager.class)).activateAll();
-		((AdapterManager) managers.get(AdapterManager.class)).activateAll();
-
+		
+		for (Driver driver: drivers.values()) {
+			if (driver instanceof Loadable) {
+				((Activable) driver).activate();
+			}
+		}
+		
 		primary.activate();
 		secondary.activate();
 	}
 
 	public void deactivate() {
-		((DriverManager) managers.get(DriverManager.class)).deactivateAll();
-		((AdapterManager) managers.get(AdapterManager.class)).deactivateAll();
+		
+		for (Driver driver: drivers.values()) {
+			if (driver instanceof Loadable) {
+				((Activable) driver).deactivate();
+			}
+		}
 
 		primary.deactivate();
 		primary.deactivate();
@@ -353,75 +348,79 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	}
 
 	public Driver driver(Class<?> clazz) {
-		return ((DriverManager) managers.get(DriverManager.class)).get(clazz);
+		return drivers.get(clazz);
 	}
 
 	public Collection<Driver> drivers() {
-		return ((DriverManager) managers.get(DriverManager.class)).getAll();
+		return Collections.unmodifiableCollection(drivers.values());
 	}
 
-	public Manager manager(Class<?> clazz) {
-		return managers.get(clazz);
+	public Adapter adapter(Class<?> clazz) {
+		return adapters.get(clazz);
 	}
 
-	public Collection<Manager> managers() {
-		return Collections.unmodifiableCollection(managers.values());
+	public Collection<Adapter> adapters() {
+		return Collections.unmodifiableCollection(adapters.values());
+	}
+	
+	public Map<Ice.Identity, Map<String, String>> cache() {
+		return Collections.unmodifiableMap(cache);
+	}
+	
+	public Map<Ice.Identity, ISessionPrx> parents() {
+		return parents;
 	}
 
-	private void initDriverManager() {
-		DriverManager driverManager = new DriverManager(DriverManager.NAME,
-				this);
-
-		driverManager.add(Discoverer.class, new Discoverer(Discoverer.NAME,
-				this));
-
-		driverManager.add(Aliver.class, new Aliver(Aliver.NAME, this));
-
-		driverManager.add(Networker.class, new Networker(Networker.NAME, this));
-
-		managers.put(DriverManager.class, driverManager);
+	public Map<Ice.Identity, ISessionPrx> childs() {
+		return childs;
 	}
 
-	private void initAdapterManager() {
-		AdapterManager adapterManager = new AdapterManager(AdapterManager.NAME,
-				this);
+	private void initDrivers() {
 
-		adapterManager.add(
+		drivers = new HashMap<Class<?>, Driver>();
+
+		drivers.put(Sessionier.class, new Sessionier(this));
+		drivers.put(Discoverer.class, new Discoverer(this));
+		drivers.put(Aliver.class, new Aliver(this));
+		drivers.put(Networker.class, new Networker(this));
+	}
+
+	private void initAdapters() {
+
+		adapters = new HashMap<Class<?>, Adapter>();
+
+		adapters.put(
 				DiscovererAdapter.class,
-				new DiscovererAdapter(DiscovererAdapter.NAME, Identities
-						.stringToIdentity(DiscovererAdapter.NAME),
-						(Discoverer) ((DriverManager) managers
-								.get(DriverManager.class))
-								.get(Discoverer.class)));
+				new DiscovererAdapter(Identities
+						.stringToIdentity(DiscovererAdapter.class.getSimpleName()),
+						(Discoverer) drivers.get(Discoverer.class)));
 
-		managers.put(AdapterManager.class, adapterManager);
-	}
-
-	private void initSessionManager() {
-		SessionManager sessionManager = new SessionManager(SessionManager.NAME,
-				this);
-
-		managers.put(SessionManager.class, sessionManager);
+		adapters.put(Sessionier.class, new SessionierAdapter(identity, new Sessionier(this)));
 	}
 
 	private void initPrimaryAdapter() {
 		primary = communicator
 				.createObjectAdapter(Defaults.DEFAULT_PRIMARY_ADAPTER_NAME);
 
-		primary.add(
-				new SessionManagerAdapter((SessionManager) managers
-						.get(SessionManager.class)), identity());
+		primary.add((Ice.Object) adapters.get(Sessionier.class),
+				((Adapter) adapters.get(Sessionier.class)).identity());
 	}
 
 	private void initSecondaryAdapter() {
 		secondary = communicator
 				.createObjectAdapter(Defaults.DEFAULT_SECONDARY_ADAPTER_NAME);
 
-		secondary.add(
-				(Ice.Object) ((AdapterManager) managers
-						.get(AdapterManager.class))
-						.get(DiscovererAdapter.class),
-				((AdapterManager) managers.get(AdapterManager.class)).get(
-						DiscovererAdapter.class).identity());
+		secondary.add((Ice.Object) adapters.get(DiscovererAdapter.class),
+				((Adapter) adapters.get(DiscovererAdapter.class)).identity());
+	}
+
+	public void initKernelListeners() {
+		kernelListeners = new LinkedList<KernelListener>();
+
+		for (Driver driver : drivers.values()) {
+			if (driver instanceof KernelListener) {
+				kernelListeners.add((KernelListener) driver);
+			}
+		}
 	}
 }

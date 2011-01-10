@@ -31,8 +31,6 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 
 	private static Logger logger = Logger.getLogger(Networker.class);
 
-	public static final String NAME = "networker";
-	
 	public static final int NETWORK_UNDEFINED = -1;
 	public static final int NETWORK_ENABLED = 0;
 	public static final int NETWORK_DISABLED = 1;
@@ -43,8 +41,8 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	
 	private int networkState;
 
-	public Networker(String name, Kernel kernel) {
-		super(name, kernel);
+	public Networker(Kernel kernel) {
+		super(Networker.class.getSimpleName(), kernel);
 
 		this.networkState = NETWORK_UNDEFINED;
 	}
