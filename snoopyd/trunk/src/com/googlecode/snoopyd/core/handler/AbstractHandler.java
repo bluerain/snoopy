@@ -19,6 +19,7 @@ package com.googlecode.snoopyd.core.handler;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
+import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
@@ -36,6 +37,8 @@ public abstract class AbstractHandler implements KernelHandler {
 			handle((NetworkDisabledEvent) event);
 		} else if (event instanceof ChildSessionSendedEvent) {
 			handle((ChildSessionSendedEvent) event);
+		} else if (event instanceof DiscoverRecivedEvent) {
+			handle((DiscoverRecivedEvent) event);
 		} else {
 			// logger.debug("can not handle event: " + event.name());
 		}

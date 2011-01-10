@@ -17,6 +17,7 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
+import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
@@ -30,5 +31,7 @@ public interface KernelHandler {
 	public void handle(NetworkDisabledEvent event);
 	
 	public void handle(ChildSessionSendedEvent event);
+	
+	public void handle(DiscoverRecivedEvent event);
 	
 }

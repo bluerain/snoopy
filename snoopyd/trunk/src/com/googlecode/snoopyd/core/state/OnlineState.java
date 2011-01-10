@@ -14,31 +14,28 @@
  * limitations under the License.
  */
 
-package com.googlecode.snoopyd.core.event;
+package com.googlecode.snoopyd.core.state;
 
-import java.util.Map;
+import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.handler.KernelHandler;
+import com.googlecode.snoopyd.core.handler.OnlineHandler;
 
-public class DiscoverRecivedEvent implements KernelEvent {
+public class OnlineState implements KernelState {
+	private Kernel kernel;
+	private KernelHandler handler;
 
-	private Map<String, String> context;
-	private Ice.Identity identity;
-	
-	public DiscoverRecivedEvent(Ice.Identity identity, Map<String, String> context) {
-		this.context = context;
-		this.identity = identity;
+	public OnlineState(Kernel kernel) {
+		this.kernel = kernel;
+		this.handler = null;
 	}
 
 	@Override
-	public String name() {
-		return this.getClass().getSimpleName();
+	public KernelHandler handler() {
+		if (handler == null) {
+			synchronized (this) {
+				handler = new OnlineHandler(kernel);
+			}
+		}
+		return handler;
 	}
-	
-	public Map<String, String> context() {
-		return context;
-	}
-	
-	public Ice.Identity identity() {
-		return identity;
-	}
-
 }

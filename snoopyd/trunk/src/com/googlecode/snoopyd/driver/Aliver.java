@@ -23,12 +23,16 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.state.ActiveState;
+import com.googlecode.snoopyd.core.state.KernelListener;
+import com.googlecode.snoopyd.core.state.KernelState;
+import com.googlecode.snoopyd.core.state.PassiveState;
+import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Aliver extends AbstractDriver implements Driver, Activable,
-		Runnable, Restartable {
+public class Aliver extends AbstractDriver implements Driver, Runnable, KernelListener {
 
 	private static Logger logger = Logger.getLogger(Aliver.class);
 
@@ -102,20 +106,23 @@ public class Aliver extends AbstractDriver implements Driver, Activable,
 		}
 	}
 
-	@Override
-	public void activate() {
+	public void start() {
 		self = new Thread(this);
 		self.start();
 	}
 
-	@Override
-	public void deactivate() {
+	public void stop() {
 		self.interrupt();
 	}
 
 	@Override
-	public void restart() {
-		deactivate();
-		activate();
+	public void stateChanged(KernelState currentState) {
+		
+		if (currentState instanceof ActiveState || currentState instanceof PassiveState) {
+			start();
+		} else if (currentState instanceof SuspenseState) {
+			stop();
+		}
+		
 	}
 }

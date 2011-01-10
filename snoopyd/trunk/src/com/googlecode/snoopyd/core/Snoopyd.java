@@ -20,6 +20,7 @@ package com.googlecode.snoopyd.core;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
+import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.driver.Driver;
 
 public class Snoopyd extends Ice.Application {
@@ -70,8 +71,11 @@ public class Snoopyd extends Ice.Application {
 				logger.info("... " + drv.name());
 		}
 
-		logger.info("activating kernel drivers: ");
+		logger.info("activating drivers adapters: ");
 		kernel.activate();
+		for (Adapter adp: kernel.adapters()) {
+			logger.info("... " + adp.name());
+		}
 
 		logger.info("statring kernel " + kernel.kernelInfo());
 		kernel.start();

@@ -22,7 +22,7 @@ public class SessionierAdapter extends _ISessionierDisp implements Adapter {
 
 	public SessionierAdapter(Identity identity, Sessionier sessionier) {
 
-		this.name = Sessionier.class.getSimpleName();
+		this.name = SessionierAdapter.class.getSimpleName();
 		this.identity = identity;
 		this.sessionier = sessionier;
 	}

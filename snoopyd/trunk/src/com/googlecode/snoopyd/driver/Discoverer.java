@@ -25,10 +25,12 @@ import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
+import com.googlecode.snoopyd.core.state.OnlineState;
+import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Discoverer extends AbstractDriver implements Driver, Activable,
-		Runnable, Restartable, KernelListener {
+public class Discoverer extends AbstractDriver implements Driver, Runnable,
+		KernelListener {
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
@@ -43,27 +45,22 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 	public void discover(Ice.Identity identity, Map<String, String> context) {
 		logger.debug("recive discover from " + Identities.toString(identity));
 
-		if (!Identities.equals(identity, kernel.identity())) {
-			kernel.handle(new DiscoverRecivedEvent(context));
-		}
-		
+		kernel.handle(new DiscoverRecivedEvent(identity, context));
 	}
 
-	@Override
-	public void activate() {
+	public void start() {
+
+		logger.debug("starting " + name);
+		
 		self = new Thread(this);
 		self.start();
 	}
 
-	@Override
-	public void deactivate() {
+	public void stop() {
+		
+		logger.debug("stoping " + name);
+		
 		self.interrupt();
-	}
-
-	@Override
-	public void restart() {
-		deactivate();
-		activate();
 	}
 
 	@Override
@@ -73,7 +70,7 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 				.communicator().propertyToProxy("Discoverer.Multicast"));
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
 
-		for (;self.isAlive();) {
+		for (; self.isAlive();) {
 
 			Map<String, String> context = new HashMap<String, String>();
 
@@ -85,16 +82,22 @@ public class Discoverer extends AbstractDriver implements Driver, Activable,
 
 			try {
 				multicast.discover(kernel.identity(), context);
-			} catch (Exception ignored) { }
-			
+			} catch (Exception ignored) {
+			}
+
 			try {
 				Thread.sleep(Discoverer.DISCOVER_INTERVAL);
-			} catch (InterruptedException ignored) { }
+			} catch (InterruptedException ignored) {
+			}
 		}
 	}
 
 	@Override
 	public void stateChanged(KernelState currentState) {
-		
+		if (currentState instanceof OnlineState) {
+			start();
+		} else if (currentState instanceof SuspenseState) {
+			stop();
+		}
 	}
 }

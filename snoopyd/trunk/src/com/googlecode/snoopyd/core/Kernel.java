@@ -123,8 +123,10 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		// Configuration configuration = builder.rate(10).build();
 
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
-		this.cache = new HashMap<Identity, Map<String,String>>();
+		this.cache = new HashMap<Identity, Map<String, String>>();
 		
+		this.parents = new HashMap<Identity, ISessionPrx>();
+		this.childs = new HashMap<Identity, ISessionPrx>();
 
 		this.state = new SuspenseState(this);
 
@@ -221,7 +223,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	@Override
 	public void load() {
-		for (Driver driver: drivers.values()) {
+		for (Driver driver : drivers.values()) {
 			if (driver instanceof Loadable) {
 				((Loadable) driver).load();
 			}
@@ -230,7 +232,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	@Override
 	public void unload() {
-		for (Driver driver: drivers.values()) {
+		for (Driver driver : drivers.values()) {
 			if (driver instanceof Loadable) {
 				((Loadable) driver).unload();
 			}
@@ -281,21 +283,21 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	}
 
 	public void activate() {
-		
-		for (Driver driver: drivers.values()) {
-			if (driver instanceof Loadable) {
+
+		for (Driver driver : drivers.values()) {
+			if (driver instanceof Activable) {
 				((Activable) driver).activate();
 			}
 		}
-		
+
 		primary.activate();
 		secondary.activate();
 	}
 
 	public void deactivate() {
-		
-		for (Driver driver: drivers.values()) {
-			if (driver instanceof Loadable) {
+
+		for (Driver driver : drivers.values()) {
+			if (driver instanceof Activable) {
 				((Activable) driver).deactivate();
 			}
 		}
@@ -362,11 +364,11 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	public Collection<Adapter> adapters() {
 		return Collections.unmodifiableCollection(adapters.values());
 	}
-	
+
 	public Map<Ice.Identity, Map<String, String>> cache() {
-		return Collections.unmodifiableMap(cache);
+		return cache;
 	}
-	
+
 	public Map<Ice.Identity, ISessionPrx> parents() {
 		return parents;
 	}
@@ -392,18 +394,20 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		adapters.put(
 				DiscovererAdapter.class,
 				new DiscovererAdapter(Identities
-						.stringToIdentity(DiscovererAdapter.class.getSimpleName()),
-						(Discoverer) drivers.get(Discoverer.class)));
+						.stringToIdentity(Discoverer.class
+								.getSimpleName()), (Discoverer) drivers
+						.get(Discoverer.class)));
 
-		adapters.put(Sessionier.class, new SessionierAdapter(identity, new Sessionier(this)));
+		adapters.put(SessionierAdapter.class, new SessionierAdapter(identity,
+				(Sessionier) drivers.get(Sessionier.class)));
 	}
 
 	private void initPrimaryAdapter() {
 		primary = communicator
 				.createObjectAdapter(Defaults.DEFAULT_PRIMARY_ADAPTER_NAME);
 
-		primary.add((Ice.Object) adapters.get(Sessionier.class),
-				((Adapter) adapters.get(Sessionier.class)).identity());
+		primary.add((Ice.Object) adapters.get(SessionierAdapter.class),
+				((Adapter) adapters.get(SessionierAdapter.class)).identity());
 	}
 
 	private void initSecondaryAdapter() {
