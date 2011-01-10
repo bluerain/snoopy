@@ -20,16 +20,13 @@ import org.apache.log4j.Logger;
 
 import Ice.Current;
 import Ice.Identity;
-import Ice.ObjectAdapter;
 
-import com.googlecode.snoopyd.core.Kernel.KernelInfo;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver._IDiscovererDisp;
-import com.googlecode.snoopyd.util.Identities;
 
 public class DiscovererAdapter extends _IDiscovererDisp implements
-		DriverAdapter {
+		Adapter {
 
 	private static Logger logger = Logger.getLogger(DiscovererAdapter.class);
 
@@ -50,12 +47,7 @@ public class DiscovererAdapter extends _IDiscovererDisp implements
 	@Override
 	public void discover(Ice.Identity identity, Current __current) {
 
-		KernelInfo info = new KernelInfo(identity,
-				Integer.valueOf(__current.ctx.get("rate")),
-				__current.ctx.get("primary"), __current.ctx.get("secondary"),
-				__current.ctx.get("state"), "none");
-
-		discoverer.discover(info);
+		discoverer.discover(identity, __current.ctx);
 	}
 
 	@Override

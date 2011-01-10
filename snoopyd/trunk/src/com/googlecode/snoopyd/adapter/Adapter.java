@@ -18,8 +18,10 @@ package com.googlecode.snoopyd.adapter;
 
 import com.googlecode.snoopyd.driver.Driver;
 
-public interface DriverAdapter {
+public interface Adapter {
+	
 	public Driver driver();
 	public String name();
 	public Ice.Identity identity();
+	
 }
