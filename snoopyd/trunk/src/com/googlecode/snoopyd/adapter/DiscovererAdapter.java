@@ -53,7 +53,7 @@ public class DiscovererAdapter extends _IDiscovererDisp implements
 		KernelInfo info = new KernelInfo(identity,
 				Integer.valueOf(__current.ctx.get("rate")),
 				__current.ctx.get("primary"), __current.ctx.get("secondary"),
-				__current.ctx.get("state"), __current.ctx.get("mode"));
+				__current.ctx.get("state"), "none");
 
 		discoverer.discover(info);
 	}
