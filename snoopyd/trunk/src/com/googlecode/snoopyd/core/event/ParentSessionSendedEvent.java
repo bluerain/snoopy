@@ -16,10 +16,18 @@
 
 package com.googlecode.snoopyd.core.event;
 
-public class ChildSessionCreatedEvent implements KernelEvent {
+import com.googlecode.snoopyd.session.IKernelSessionPrx;
 
+public class ParentSessionSendedEvent implements KernelEvent {
+
+	private IKernelSessionPrx session;
+	
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();
+	}
+
+	public IKernelSessionPrx session() {
+		return session;
 	}
 }
