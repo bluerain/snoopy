@@ -29,9 +29,9 @@ import Ice.Identity;
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.AdapterManager;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
-import com.googlecode.snoopyd.core.Kernel.KernelEvent;
-import com.googlecode.snoopyd.core.Kernel.NetworkDisabledEvent;
-import com.googlecode.snoopyd.core.Kernel.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.state.KernelState;
+import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Aliver;
 import com.googlecode.snoopyd.driver.Discoverer;
@@ -41,494 +41,12 @@ import com.googlecode.snoopyd.driver.Loadable;
 import com.googlecode.snoopyd.driver.Networker;
 import com.googlecode.snoopyd.driver.Restartable;
 import com.googlecode.snoopyd.manager.Manager;
-import com.googlecode.snoopyd.session.IKernelSessionPrx;
-import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
-import com.googlecode.snoopyd.session.ISessionManagerPrx;
-import com.googlecode.snoopyd.session.ISessionManagerPrxHelper;
-import com.googlecode.snoopyd.session.KernelSession;
-import com.googlecode.snoopyd.session.KernelSessionAdapter;
 import com.googlecode.snoopyd.session.SessionManager;
 import com.googlecode.snoopyd.session.SessionManagerAdapter;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
-	public static final int KERNEL_TOOGLE_DELAY = 10000;
-
-	public static interface KernelEvent {
-		public void aplly(KernelHandler handler);
-	}
-	
-	public static class NetworkEnabledEvent implements KernelEvent {
-
-		@Override
-		public void aplly(KernelHandler handler) {
-			handler.handle(this);
-		}
-	}
-
-	public static class NetworkDisabledEvent implements KernelEvent {
-
-		@Override
-		public void aplly(KernelHandler handler) {
-			handler.handle(this);
-		}
-	}
-
-//	public static class ChildSessionCreatedEvent extends AbstractKernelEvent implements KernelEvent {
-//
-//	}
-//
-//	public static class ParentSessionCreatedEvent extends AbstractKernelEvent implements KernelEvent {
-//		
-//	}	
-	// public static interface KernelMode {
-	//
-	// public void starting();
-	//
-	// public void waiting();
-	//
-	// public void severing();
-	//
-	// public void terminating();
-	//
-	// }
-
-	// public static class DiscoverMode implements KernelMode {
-	//
-	// private Kernel kernel;
-	//
-	// public DiscoverMode(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void starting() {
-	//
-	// kernel.toogle(new WaitingState(kernel));
-	//
-	// }
-	//
-	// @Override
-	// public void waiting() {
-	//
-	// boolean stateChanged = false;
-	//
-	// while (!stateChanged) {
-	//
-	// int targetRate = 0;
-	// Ice.Identity targetId = null;
-	//
-	// Discoverer discoverer = (Discoverer) kernel
-	// .driver(Discoverer.class);
-	// Map<Ice.Identity, KernelInfo> cache = discoverer.cache();
-	//
-	// if (cache.size() == 0) {
-	//
-	// try {
-	// Thread.sleep(10000);
-	// } catch (InterruptedException e) {
-	// logger.info(e.getMessage());
-	// }
-	//
-	// continue;
-	// }
-	//
-	// for (Ice.Identity identity : cache.keySet()) {
-	// KernelInfo info = cache.get(identity);
-	//
-	// if (info.rate > targetRate) {
-	// targetRate = info.rate;
-	// targetId = info.identity;
-	// }
-	// }
-	//
-	// KernelInfo targetInfo = cache.get(targetId);
-	//
-	// String proxy = Identities.toString(targetInfo.identity) + ": "
-	// + targetInfo.primary;
-	//
-	// ISessionManagerPrx prx = ISessionManagerPrxHelper
-	// .checkedCast(kernel.communicator().stringToProxy(proxy));
-	//
-	// IKernelSessionPrx selfSession = IKernelSessionPrxHelper
-	// .uncheckedCast(kernel.primary().addWithUUID(
-	// new KernelSessionAdapter(new KernelSession(
-	// kernel))));
-	//
-	// IKernelSessionPrx remoteSession = prx.createKernelSession(
-	// kernel.identity(), selfSession);
-	//
-	// ((SessionManager) kernel.manager(SessionManager.class)).add(
-	// targetId, remoteSession);
-	//
-	// stateChanged = true;
-	//
-	// kernel.toogle(new PassiveMode(kernel));
-	// kernel.toogle(new SeveringState(kernel));
-	// }
-	//
-	// }
-	//
-	// @Override
-	// public void severing() {
-	//
-	// }
-	//
-	// @Override
-	// public void terminating() {
-	//
-	// }
-	// }
-
-	// public static class SuspenseMode implements KernelMode {
-	//
-	// private Kernel kernel;
-	//
-	// public SuspenseMode(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void starting() {
-	//
-	// kernel.toogle(new WaitingState(kernel));
-	//
-	// }
-	//
-	// @Override
-	// public void waiting() {
-	//
-	// kernel.await();
-	//
-	// }
-	//
-	// @Override
-	// public void severing() {
-	//
-	// }
-	//
-	// @Override
-	// public void terminating() {
-	//
-	// }
-	// }
-	//
-	// public static class OfflineMode implements KernelMode {
-	//
-	// private Kernel kernel;
-	//
-	// public OfflineMode(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void starting() {
-	//
-	// ((Restartable) kernel.manager(SessionManager.class)).restart();
-	//
-	// kernel.toogle(new WaitingState(kernel));
-	// }
-	//
-	// @Override
-	// public void waiting() {
-	//
-	// String proxy = Identities.toString(kernel.identity()) + ": "
-	// + kernel.primaryEndpoints();
-	//
-	// ISessionManagerPrx prx = ISessionManagerPrxHelper
-	// .checkedCast(kernel.communicator().stringToProxy(proxy));
-	//
-	// IKernelSessionPrx selfSession = IKernelSessionPrxHelper
-	// .uncheckedCast(kernel.primary()
-	// .addWithUUID(
-	// new KernelSessionAdapter(new KernelSession(
-	// kernel))));
-	//
-	// IKernelSessionPrx remoteSession = prx.createKernelSession(
-	// kernel.identity(), selfSession);
-	//
-	// ((SessionManager) kernel.manager(SessionManager.class)).add(
-	// kernel.identity(), remoteSession);
-	//
-	// kernel.toogle(new SeveringState(kernel));
-	// }
-	//
-	// @Override
-	// public void severing() {
-	//
-	// kernel.await();
-	//
-	// }
-	//
-	// @Override
-	// public void terminating() {
-	//
-	// }
-	// }
-
-	// public static class ActiveMode implements KernelMode {
-	//
-	// private Kernel kernel;
-	//
-	// public ActiveMode(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void starting() {
-	//
-	// kernel.toogle(new WaitingState(kernel));
-	//
-	// }
-	//
-	// @Override
-	// public void waiting() {
-	//
-	// kernel.toogle(new SeveringState(kernel));
-	// }
-	//
-	// @Override
-	// public void severing() {
-	//
-	// kernel.await();
-	//
-	// }
-	//
-	// @Override
-	// public void terminating() {
-	//
-	// }
-	// }
-	//
-	// public static class PassiveMode implements KernelMode {
-	//
-	// private Kernel kernel;
-	//
-	// public PassiveMode(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void starting() {
-	//
-	// kernel.toogle(new WaitingState(kernel));
-	//
-	// }
-	//
-	// @Override
-	// public void waiting() {
-	//
-	// kernel.toogle(new SeveringState(kernel));
-	// }
-	//
-	// @Override
-	// public void severing() {
-	//
-	// kernel.await();
-	//
-	// }
-	//
-	// @Override
-	// public void terminating() {
-	//
-	// }
-	// }
-
-	public static interface KernelHandler {
-
-		public void handle(KernelEvent event);
-		
-		public void handle(NetworkEnabledEvent event);
-
-		public void handle(NetworkDisabledEvent event);
-
-	}
-
-	public static class SuspenseHandler implements KernelHandler {
-
-		private Kernel kernel;
-
-		public SuspenseHandler(Kernel kernel) {
-			this.kernel = kernel;
-		}
-		
-		
-		@Override
-		public void handle(KernelEvent event) {
-			
-		}
-
-		@Override
-		public void handle(NetworkEnabledEvent event) {
-			// connect to anybody and toogle state to passive state
-		}
-
-		@Override
-		public void handle(NetworkDisabledEvent event) {
-			// connect to them self and toogle to offlie state
-
-			String proxy = Identities.toString(kernel.identity()) + ": "
-					+ kernel.primaryEndpoints();
-
-			ISessionManagerPrx prx = ISessionManagerPrxHelper
-					.checkedCast(kernel.communicator().stringToProxy(proxy));
-
-			IKernelSessionPrx selfSession = IKernelSessionPrxHelper
-					.uncheckedCast(kernel.primary()
-							.addWithUUID(
-									new KernelSessionAdapter(new KernelSession(
-											kernel))));
-
-			IKernelSessionPrx remoteSession = prx.createKernelSession(
-					kernel.identity(), selfSession);
-
-			((SessionManager) kernel.manager(SessionManager.class)).add(
-					kernel.identity(), remoteSession);
-			
-			kernel.toogle(new OfflineHandler());
-			//kernel.handle(new Kernel.StateChangedEvent());
-
-		}
-
-//		@Override
-//		public void handle(KernelEvent event) {
-//			logger.debug("not handled " + event.getClass().getSimpleName());
-//		}
-	}
-
-	public static class OfflineHandler implements KernelHandler {
-
-		
-		@Override
-		public void handle(KernelEvent event) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void handle(NetworkEnabledEvent event) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void handle(NetworkDisabledEvent event) {
-			// TODO Auto-generated method stub
-
-		}
-		
-		
-
-//		@Override
-//		public void handle(KernelEvent event) {
-//			logger.debug("not handled " + event.getClass().getSimpleName());			
-//		}
-	}
-
-	public static class ActiveHandler implements KernelHandler {
-
-		@Override
-		public void handle(KernelEvent event) {
-			
-		}
-
-		@Override
-		public void handle(NetworkEnabledEvent event) {
-
-		}
-
-		@Override
-		public void handle(NetworkDisabledEvent event) {
-
-		}
-
-//		@Override
-//		public void handle(KernelEvent event) {
-//			logger.debug("not handled " + event.getClass().getSimpleName());
-//		}
-	}
-
-	public static class PassiveHandler implements KernelHandler {
-
-		
-		@Override
-		public void handle(KernelEvent event) {
-			
-		}
-
-		@Override
-		public void handle(NetworkEnabledEvent event) {
-			
-		}
-
-		@Override
-		public void handle(NetworkDisabledEvent event) {
-			// TODO Auto-generated method stub
-			
-		}
-
-	}
-	
-	// public static class StartingState implements KernelState {
-	//
-	// private Kernel kernel;
-	//
-	// public StartingState(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void run() {
-	// kernel.mode().starting();
-	// }
-	// }
-	//
-	// public static class WaitingState implements KernelState {
-	//
-	// private Kernel kernel;
-	//
-	// public WaitingState(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void run() {
-	// kernel.mode().waiting();
-	// }
-	// }
-	//
-	// public static class SeveringState implements KernelState {
-	//
-	// private Kernel kernel;
-	//
-	// public SeveringState(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void run() {
-	// kernel.mode().severing();
-	// }
-	// }
-	//
-	// public static class TerminatingState implements KernelState {
-	//
-	// private Kernel kernel;
-	//
-	// public TerminatingState(Kernel kernel) {
-	// this.kernel = kernel;
-	// }
-	//
-	// @Override
-	// public void run() {
-	// kernel.mode().terminating();
-	// }
-	// }
-
-	/**
-	 * TODO: impl builder for this class
-	 */
 	public static class KernelInfo {
 
 		public final Identity identity;
@@ -588,18 +106,18 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	private Thread self;
 
-	private KernelHandler state;
+	private KernelState state;
 
-	private ConcurrentLinkedQueue<Kernel.KernelEvent> pool;
+	private ConcurrentLinkedQueue<KernelEvent> pool;
 
 	public Kernel(Ice.Communicator communicator) {
 
 		// ConfigurationBuilder builder = new ConfigurationBuilder();
 		// Configuration configuration = builder.rate(10).build();
 
-		this.pool = new ConcurrentLinkedQueue<Kernel.KernelEvent>();
+		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
 
-		this.state = new Kernel.SuspenseHandler(this);
+		this.state = new SuspenseState(this);
 
 		this.communicator = communicator;
 		this.properties = communicator.getProperties();
@@ -631,7 +149,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 		this.info = new KernelInfo(identity(), rate(),
 				primaryPublishedEndpoints(), secondaryPublishedEndpoints(),
-				state().getClass().getSimpleName(), "none");
+				handler().getClass().getSimpleName(), "none");
 	}
 
 	public Identity identity() {
@@ -682,7 +200,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		return secondary;
 	}
 
-	public KernelHandler state() {
+	public KernelState handler() {
 		return state;
 	}
 
@@ -704,7 +222,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		((DriverManager) managers.get(DriverManager.class)).unloadAll();
 	}
 
-	public synchronized void toogle(KernelHandler kernelState) {
+	public synchronized void toogle(KernelState kernelState) {
 
 		stateChanged = false;
 
@@ -817,10 +335,11 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 			for (; !pool.isEmpty();) {
 				KernelEvent event = pool.poll();
-				
+
 				logger.debug("handle " + event.getClass().getSimpleName());
-				
-				event.aplly(state);
+
+				state.handler().handle(event);
+
 			}
 
 			await();
