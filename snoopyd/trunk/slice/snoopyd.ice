@@ -21,27 +21,8 @@
 
 module com { module googlecode { module snoopyd {
 
-	module driver
-	{
- 		interface IController
- 		{
- 			int rate();
- 			void shutdown(); 		
- 		};
- 		
- 		interface IDiscoverer 
- 		{
- 			void discover(Ice::Identity identity);
- 			void request();
- 			void offer();
- 			void pack();
- 		};
- 		
-	}; 
-
 	module session 
 	{
-	
 		interface ISession 
 		{
 		
@@ -56,14 +37,31 @@ module com { module googlecode { module snoopyd {
 		{
 			void helloUser();
 		};
-		
-		interface ISessionManager
-		{
-			IKernelSession* createKernelSession(Ice::Identity identity, IKernelSession* selfSession);
-			IUserSession* createUserSession(Ice::Identity identity, IUserSession* selfSession);
-		};
+	
 	};
 	
+	module driver
+	{
+ 		interface IController
+ 		{
+ 			int rate();
+ 			void shutdown(); 		
+ 		};
+ 		
+ 		interface IDiscoverer 
+ 		{
+ 			void discover(Ice::Identity identity);
+ 		};
+ 		
+ 		interface ISessionier
+ 		{
+ 			session::IKernelSession* createKernelSession(Ice::Identity identity, session::IKernelSession* selfSession);
+			session::IUserSession* createUserSession(Ice::Identity identity, session::IUserSession* selfSession);
+ 		
+ 		};
+ 		
+	}; 
+
 }; }; };
 
 #endif
