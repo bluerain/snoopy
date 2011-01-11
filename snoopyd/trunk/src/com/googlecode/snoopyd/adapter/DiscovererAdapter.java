@@ -47,21 +47,6 @@ public class DiscovererAdapter extends _IDiscovererDisp implements Adapter {
 	}
 
 	@Override
-	public void request(Current __current) {
-
-	}
-
-	@Override
-	public void offer(Current __current) {
-
-	}
-
-	@Override
-	public void pack(Current __current) {
-
-	}
-
-	@Override
 	public Driver driver() {
 		return discoverer;
 	}
