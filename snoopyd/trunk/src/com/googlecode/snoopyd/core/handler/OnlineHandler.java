@@ -18,12 +18,16 @@ package com.googlecode.snoopyd.core.handler;
 
 import java.util.Map;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
+import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.PassiveState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
@@ -37,8 +41,11 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 	private Kernel kernel;
 
+	private int discoverRecivedCounter;
+
 	public OnlineHandler(Kernel kernel) {
 		this.kernel = kernel;
+		this.discoverRecivedCounter = 0;
 	}
 
 	@Override
@@ -48,7 +55,11 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
-
+		
+		kernel.childs().clear();
+		kernel.parents().clear();
+		
+		kernel.toogle(new OfflineState(kernel));
 	}
 
 	@Override
@@ -57,16 +68,26 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	}
 
 	@Override
+	public void handle(ChildSessionRecivedEvent event) {
+		
+	}
+
+	@Override
 	public void handle(DiscoverRecivedEvent event) {
+
+		discoverRecivedCounter++;
 
 		int oldSize = kernel.cache().size();
 		kernel.cache().put(event.identity(), event.context());
 		int newSize = kernel.cache().size();
 
-		if (oldSize == newSize) {
+		if (oldSize == newSize
+				&& discoverRecivedCounter > Defaults.DEFAULT_DISCOVER_RECIVED_COUTER_THRESHOLD) {
 
+			Ice.Identity hostIdentity = kernel.identity();
+			
 			int targetRate = 0;
-			Ice.Identity targetId = null;
+			Ice.Identity targetIdentity = null;
 
 			Map<Ice.Identity, Map<String, String>> cache = kernel.cache();
 
@@ -75,14 +96,14 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 				if (Integer.valueOf(context.get("rate")) > targetRate) {
 					targetRate = Integer.valueOf(context.get("rate"));
-					targetId = identity;
+					targetIdentity = identity;
 				}
 			}
 
-			Map<String, String> targetInfo = cache.get(targetId);
+			Map<String, String> targetContext = cache.get(targetIdentity);
 
-			String proxy = Identities.toString(targetId) + ": "
-					+ targetInfo.get("primary");
+			String proxy = Identities.toString(targetIdentity) + ": "
+					+ targetContext.get("primary");
 
 			ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel
 					.communicator().stringToProxy(proxy));
@@ -94,15 +115,20 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 											kernel))));
 
 			IKernelSessionPrx remoteSession = prx.createKernelSession(
-					kernel.identity(), selfSession);
+					hostIdentity, selfSession);
 
-			kernel.parents().put(targetId, remoteSession);
+			kernel.parents().put(targetIdentity, remoteSession);
 
-			if (Identities.equals(kernel.identity(), targetId)) {
+			if (Identities.equals(hostIdentity, targetIdentity)) {
 				kernel.toogle(new ActiveState(kernel));
 			} else {
 				kernel.toogle(new PassiveState(kernel));
 			}
 		}
+	}
+
+	@Override
+	public void handle(ParentNodeDeadedEvent event) {
+		
 	}
 }

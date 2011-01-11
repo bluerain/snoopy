@@ -29,7 +29,7 @@ import com.googlecode.snoopyd.session.IUserSessionPrx;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
 
-public class Sessionier extends AbstractDriver implements Driver, Activable, Restartable, KernelListener {
+public class Sessionier extends AbstractDriver implements Driver, Activable, KernelListener {
 	
 	private static Logger logger = Logger.getLogger(Sessionier.class);
 	
@@ -40,16 +40,16 @@ public class Sessionier extends AbstractDriver implements Driver, Activable, Res
 	public IKernelSessionPrx createKernelSession(Ice.Identity identity,
 			IKernelSessionPrx selfSession) {
 
-		kernel.handle(new ChildSessionRecivedEvent(selfSession));
+		kernel.handle(new ChildSessionRecivedEvent(identity, selfSession));
 		
-		IKernelSessionPrx prx = IKernelSessionPrxHelper.uncheckedCast(kernel
+		IKernelSessionPrx remoteSession = IKernelSessionPrxHelper.uncheckedCast(kernel
 				.primary().addWithUUID(
 						new KernelSessionAdapter(new KernelSession(kernel))));
 
 		
-		kernel.handle(new ChildSessionSendedEvent(prx));
+		kernel.handle(new ChildSessionSendedEvent(identity, remoteSession));
 
-		return prx;
+		return remoteSession;
 	}
 
 	public IUserSessionPrx createUserSession(Ice.Identity identity,
@@ -58,11 +58,6 @@ public class Sessionier extends AbstractDriver implements Driver, Activable, Res
 		return null;
 	}
 	
-	@Override
-	public void restart() {
-
-	}
-
 	@Override
 	public void activate() {
 

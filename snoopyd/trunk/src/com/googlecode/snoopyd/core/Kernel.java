@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
@@ -42,13 +43,42 @@ import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.Loadable;
 import com.googlecode.snoopyd.driver.Networker;
-import com.googlecode.snoopyd.driver.Restartable;
+import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.driver.Sessionier;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Kernel implements Loadable, Activable, Restartable, Runnable {
+public class Kernel implements Loadable, Activable, Startable, Runnable {
 
+	public static class KernelBox {
+		
+		private static Logger logger = Logger.getLogger(KernelBox.class);
+		
+		private Map<String, String> box;
+
+		public KernelBox() {
+			this.box = new ConcurrentHashMap<String, String>();
+		}
+		
+		public void put(String key, String value) {
+			logger.debug(key + " = " + value);
+			box.put(key, value);
+		}
+		
+		public String get(String key) {
+			return box.get(key);
+		}
+		
+		public void putInt(String key, int value) {
+			logger.debug(key + " = " + value);
+			box.put(key, String.valueOf(value));
+		}
+		
+		public int getInt(String key, int defaultValue) {
+			return (box.get(key) == null) ? defaultValue : Integer.valueOf(box.get(key));
+		}
+	}
+	
 	public static class KernelInfo {
 
 		public final Identity identity;
@@ -87,7 +117,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	}
 
-	private static Logger logger = Logger.getLogger(Kernel.class);
+	public static Logger logger = Logger.getLogger(Kernel.class);
 
 	private KernelInfo info;
 
@@ -116,12 +146,16 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 	private Map<Ice.Identity, Map<String, String>> cache;
 
 	private List<KernelListener> kernelListeners;
+	
+	private KernelBox box;
 
 	public Kernel(Ice.Communicator communicator) {
 
 		// ConfigurationBuilder builder = new ConfigurationBuilder();
 		// Configuration configuration = builder.rate(10).build();
 
+		this.box = new KernelBox();
+		
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
 		this.cache = new HashMap<Identity, Map<String, String>>();
 		
@@ -257,12 +291,6 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		}
 	}
 
-	public synchronized void restart() {
-
-		logger.debug("reseting kernel");
-
-		reset();
-	}
 
 	public synchronized void reset() {
 		try {
@@ -306,6 +334,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		primary.deactivate();
 	}
 
+	@Override
 	public void start() {
 
 		try {
@@ -319,10 +348,23 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 		}
 	}
 
+	@Override
 	public void stop() {
 
 		self.interrupt();
 		communicator.destroy();
+	}
+	
+	@Override
+	public void restart() {
+		
+		logger.debug("restarting kernel");
+		reset();
+	}
+	
+	@Override
+	public boolean started() {
+		return true;
 	}
 
 	@Override
@@ -333,7 +375,7 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 			for (; !pool.isEmpty();) {
 				KernelEvent event = pool.poll();
 
-				logger.debug("handle " + event.getClass().getSimpleName());
+				logger.debug("handle " + event.getClass().getSimpleName() + " with " + state.handler().getClass().getSimpleName());
 
 				state.handler().handle(event);
 
@@ -375,6 +417,10 @@ public class Kernel implements Loadable, Activable, Restartable, Runnable {
 
 	public Map<Ice.Identity, ISessionPrx> childs() {
 		return childs;
+	}
+	
+	public KernelBox box() {
+		return box;
 	}
 
 	private void initDrivers() {

@@ -27,7 +27,7 @@ import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 
 public class Networker extends AbstractDriver implements Driver, Activable,
-		Runnable, Restartable {
+		Runnable {
 
 	private static Logger logger = Logger.getLogger(Networker.class);
 
@@ -51,7 +51,8 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	public void run() {
 
 		try {
-			for (; self.isAlive();) {
+			
+			for (;;) {
 
 				try {
 
@@ -103,7 +104,6 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 						} else {
 						
 							logger.debug("network still disabled");
-							
 						}
 						
 					} else if (networkState == NETWORK_ENABLED) {
@@ -138,7 +138,7 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 			}
 
 		} catch (InterruptedException ex) {
-			logger.info(ex.getMessage());
+			logger.warn(ex.getMessage());
 		}
 	}
 
@@ -151,12 +151,5 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	@Override
 	public void deactivate() {
 		self.interrupt();
-	}
-
-	@Override
-	public void restart() {
-		networkState = NETWORK_UNDEFINED;
-		deactivate();
-		activate();
 	}
 }

@@ -17,11 +17,13 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
-import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.state.OnlineState;
 
 public class OfflineHandler extends AbstractHandler implements
 		KernelHandler {
@@ -33,21 +35,15 @@ public class OfflineHandler extends AbstractHandler implements
 	}
 
 	@Override
-	public void handle(KernelEvent event) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void handle(NetworkEnabledEvent event) {
-		// TODO Auto-generated method stub
-
+		
+		kernel.toogle(new OnlineState(kernel));		
+	
 	}
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -56,8 +52,17 @@ public class OfflineHandler extends AbstractHandler implements
 	}
 
 	@Override
+	public void handle(ChildSessionRecivedEvent event) {
+		
+	}
+
+	@Override
 	public void handle(DiscoverRecivedEvent event) {
 		
 	}
-	
+
+	@Override
+	public void handle(ParentNodeDeadedEvent event) {
+		
+	}
 }

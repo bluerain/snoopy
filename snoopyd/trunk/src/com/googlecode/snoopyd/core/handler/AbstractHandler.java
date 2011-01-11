@@ -18,11 +18,13 @@ package com.googlecode.snoopyd.core.handler;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 
 public abstract class AbstractHandler implements KernelHandler {
 
@@ -37,10 +39,14 @@ public abstract class AbstractHandler implements KernelHandler {
 			handle((NetworkDisabledEvent) event);
 		} else if (event instanceof ChildSessionSendedEvent) {
 			handle((ChildSessionSendedEvent) event);
+		} else if (event instanceof ChildSessionRecivedEvent) { 
+			handle((ChildSessionRecivedEvent) event);
 		} else if (event instanceof DiscoverRecivedEvent) {
 			handle((DiscoverRecivedEvent) event);
+		} else if (event instanceof ParentNodeDeadedEvent) {
+			handle((ParentNodeDeadedEvent) event);
 		} else {
-			// logger.debug("can not handle event: " + event.name());
+			logger.warn("not found handler for " + event.name());
 		}
 	}
 

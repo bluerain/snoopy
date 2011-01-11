@@ -17,16 +17,28 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.state.ActiveState;
+import com.googlecode.snoopyd.core.state.OfflineState;
+import com.googlecode.snoopyd.core.state.OnlineState;
+import com.googlecode.snoopyd.core.state.SuspenseState;
+import com.googlecode.snoopyd.driver.ISessionierPrx;
+import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
+import com.googlecode.snoopyd.session.IKernelSessionPrx;
+import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
+import com.googlecode.snoopyd.session.KernelSession;
+import com.googlecode.snoopyd.session.KernelSessionAdapter;
+import com.googlecode.snoopyd.util.Identities;
 
-public class PassiveHandler extends AbstractHandler implements
-		KernelHandler {
+public class PassiveHandler extends AbstractHandler implements KernelHandler {
 
 	private Kernel kernel;
-	
+
 	public PassiveHandler(Kernel kernel) {
 		this.kernel = kernel;
 	}
@@ -38,16 +50,51 @@ public class PassiveHandler extends AbstractHandler implements
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
+		
+		kernel.childs().clear();
+		kernel.parents().clear();
+	
+		String proxy = Identities.toString(kernel.identity()) + ": "
+				+ kernel.primaryEndpoints();
 
+		ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel
+				.communicator().stringToProxy(proxy));
+
+		IKernelSessionPrx selfSession = IKernelSessionPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
+						new KernelSessionAdapter(new KernelSession(kernel))));
+
+		IKernelSessionPrx remoteSession = prx.createKernelSession(
+				kernel.identity(), selfSession);
+
+		kernel.parents().put(kernel.identity(), remoteSession);
+
+		kernel.toogle(new OfflineState(kernel));
 	}
 
 	@Override
 	public void handle(ChildSessionSendedEvent event) {
+
+	}
+
+	@Override
+	public void handle(ChildSessionRecivedEvent event) {
 		
+		kernel.childs().put(event.identity(), event.sessoin());
+		
+		kernel.toogle(new ActiveState(kernel));
 	}
 
 	@Override
 	public void handle(DiscoverRecivedEvent event) {
+		kernel.cache().put(event.identity(), event.context());
+	}
+
+	@Override
+	public void handle(ParentNodeDeadedEvent event) {
 		
+		kernel.cache().clear();
+		kernel.toogle(new OnlineState(kernel));
+
 	}
 }

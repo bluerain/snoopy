@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.googlecode.snoopyd.core.event;
+package com.googlecode.snoopyd.driver;
 
-public class ParentSessionCreatedEvent implements KernelEvent {
+public interface Startable {
 
-	@Override
-	public String name() {
-		return this.getClass().getSimpleName();
-	}
+	public void start();
+	public void stop();
+	public void restart();
+
+	public boolean started();
 }

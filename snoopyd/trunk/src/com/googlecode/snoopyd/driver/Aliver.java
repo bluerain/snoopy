@@ -23,106 +23,138 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.PassiveState;
-import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Aliver extends AbstractDriver implements Driver, Runnable, KernelListener {
+public class Aliver extends AbstractDriver implements Driver, Runnable, Startable,
+		KernelListener {
 
 	private static Logger logger = Logger.getLogger(Aliver.class);
 
 	public static final int ALIVE_INTERVAL = 15000;
 
 	private Thread self;
+	
+	private boolean started;
 
 	public Aliver(Kernel kernel) {
 		super(Aliver.class.getSimpleName(), kernel);
+		this.started = false;
 	}
 
 	@Override
 	public void run() {
 
-		for (;self.isAlive();) {
-			
-			List<Ice.Identity> tobeRemoved = new ArrayList<Ice.Identity>();
-			
-			Map<Ice.Identity, ISessionPrx> parents = kernel.parents();
-			for (Ice.Identity identity : parents.keySet()) {
-				IKernelSessionPrx parent = (IKernelSessionPrx) parents
-						.get(identity);
+		try {
+			for (;;) {
 
-				try {
-					parent.ice_ping();
-					logger.debug("parent node is alive: "
-							+ Identities.toString(identity));
-				} catch (Exception ex) {
-					logger.debug("parent node is dead: " + Identities.toString(identity));
-					
-					tobeRemoved.add(identity);
-					
-					if (kernel.parents().size() - tobeRemoved.size() == 0) {
+				List<Ice.Identity> tobeRemoved = new ArrayList<Ice.Identity>();
 
-						//kernel.toogle(new Kernel.PassiveMode(kernel));
-						//kernel.toogle(new Kernel.WaitingState(kernel));
-						
-						//kernel.reset();
+				Map<Ice.Identity, ISessionPrx> parents = kernel.parents();
+				for (Ice.Identity identity : parents.keySet()) {
+					IKernelSessionPrx parent = (IKernelSessionPrx) parents
+							.get(identity);
+
+					try {
+						parent.ice_ping();
+						logger.debug("parent node is alive: "
+								+ Identities.toString(identity));
+					} catch (Exception ex) {
+						logger.debug("parent node is dead: "
+								+ Identities.toString(identity));
+
+						tobeRemoved.add(identity);
+
+						if (kernel.parents().size() - tobeRemoved.size() == 0) {
+							kernel.handle(new ParentNodeDeadedEvent());
+						}
 					}
 				}
-			}
-			
-			Map<Ice.Identity, ISessionPrx> childs = kernel.childs();
-			for (Ice.Identity identity : childs.keySet()) {
-				IKernelSessionPrx child = (IKernelSessionPrx) childs
-						.get(identity);
 
-				try {
-					child.ice_ping();
-					logger.debug("child node is alive: "
-							+ Identities.toString(identity));
-				} catch (Exception ex) {
-					logger.debug("child node is dead: " + Identities.toString(identity));
-					
-					tobeRemoved.add(identity);
+				Map<Ice.Identity, ISessionPrx> childs = kernel.childs();
+				for (Ice.Identity identity : childs.keySet()) {
+					IKernelSessionPrx child = (IKernelSessionPrx) childs
+							.get(identity);
+
+					try {
+						child.ice_ping();
+						logger.debug("child node is alive: "
+								+ Identities.toString(identity));
+					} catch (Exception ex) {
+						logger.debug("child node is dead: "
+								+ Identities.toString(identity));
+
+						tobeRemoved.add(identity);
+					}
 				}
-			}
-			
-			// TODO: think, maybe it is not needed
-			
-//			for (Ice.Identity identity: tobeRemoved) {
-//				//manager.removeChild(identity);
-//				//manager.removeParent(identity);
-//			}
 
-			try {
+				// TODO: think, maybe it is not needed
+
+				// for (Ice.Identity identity: tobeRemoved) {
+				// //manager.removeChild(identity);
+				// //manager.removeParent(identity);
+				// }
+
 				Thread.sleep(Aliver.ALIVE_INTERVAL);
-			} catch (InterruptedException e) {
-				logger.error(e.getMessage());
 			}
+
+		} catch (InterruptedException ex) {
+			logger.warn(ex.getMessage());
 		}
 	}
 
+	@Override
 	public void start() {
+		
+		logger.debug("starting " + name);
+		
 		self = new Thread(this);
 		self.start();
+		started = true;
 	}
 
+	@Override
 	public void stop() {
+		
+		logger.debug("stoping " + name);
+		
 		self.interrupt();
+		started = false;
+	}
+	
+	@Override
+	public void restart() {
+		
+		logger.debug("restarting " + name);
+		
+		stop();
+		start();
+	}
+	
+	@Override
+	public boolean started() {
+		return started;
 	}
 
 	@Override
 	public void stateChanged(KernelState currentState) {
-		
-		if (currentState instanceof ActiveState || currentState instanceof PassiveState) {
-			start();
-		} else if (currentState instanceof SuspenseState) {
-			stop();
+
+		if (currentState instanceof ActiveState
+				|| currentState instanceof PassiveState) {
+			if (!started) {
+				start();
+			}
+		} else {
+			if (started) {
+				stop();
+			}
 		}
-		
+
 	}
 }

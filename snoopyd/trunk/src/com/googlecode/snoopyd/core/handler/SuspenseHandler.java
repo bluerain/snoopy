@@ -17,10 +17,12 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
@@ -72,11 +74,23 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(ChildSessionSendedEvent event) {
-
+		
+	}
+	
+	@Override
+	public void handle(ChildSessionRecivedEvent event) {
+		
+		kernel.childs().put(event.identity(), event.sessoin());
+		
 	}
 
 	@Override
 	public void handle(DiscoverRecivedEvent event) {
+		
+	}
+
+	@Override
+	public void handle(ParentNodeDeadedEvent event) {
 		
 	}
 }

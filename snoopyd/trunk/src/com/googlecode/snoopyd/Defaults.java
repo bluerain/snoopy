@@ -25,5 +25,9 @@ public final class Defaults {
 	
 	public static final String DEFAULT_PRIMARY_ADAPTER_NAME = "PrimaryAdapter";
 	public static final String DEFAULT_SECONDARY_ADAPTER_NAME = "SecondaryAdapter";
+	
+	public static final int DEFAULT_DISCOVER_INTERVAL = 5000;
+	public static final int DEFAULT_DISCOVER_RECIVED_COUTER_THRESHOLD = 6;
+	
 
 }

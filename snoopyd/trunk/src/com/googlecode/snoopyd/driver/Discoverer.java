@@ -21,25 +21,27 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
+import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
-import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Discoverer extends AbstractDriver implements Driver, Runnable,
-		KernelListener {
+		Startable, KernelListener {
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
-	public static final int DISCOVER_INTERVAL = 5000;
-
 	private Thread self;
+
+	private boolean started;
 
 	public Discoverer(Kernel kernel) {
 		super(Discoverer.class.getSimpleName(), kernel);
+		this.started = false;
 	}
 
 	public void discover(Ice.Identity identity, Map<String, String> context) {
@@ -48,19 +50,37 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 		kernel.handle(new DiscoverRecivedEvent(identity, context));
 	}
 
+	@Override
 	public void start() {
 
 		logger.debug("starting " + name);
-		
+
 		self = new Thread(this);
 		self.start();
+		started = true;
 	}
 
+	@Override
 	public void stop() {
-		
+
 		logger.debug("stoping " + name);
-		
+
 		self.interrupt();
+		started = false;
+	}
+
+	@Override
+	public void restart() {
+
+		logger.debug("restarting " + name);
+
+		stop();
+		start();
+	}
+
+	@Override
+	public boolean started() {
+		return started;
 	}
 
 	@Override
@@ -70,34 +90,39 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 				.communicator().propertyToProxy("Discoverer.Multicast"));
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
 
-		for (; self.isAlive();) {
+		try {
+			for (; self.isAlive();) {
 
-			Map<String, String> context = new HashMap<String, String>();
+				Map<String, String> context = new HashMap<String, String>();
 
-			context.put("identity", Identities.toString(kernel.identity()));
-			context.put("rate", String.valueOf(kernel.rate()));
-			context.put("primary", kernel.primaryPublishedEndpoints());
-			context.put("secondary", kernel.secondaryPublishedEndpoints());
-			context.put("state", kernel.state().getClass().getSimpleName());
+				context.put("identity", Identities.toString(kernel.identity()));
+				context.put("rate", String.valueOf(kernel.rate()));
+				context.put("primary", kernel.primaryPublishedEndpoints());
+				context.put("secondary", kernel.secondaryPublishedEndpoints());
+				context.put("state", kernel.state().getClass().getSimpleName());
 
-			try {
-				multicast.discover(kernel.identity(), context);
-			} catch (Exception ignored) {
+				try {
+					multicast.discover(kernel.identity(), context);
+				} catch (Exception ignored) {
+				}
+
+				Thread.sleep(Defaults.DEFAULT_DISCOVER_INTERVAL);
 			}
-
-			try {
-				Thread.sleep(Discoverer.DISCOVER_INTERVAL);
-			} catch (InterruptedException ignored) {
-			}
+		} catch (InterruptedException ex) {
+			logger.warn(ex.getMessage());
 		}
 	}
 
 	@Override
 	public void stateChanged(KernelState currentState) {
 		if (currentState instanceof OnlineState) {
-			start();
-		} else if (currentState instanceof SuspenseState) {
-			stop();
+			if (!started) {
+				start();
+			}
+		} else if (currentState instanceof OfflineState) {
+			if (started) {
+				stop();
+			}
 		}
 	}
 }

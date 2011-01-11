@@ -16,11 +16,13 @@
 
 package com.googlecode.snoopyd.core.handler;
 
+import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 
 public interface KernelHandler {
 	
@@ -32,6 +34,10 @@ public interface KernelHandler {
 	
 	public void handle(ChildSessionSendedEvent event);
 	
+	public void handle(ChildSessionRecivedEvent event);
+	
 	public void handle(DiscoverRecivedEvent event);
+	
+	public void handle(ParentNodeDeadedEvent event);
 	
 }

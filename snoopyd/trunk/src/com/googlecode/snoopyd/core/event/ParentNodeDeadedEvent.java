@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.googlecode.snoopyd.driver;
+package com.googlecode.snoopyd.core.event;
 
-public interface Restartable {
+public class ParentNodeDeadedEvent implements KernelEvent {
 
-	public void restart();
-
+	@Override
+	public String name() {
+		return this.getClass().getSimpleName();
+	}
 }
