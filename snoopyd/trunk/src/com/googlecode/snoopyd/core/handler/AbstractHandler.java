@@ -25,6 +25,8 @@ import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
+import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 
 public abstract class AbstractHandler implements KernelHandler {
 
@@ -34,19 +36,41 @@ public abstract class AbstractHandler implements KernelHandler {
 	public void handle(KernelEvent event) {
 
 		if (event instanceof NetworkEnabledEvent) {
+			
 			handle((NetworkEnabledEvent) event);
+			
 		} else if (event instanceof NetworkDisabledEvent) {
+			
 			handle((NetworkDisabledEvent) event);
+		
 		} else if (event instanceof ChildSessionSendedEvent) {
+		
 			handle((ChildSessionSendedEvent) event);
+		
 		} else if (event instanceof ChildSessionRecivedEvent) { 
+		
 			handle((ChildSessionRecivedEvent) event);
+		
 		} else if (event instanceof DiscoverRecivedEvent) {
+		
 			handle((DiscoverRecivedEvent) event);
+		
 		} else if (event instanceof ParentNodeDeadedEvent) {
+		
 			handle((ParentNodeDeadedEvent) event);
+		
+		} else if (event instanceof SnoopydStartedEvent) {
+		
+			handle((SnoopydStartedEvent) event);
+		
+		} else if (event instanceof SnoopydTerminatedEvent) {
+		
+			handle((SnoopydTerminatedEvent) event);
+		
 		} else {
+		
 			logger.warn("not found handler for " + event.name());
+		
 		}
 	}
 

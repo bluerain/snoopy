@@ -23,6 +23,8 @@ import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
+import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 
 public interface KernelHandler {
 	
@@ -40,4 +42,7 @@ public interface KernelHandler {
 	
 	public void handle(ParentNodeDeadedEvent event);
 	
+	public void handle(SnoopydStartedEvent event);
+	
+	public void handle(SnoopydTerminatedEvent event);
 }

@@ -26,6 +26,8 @@ import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
+import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.PassiveState;
@@ -130,5 +132,22 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
 		
+	}
+
+	@Override
+	public void handle(SnoopydStartedEvent event) {
+		
+	}
+
+	@Override
+	public void handle(SnoopydTerminatedEvent event) {
+
+		kernel.unload();
+    	kernel.deactivate();
+    	kernel.stop();
+    	
+    	synchronized (event) {
+    		event.notify();
+		}
 	}
 }
