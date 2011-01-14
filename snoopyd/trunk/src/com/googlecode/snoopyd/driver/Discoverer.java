@@ -51,26 +51,31 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 	}
 
 	@Override
-	public void start() {
+	public synchronized void start() {
 
 		logger.debug("starting " + name);
 
+		started = true;
 		self = new Thread(this);
 		self.start();
-		started = true;
 	}
 
 	@Override
-	public void stop() {
+	public synchronized void stop() {
 
 		logger.debug("stoping " + name);
 
-		self.interrupt();
 		started = false;
+
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			logger.warn(e.getMessage());
+		}
 	}
 
 	@Override
-	public void restart() {
+	public synchronized void restart() {
 
 		logger.debug("restarting " + name);
 
@@ -91,7 +96,8 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
 
 		try {
-			for (; self.isAlive();) {
+
+			for (; started;) {
 
 				Map<String, String> context = new HashMap<String, String>();
 
@@ -108,8 +114,13 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 
 				Thread.sleep(Defaults.DEFAULT_DISCOVER_INTERVAL);
 			}
+
 		} catch (InterruptedException ex) {
 			logger.warn(ex.getMessage());
+		}
+
+		synchronized (this) {
+			notify();
 		}
 	}
 

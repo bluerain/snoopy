@@ -32,15 +32,15 @@ import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Aliver extends AbstractDriver implements Driver, Runnable, Startable,
-		KernelListener {
+public class Aliver extends AbstractDriver implements Driver, Runnable,
+		Startable, KernelListener {
 
 	private static Logger logger = Logger.getLogger(Aliver.class);
 
 	public static final int ALIVE_INTERVAL = 15000;
 
 	private Thread self;
-	
+
 	private boolean started;
 
 	public Aliver(Kernel kernel) {
@@ -52,7 +52,8 @@ public class Aliver extends AbstractDriver implements Driver, Runnable, Startabl
 	public void run() {
 
 		try {
-			for (;;) {
+
+			for (; started;) {
 
 				List<Ice.Identity> tobeRemoved = new ArrayList<Ice.Identity>();
 
@@ -106,37 +107,46 @@ public class Aliver extends AbstractDriver implements Driver, Runnable, Startabl
 
 		} catch (InterruptedException ex) {
 			logger.warn(ex.getMessage());
+		} 
+		
+		synchronized (this) {
+			notify();
 		}
 	}
 
 	@Override
-	public void start() {
-		
+	public synchronized void start() {
+
 		logger.debug("starting " + name);
-		
+
+		started = true;
 		self = new Thread(this);
 		self.start();
-		started = true;
 	}
 
 	@Override
-	public void stop() {
-		
+	public synchronized void stop() {
+
 		logger.debug("stoping " + name);
-		
-		self.interrupt();
+
 		started = false;
+
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			logger.warn(e.getMessage());
+		}
 	}
-	
+
 	@Override
-	public void restart() {
-		
+	public synchronized void restart() {
+
 		logger.debug("restarting " + name);
-		
+
 		stop();
 		start();
 	}
-	
+
 	@Override
 	public boolean started() {
 		return started;

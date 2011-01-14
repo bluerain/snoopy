@@ -29,7 +29,7 @@ import com.googlecode.snoopyd.session.IUserSessionPrx;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
 
-public class Sessionier extends AbstractDriver implements Driver, Activable, KernelListener {
+public class Sessionier extends AbstractDriver implements Driver, KernelListener {
 	
 	private static Logger logger = Logger.getLogger(Sessionier.class);
 	
@@ -57,20 +57,9 @@ public class Sessionier extends AbstractDriver implements Driver, Activable, Ker
 
 		return null;
 	}
-	
-	@Override
-	public void activate() {
-
-	}
-
-	@Override
-	public void deactivate() {
-
-	}
 
 	@Override
 	public void stateChanged(KernelState currentState) {
-		// TODO Auto-generated method stub
 		
 	}
 }
