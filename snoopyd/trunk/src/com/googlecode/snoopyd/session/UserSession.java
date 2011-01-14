@@ -16,6 +16,7 @@
 
 package com.googlecode.snoopyd.session;
 
+
 public class UserSession {
-	
+
 }

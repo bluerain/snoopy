@@ -18,21 +18,26 @@ package com.googlecode.snoopyd.session;
 
 import Ice.Current;
 
-public class KernelSessionAdapter extends _IKernelSessionDisp {
-
-	private KernelSession kernelSession;
+public class UserSessionAdapter extends _IUserSessionDisp {
 	
-	public KernelSessionAdapter(KernelSession kernelSession) {
-		this.kernelSession = kernelSession;
+	private UserSession userSession;
+
+	public UserSessionAdapter(UserSession userSession) {
+		this.userSession = userSession;
 	}
 
 	@Override
-	public void helloKernel(Current __current) {
-		kernelSession.helloKernel();
+	public void helloUser(Current __current) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void destroy(Current __current) {
+		// TODO Auto-generated method stub
 		
 	}
+	
+	
+
 }
