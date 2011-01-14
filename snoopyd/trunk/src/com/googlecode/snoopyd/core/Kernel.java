@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
@@ -34,6 +33,7 @@ import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.SuspenseState;
@@ -43,83 +43,81 @@ import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.Loadable;
 import com.googlecode.snoopyd.driver.Networker;
-import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.driver.Sessionier;
+import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Kernel implements Loadable, Activable, Startable, Runnable {
 
-	public static class KernelBox {
-		
-		private static Logger logger = Logger.getLogger(KernelBox.class);
-		
-		private Map<String, String> box;
-
-		public KernelBox() {
-			this.box = new ConcurrentHashMap<String, String>();
-		}
-		
-		public void put(String key, String value) {
-			logger.debug(key + " = " + value);
-			box.put(key, value);
-		}
-		
-		public String get(String key) {
-			return box.get(key);
-		}
-		
-		public void putInt(String key, int value) {
-			logger.debug(key + " = " + value);
-			box.put(key, String.valueOf(value));
-		}
-		
-		public int getInt(String key, int defaultValue) {
-			return (box.get(key) == null) ? defaultValue : Integer.valueOf(box.get(key));
-		}
-	}
+//	public static class KernelBox {
+//		
+//		private static Logger logger = Logger.getLogger(KernelBox.class);
+//		
+//		private Map<String, String> box;
+//
+//		public KernelBox() {
+//			this.box = new ConcurrentHashMap<String, String>();
+//		}
+//		
+//		public void put(String key, String value) {
+//			logger.debug(key + " = " + value);
+//			box.put(key, value);
+//		}
+//		
+//		public String get(String key) {
+//			return box.get(key);
+//		}
+//		
+//		public void putInt(String key, int value) {
+//			logger.debug(key + " = " + value);
+//			box.put(key, String.valueOf(value));
+//		}
+//		
+//		public int getInt(String key, int defaultValue) {
+//			return (box.get(key) == null) ? defaultValue : Integer.valueOf(box.get(key));
+//		}
+//	}
 	
-	public static class KernelInfo {
-
-		public final Identity identity;
-		public final int rate;
-		public final String primary;
-		public final String secondary;
-		public final String state;
-		public final String mode;
-
-		public KernelInfo(Identity identity, int rate, String primary,
-				String secondary, String state, String mode) {
-			this.identity = identity;
-			this.rate = rate;
-			this.primary = primary;
-			this.secondary = secondary;
-			this.state = state;
-			this.mode = mode;
-		}
-
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			sb.append("[");
-			sb.append("identity=" + Identities.toString(identity) + ", ");
-			sb.append("rate=" + rate + ", ");
-			sb.append("primary=" + primary + ", ");
-			sb.append("secondary=" + secondary + ", ");
-			sb.append("state=" + state + ", ");
-			sb.append("mode=" + mode);
-			sb.append("]");
-
-			return sb.toString();
-		}
-	}
-
-	public static class KernelConfiguration {
-
-	}
+//	public static class KernelInfo {
+//
+//		public final Identity identity;
+//		public final int rate;
+//		public final String primary;
+//		public final String secondary;
+//		public final String state;
+//		public final String mode;
+//
+//		public KernelInfo(Identity identity, int rate, String primary,
+//				String secondary, String state, String mode) {
+//			this.identity = identity;
+//			this.rate = rate;
+//			this.primary = primary;
+//			this.secondary = secondary;
+//			this.state = state;
+//			this.mode = mode;
+//		}
+//
+//		public String toString() {
+//			StringBuilder sb = new StringBuilder();
+//			sb.append("[");
+//			sb.append("identity=" + Identities.toString(identity) + ", ");
+//			sb.append("rate=" + rate + ", ");
+//			sb.append("primary=" + primary + ", ");
+//			sb.append("secondary=" + secondary + ", ");
+//			sb.append("state=" + state + ", ");
+//			sb.append("mode=" + mode);
+//			sb.append("]");
+//
+//			return sb.toString();
+//		}
+//	}
+//
+//	public static class KernelConfiguration {
+//
+//	}
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
-
-	private KernelInfo info;
 
 	private Identity identity;
 
@@ -147,16 +145,18 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 
 	private List<KernelListener> kernelListeners;
 	
-	private KernelBox box;
-
+	private Object terminator;
+	
 	public Kernel(Ice.Communicator communicator) {
 
 		// ConfigurationBuilder builder = new ConfigurationBuilder();
 		// Configuration configuration = builder.rate(10).build();
-
-		this.box = new KernelBox();
 		
+		this.terminator = new Object();
+
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
+		this.pool.offer(new SnoopydStartedEvent());
+		
 		this.cache = new HashMap<Identity, Map<String, String>>();
 		
 		this.parents = new HashMap<Identity, ISessionPrx>();
@@ -190,11 +190,8 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		logger.debug("init kernel listeners");
 		initKernelListeners();
 
-		this.info = new KernelInfo(identity(), rate(),
-				primaryPublishedEndpoints(), secondaryPublishedEndpoints(),
-				state().getClass().getSimpleName(), "none");
 	}
-
+	
 	public Identity identity() {
 		return identity;
 	}
@@ -223,10 +220,6 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 				._toString();
 	}
 
-	public KernelInfo kernelInfo() {
-		return info;
-	}
-
 	public Ice.Communicator communicator() {
 		return communicator;
 	}
@@ -247,13 +240,9 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		return state;
 	}
 
-	public Object mode() {
-		return null;
-	}
-
-	public void recofigure(KernelConfiguration configuration) {
-
-	}
+//	public void recofigure(KernelConfiguration configuration) {
+//
+//	}
 
 	@Override
 	public void load() {
@@ -291,25 +280,6 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		}
 	}
 
-
-	public synchronized void reset() {
-		try {
-			notify();
-		} catch (IllegalMonitorStateException e) {
-			logger.warn("can not reset kernel: " + e.getMessage());
-		}
-	}
-
-	public synchronized void await() {
-		try {
-
-			wait();
-
-		} catch (InterruptedException e) {
-			logger.error("wait interrupted");
-		}
-	}
-
 	public void activate() {
 
 		for (Driver driver : drivers.values()) {
@@ -317,9 +287,6 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 				((Activable) driver).activate();
 			}
 		}
-
-		primary.activate();
-		secondary.activate();
 	}
 
 	public void deactivate() {
@@ -329,14 +296,16 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 				((Activable) driver).deactivate();
 			}
 		}
-
-		primary.deactivate();
-		primary.deactivate();
 	}
-
+	
 	@Override
 	public void start() {
 
+		logger.debug("starting kernel");
+		
+		primary.activate();
+		secondary.activate();
+		
 		try {
 
 			self = new Thread(this);
@@ -350,16 +319,36 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 
 	@Override
 	public void stop() {
-
+		
+		logger.debug("stopping kernel");
+		
+		for (Driver drv: drivers.values()) {
+			
+			if (drv instanceof Startable) {
+				if (((Startable) drv).started()) {
+					logger.debug("... stopping " + drv.name());
+					((Startable) drv).stop();
+				}
+			}
+		}
+		
+		
+		logger.debug("deactivate adapters");
+		primary.deactivate();
+		secondary.deactivate();
+		
+		logger.debug("interrupt self");
 		self.interrupt();
-		communicator.destroy();
 	}
 	
 	@Override
 	public void restart() {
 		
 		logger.debug("restarting kernel");
-		reset();
+
+		stop();
+		start();
+		
 	}
 	
 	@Override
@@ -373,6 +362,7 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		for (;;) {
 
 			for (; !pool.isEmpty();) {
+				
 				KernelEvent event = pool.poll();
 
 				logger.debug("handle " + event.getClass().getSimpleName() + " with " + state.handler().getClass().getSimpleName());
@@ -381,10 +371,24 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 
 			}
 
-			await();
+			synchronized (this) {
+				try {
+					wait();
+				} catch (InterruptedException ignored) {
+				}
+			}
+			
 		}
 	}
-
+	
+	public synchronized void waitForTerminated() {
+		try {
+			terminator.wait();
+		} catch (InterruptedException e) {
+			logger.warn(e.getMessage());
+		}
+	}
+	
 	public synchronized void handle(KernelEvent event) {
 
 		pool.offer(event);
@@ -419,10 +423,6 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		return childs;
 	}
 	
-	public KernelBox box() {
-		return box;
-	}
-
 	private void initDrivers() {
 
 		drivers = new HashMap<Class<?>, Driver>();
