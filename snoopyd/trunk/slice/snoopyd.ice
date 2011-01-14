@@ -25,7 +25,7 @@ module com { module googlecode { module snoopyd {
 	{
 		interface ISession 
 		{
-		
+			void destroy();
 		};
 		
 		interface IKernelSession extends ISession
@@ -42,12 +42,6 @@ module com { module googlecode { module snoopyd {
 	
 	module driver
 	{
- 		interface IController
- 		{
- 			int rate();
- 			void shutdown(); 		
- 		};
- 		
  		interface IDiscoverer 
  		{
  			void discover(Ice::Identity identity);
@@ -57,7 +51,6 @@ module com { module googlecode { module snoopyd {
  		{
  			session::IKernelSession* createKernelSession(Ice::Identity identity, session::IKernelSession* selfSession);
 			session::IUserSession* createUserSession(Ice::Identity identity, session::IUserSession* selfSession);
- 		
  		};
  		
 	}; 
