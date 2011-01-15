@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.util.Identities;
@@ -81,8 +82,11 @@ public class Snoopyd extends Ice.Application {
 
 		logger.info("statring kernel ("
 				+ Identities.toString(kernel.identity()) + ")");
+		
+		// TODO: kernel.handle(new SnoopydStartedEvent());
+		
 		kernel.start();
-
+		
 		return EXIT_SUCCESS;
 	}
 }
