@@ -145,15 +145,11 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 
 	private List<KernelListener> kernelListeners;
 	
-	private Object terminator;
-	
 	public Kernel(Ice.Communicator communicator) {
 
 		// ConfigurationBuilder builder = new ConfigurationBuilder();
 		// Configuration configuration = builder.rate(10).build();
 		
-		this.terminator = new Object();
-
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
 		this.pool.offer(new SnoopydStartedEvent());
 		
@@ -333,11 +329,9 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		}
 		
 		
-		logger.debug("deactivate adapters");
 		primary.deactivate();
 		secondary.deactivate();
 		
-		logger.debug("interrupt self");
 		self.interrupt();
 	}
 	
@@ -378,14 +372,6 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 				}
 			}
 			
-		}
-	}
-	
-	public synchronized void waitForTerminated() {
-		try {
-			terminator.wait();
-		} catch (InterruptedException e) {
-			logger.warn(e.getMessage());
 		}
 	}
 	
