@@ -35,8 +35,6 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 
 	private static Logger logger = Logger.getLogger(Discoverer.class);
 
-	private Thread self;
-
 	private boolean started;
 
 	public Discoverer(Kernel kernel) {
@@ -55,9 +53,10 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 
 		logger.debug("starting " + name);
 
-		started = true;
-		self = new Thread(this);
+		Thread self = new Thread(this);
 		self.start();
+
+		started = true;
 	}
 
 	@Override

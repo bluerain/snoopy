@@ -39,8 +39,6 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 
 	public static final int ALIVE_INTERVAL = 15000;
 
-	private Thread self;
-
 	private boolean started;
 
 	public Aliver(Kernel kernel) {
@@ -119,9 +117,10 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 
 		logger.debug("starting " + name);
 
-		started = true;
-		self = new Thread(this);
+		Thread self = new Thread(this);
 		self.start();
+
+		started = true;
 	}
 
 	@Override
