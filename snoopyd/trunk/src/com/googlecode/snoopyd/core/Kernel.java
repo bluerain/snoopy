@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.net.ssl.HostnameVerifier;
+
 import org.apache.log4j.Logger;
 
 import Ice.Identity;
