@@ -18,14 +18,14 @@ package com.googlecode.snoopyd.core.event;
 
 import Ice.Identity;
 
-import com.googlecode.snoopyd.session.IKernelSessionPrx;
+import com.googlecode.snoopyd.session.ISessionPrx;
 
 public class ChildSessionSendedEvent implements KernelEvent {
 	
 	private Identity identity;
-	private IKernelSessionPrx session;
+	private ISessionPrx session;
 	
-	public ChildSessionSendedEvent(Identity identity, IKernelSessionPrx session) {
+	public ChildSessionSendedEvent(Identity identity, ISessionPrx session) {
 		this.identity = identity;
 		this.session = session;
 	}
@@ -35,7 +35,7 @@ public class ChildSessionSendedEvent implements KernelEvent {
 		return this.getClass().getSimpleName();
 	}
 	
-	public IKernelSessionPrx session() {
+	public ISessionPrx session() {
 		return session;
 	}
 	
