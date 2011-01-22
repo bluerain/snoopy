@@ -16,7 +16,48 @@
 
 package com.googlecode.snoopyd.session;
 
+import com.googlecode.snoopyd.adapter.ControllerAdapter;
+import com.googlecode.snoopyd.adapter.HosterAdapter;
+import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.driver.Controller;
+import com.googlecode.snoopyd.driver.Hoster;
+import com.googlecode.snoopyd.driver.IControllerPrx;
+import com.googlecode.snoopyd.driver.IControllerPrxHelper;
+import com.googlecode.snoopyd.driver.IHosterPrx;
+import com.googlecode.snoopyd.driver.IHosterPrxHelper;
 
 public class UserSession {
+
+	private Kernel kernel;
+
+	public UserSession(Kernel kernel) {
+		this.kernel = kernel;
+	}
+
+	public IHosterPrx hoster() {
+
+		IHosterPrx remoteHoster = IHosterPrxHelper
+				.uncheckedCast(kernel.primary()
+						.addWithUUID(
+								new HosterAdapter((Hoster) kernel
+										.driver(Hoster.class))));
+
+		return remoteHoster;
+
+	}
+
+	public IControllerPrx controller() {
+
+		IControllerPrx remoteController = IControllerPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
+						new ControllerAdapter((Controller) kernel
+								.driver(Controller.class))));
+
+		return remoteController;
+	}
+
+	public void helloUser() {
+		System.out.println("HELO USER!");
+	}
 
 }

@@ -16,6 +16,9 @@
 
 package com.googlecode.snoopyd.session;
 
+import com.googlecode.snoopyd.driver.IControllerPrx;
+import com.googlecode.snoopyd.driver.IHosterPrx;
+
 import Ice.Current;
 
 public class UserSessionAdapter extends _IUserSessionDisp {
@@ -37,7 +40,22 @@ public class UserSessionAdapter extends _IUserSessionDisp {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	
 
+	@Override
+	public void refresh(Current __current) {
+		
+	}
+
+	@Override
+	public IHosterPrx hoster(Current __current) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IControllerPrx controller(Current __current) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 }

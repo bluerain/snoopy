@@ -35,4 +35,10 @@ public class KernelSessionAdapter extends _IKernelSessionDisp {
 	public void destroy(Current __current) {
 		
 	}
+
+	@Override
+	public void refresh(Current __current) {
+
+	}
+	
 }
