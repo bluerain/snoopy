@@ -21,20 +21,35 @@
 
 module com { module googlecode { module snoopyd {
 
+	module driver
+	{
+		interface IHoster;
+		interface IDiscoverer;
+		interface ISessionier;
+		interface IController;
+			
+	};
+
 	module session 
 	{
 		interface ISession 
 		{
+			void refresh();
 			void destroy();
 		};
 		
 		interface IKernelSession extends ISession
 		{
+			
+				
 			void helloKernel();
 		};
 	
 		interface IUserSession extends ISession
 		{
+			driver::IHoster* hoster();
+			driver::IController* controller();
+		
 			void helloUser();
 		};
 	
@@ -42,6 +57,9 @@ module com { module googlecode { module snoopyd {
 	
 	module driver
 	{
+		
+		dictionary<string, string> HostContext; 
+		
  		interface IDiscoverer 
  		{
  			void discover(Ice::Identity identity);
@@ -51,6 +69,16 @@ module com { module googlecode { module snoopyd {
  		{
  			session::IKernelSession* createKernelSession(Ice::Identity identity, session::IKernelSession* selfSession);
 			session::IUserSession* createUserSession(Ice::Identity identity, session::IUserSession* selfSession);
+ 		};
+ 		
+ 		interface IHoster
+ 		{
+ 			HostContext context();
+ 		};
+ 		
+ 		interface IController
+ 		{
+ 			void shutdown(); 		
  		};
  		
 	}; 
