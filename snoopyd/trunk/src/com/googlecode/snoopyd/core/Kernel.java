@@ -41,8 +41,10 @@ import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.SuspenseState;
 import com.googlecode.snoopyd.driver.Activable;
 import com.googlecode.snoopyd.driver.Aliver;
+import com.googlecode.snoopyd.driver.Controller;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
+import com.googlecode.snoopyd.driver.Hoster;
 import com.googlecode.snoopyd.driver.Loadable;
 import com.googlecode.snoopyd.driver.Networker;
 import com.googlecode.snoopyd.driver.Sessionier;
@@ -419,6 +421,9 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		drivers.put(Discoverer.class, new Discoverer(this));
 		drivers.put(Aliver.class, new Aliver(this));
 		drivers.put(Networker.class, new Networker(this));
+		drivers.put(Hoster.class, new Hoster(this));
+		drivers.put(Controller.class, new Controller(this));
+	
 	}
 
 	private void initAdapters() {
