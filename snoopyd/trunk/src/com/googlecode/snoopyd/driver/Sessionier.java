@@ -26,27 +26,30 @@ import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.IUserSessionPrx;
+import com.googlecode.snoopyd.session.IUserSessionPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
+import com.googlecode.snoopyd.session.UserSession;
+import com.googlecode.snoopyd.session.UserSessionAdapter;
 
-public class Sessionier extends AbstractDriver implements Driver, KernelListener {
-	
+public class Sessionier extends AbstractDriver implements Driver,
+		KernelListener {
+
 	private static Logger logger = Logger.getLogger(Sessionier.class);
-	
+
 	public Sessionier(Kernel kernel) {
 		super(Sessionier.class.getSimpleName(), kernel);
 	}
-	
+
 	public IKernelSessionPrx createKernelSession(Ice.Identity identity,
 			IKernelSessionPrx selfSession) {
 
 		kernel.handle(new ChildSessionRecivedEvent(identity, selfSession));
-		
-		IKernelSessionPrx remoteSession = IKernelSessionPrxHelper.uncheckedCast(kernel
-				.primary().addWithUUID(
+
+		IKernelSessionPrx remoteSession = IKernelSessionPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
 						new KernelSessionAdapter(new KernelSession(kernel))));
 
-		
 		kernel.handle(new ChildSessionSendedEvent(identity, remoteSession));
 
 		return remoteSession;
@@ -55,11 +58,20 @@ public class Sessionier extends AbstractDriver implements Driver, KernelListener
 	public IUserSessionPrx createUserSession(Ice.Identity identity,
 			IUserSessionPrx selfSession) {
 
-		return null;
+		kernel.handle(new ChildSessionRecivedEvent(identity, selfSession));
+
+		IUserSessionPrx remoteSession = IUserSessionPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
+						new UserSessionAdapter(new UserSession(kernel))));
+		
+		kernel.handle(new ChildSessionSendedEvent(identity, remoteSession));
+		
+		return remoteSession;
+
 	}
 
 	@Override
 	public void stateChanged(KernelState currentState) {
-		
+
 	}
 }
