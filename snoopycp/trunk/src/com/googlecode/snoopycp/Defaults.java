@@ -23,7 +23,5 @@ public final class Defaults {
 
 	public static final String DEFAULT_CONFIGURATION = "snoopycp.conf";
 
-	public static final String DEFAULT_PRIMARY_ADAPTER_NAME = "PrimaryAdapter";
-	public static final String DEFAULT_SECONDARY_ADAPTER_NAME = "SecondaryAdapter";
-
+	public static final String DEFAULT_ADAPTER_NAME = "Adapter";
 }
