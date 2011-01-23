@@ -16,9 +16,17 @@
 
 package com.googlecode.snoopycp;
 
+import com.googlecode.snoopycp.core.Snoopycp;
+
 public class Launcher {
 
     public static void main(String args[]) {
-        
+
+        Snoopycp snoopycp = new Snoopycp();
+        int status = snoopycp.main(Defaults.APP_NAME, args,
+                System.getProperty("snoopycp.configuration", Defaults.DEFAULT_CONFIGURATION));
+
+        System.exit(status);
+
     }
 }
