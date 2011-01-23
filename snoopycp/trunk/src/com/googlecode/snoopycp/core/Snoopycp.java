@@ -16,14 +16,14 @@
 package com.googlecode.snoopycp.core;
 
 import com.googlecode.snoopycp.controller.Coordinator;
-import com.googlecode.snoopycp.core.ui.View;
-import com.googlecode.snoopycp.model.Domain;
+import com.googlecode.snoopycp.ui.View;
 
 import org.apache.log4j.Logger;
 
 public class Snoopycp extends Ice.Application {
 
     public static Logger logger = Logger.getLogger(Snoopycp.class);
+
     public static final int EXIT_SUCCESS = 0;
     public static final int EXIT_FAILURE = 999;
 

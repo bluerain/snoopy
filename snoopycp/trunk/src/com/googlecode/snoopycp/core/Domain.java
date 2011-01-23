@@ -14,17 +14,32 @@
  * limitations under the License.
  */
 
-package com.googlecode.snoopycp.model;
+package com.googlecode.snoopycp.core;
 
 import Ice.Communicator;
+import java.util.Map;
 
 public class Domain {
 
     private Ice.Communicator communicator;
     private String name;
 
+    private Ice.ObjectAdapter primaryAdapter;
+    private Ice.ObjectAdapter secondaryAdapter;
+
+    private Map<Ice.Identity, Map<String, String>> cache;
+    private Map<Ice.Identity, String> sessions;
+
     public Domain(Communicator communicator, String name) {
         this.communicator = communicator;
         this.name = name;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public Ice.Communicator communicator() {
+        return communicator;
     }
 }

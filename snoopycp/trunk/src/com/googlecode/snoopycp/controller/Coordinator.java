@@ -16,10 +16,15 @@
 
 package com.googlecode.snoopycp.controller;
 
-import com.googlecode.snoopycp.core.ui.View;
-import com.googlecode.snoopycp.model.Domain;
+import com.googlecode.snoopycp.Defaults;
+import com.googlecode.snoopycp.ui.View;
+import com.googlecode.snoopycp.core.Domain;
+import org.apache.log4j.Logger;
+
 
 public class Coordinator {
+    
+    public static Logger logger = Logger.getLogger(Coordinator.class);
 
     private Domain domain;
     private View view;
@@ -30,10 +35,25 @@ public class Coordinator {
     }
 
     public void launch() {
+
+        view.setTitle("[" + domain.name() + "] " + Defaults.APP_NAME + " " + Defaults.APP_VER);
+        
+        view.setLocationRelativeTo(null);
         view.setVisible(true);
+
+        synchronized(this) {
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
     }
 
     public void terminate() {
 
+        synchronized(this) {
+            notify();
+        }
     }
 }
