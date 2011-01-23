@@ -13,12 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.googlecode.snoopycp.core;
 
-package com.googlecode.snoopycp;
+import org.apache.log4j.Logger;
 
-public class Launcher {
+public class Snoopycp extends Ice.Application {
 
-    public static void main(String args[]) {
+    public static Logger logger = Logger.getLogger(Snoopycp.class);
+
+    public static final int EXIT_SUCCESS = 0;
+    public static final int EXIT_FAILURE = 999;
+
+    @Override
+    public int run(String[] args) {
+
         
+
+        return EXIT_SUCCESS;
     }
 }

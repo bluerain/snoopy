@@ -16,9 +16,14 @@
 
 package com.googlecode.snoopycp;
 
-public class Launcher {
+public final class Defaults {
 
-    public static void main(String args[]) {
-        
-    }
+	public static final String APP_NAME = "snoopycp";
+	public static final String APP_VER = "0.0.0";
+
+	public static final String DEFAULT_CONFIGURATION = "snoopyd.conf";
+
+	public static final String DEFAULT_PRIMARY_ADAPTER_NAME = "PrimaryAdapter";
+	public static final String DEFAULT_SECONDARY_ADAPTER_NAME = "SecondaryAdapter";
+
 }
