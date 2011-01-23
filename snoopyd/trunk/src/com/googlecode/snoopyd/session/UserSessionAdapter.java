@@ -48,14 +48,12 @@ public class UserSessionAdapter extends _IUserSessionDisp {
 
 	@Override
 	public IHosterPrx hoster(Current __current) {
-		// TODO Auto-generated method stub
-		return null;
+		return userSession.hoster();
 	}
 
 	@Override
 	public IControllerPrx controller(Current __current) {
-		// TODO Auto-generated method stub
-		return null;
+		return userSession.controller();
 	}
 	
 }
