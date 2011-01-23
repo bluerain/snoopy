@@ -21,8 +21,10 @@ import Ice.Communicator;
 public class Domain {
 
     private Ice.Communicator communicator;
+    private String name;
 
-    public Domain(Communicator communicator) {
+    public Domain(Communicator communicator, String name) {
         this.communicator = communicator;
+        this.name = name;
     }
 }
