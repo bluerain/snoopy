@@ -23,6 +23,29 @@ import org.apache.log4j.Logger;
 
 
 public class Coordinator {
+
+    public static class Refresher extends Thread {
+
+        private View view;
+
+        public Refresher(View view) {
+            this.view = view;
+        }
+
+        @Override
+        public void run() {
+
+            for (;;) {
+
+                view.update(null, null);
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+    }
     
     public static Logger logger = Logger.getLogger(Coordinator.class);
 
@@ -32,9 +55,14 @@ public class Coordinator {
     public Coordinator(Domain domain, View view) {
         this.domain = domain;
         this.view = view;
+
+        domain.addObserver(view);
     }
 
     public void launch() {
+
+        //Refresher refresher = new Refresher(view);
+        //refresher.start();
 
         view.setTitle("[" + domain.name() + "] " + Defaults.APP_NAME + " " + Defaults.APP_VER);
         
