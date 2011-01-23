@@ -16,6 +16,9 @@
 
 package com.googlecode.snoopyd.core;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -190,6 +193,14 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		logger.debug("init kernel listeners");
 		initKernelListeners();
 
+	}
+	
+	public String hostname() {
+		try {
+			return InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException ex) {
+			return "localhost";
+		}
 	}
 	
 	public Identity identity() {
