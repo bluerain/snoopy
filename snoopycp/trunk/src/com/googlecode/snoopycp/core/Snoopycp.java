@@ -24,18 +24,36 @@ import org.apache.log4j.Logger;
 public class Snoopycp extends Ice.Application {
 
     public static Logger logger = Logger.getLogger(Snoopycp.class);
-    
     public static final int EXIT_SUCCESS = 0;
     public static final int EXIT_FAILURE = 999;
+
+    public static class ShutdownHook extends Thread {
+
+        private Coordinator coordinator;
+
+        public ShutdownHook(Coordinator coordinator) {
+            this.coordinator = coordinator;
+        }
+
+        @Override
+        public void run() {
+            coordinator.terminate();
+        }
+    }
 
     @Override
     public int run(String[] args) {
 
-        Domain domain = new Domain(communicator());
+        Ice.Communicator communicator = communicator();
+        Ice.Properties properties = communicator.getProperties();
+
+        Domain domain = new Domain(communicator, properties.getProperty("Snoopy.Domain"));
         View view = new View(domain);
         Coordinator coordinator = new Coordinator(domain, view);
 
-        view.setVisible(true);
+        setInterruptHook(new ShutdownHook(coordinator));
+
+        coordinator.launch();
 
         return EXIT_SUCCESS;
     }
