@@ -29,4 +29,11 @@ public class Coordinator {
         this.view = view;
     }
 
+    public void launch() {
+        view.setVisible(true);
+    }
+
+    public void terminate() {
+
+    }
 }
