@@ -58,13 +58,13 @@ public class Sessionier extends AbstractDriver implements Driver,
 	public IUserSessionPrx createUserSession(Ice.Identity identity,
 			IUserSessionPrx selfSession) {
 
-		kernel.handle(new ChildSessionRecivedEvent(identity, selfSession));
+		//kernel.handle(new ChildSessionRecivedEvent(identity, selfSession));
 
 		IUserSessionPrx remoteSession = IUserSessionPrxHelper
 				.uncheckedCast(kernel.primary().addWithUUID(
 						new UserSessionAdapter(new UserSession(kernel))));
 		
-		kernel.handle(new ChildSessionSendedEvent(identity, remoteSession));
+		//kernel.handle(new ChildSessionSendedEvent(identity, remoteSession));
 		
 		return remoteSession;
 

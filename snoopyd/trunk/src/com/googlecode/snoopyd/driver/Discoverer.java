@@ -28,6 +28,7 @@ import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
+import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Discoverer extends AbstractDriver implements Driver, Runnable,
@@ -90,9 +91,13 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 	@Override
 	public void run() {
 
-		IDiscovererPrx multicast = IDiscovererPrxHelper.uncheckedCast(kernel
+		IDiscovererPrx dmulticast = IDiscovererPrxHelper.uncheckedCast(kernel
 				.communicator().propertyToProxy("Discoverer.Multicast"));
-		multicast = IDiscovererPrxHelper.checkedCast(multicast.ice_datagram());
+		dmulticast = IDiscovererPrxHelper.checkedCast(dmulticast.ice_datagram());
+		
+		IDiscovererPrx cpmulticast = IDiscovererPrxHelper.uncheckedCast(kernel
+				.communicator().propertyToProxy("ControlPanel.Multicast"));
+		cpmulticast = IDiscovererPrxHelper.checkedCast(cpmulticast.ice_datagram());
 
 		try {
 
@@ -101,13 +106,31 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 				Map<String, String> context = new HashMap<String, String>();
 
 				context.put("identity", Identities.toString(kernel.identity()));
+				context.put("hostname", kernel.hostname());
 				context.put("rate", String.valueOf(kernel.rate()));
 				context.put("primary", kernel.primaryPublishedEndpoints());
 				context.put("secondary", kernel.secondaryPublishedEndpoints());
 				context.put("state", kernel.state().getClass().getSimpleName());
+				
+				StringBuilder sbchilds = new StringBuilder();
+				for (Ice.Identity identity: kernel.childs().keySet()) {
+					sbchilds.append(Identities.toString(identity));
+					sbchilds.append(";");
+				}
+				
+				context.put("childs", sbchilds.toString());
+				
+				StringBuilder sbparents = new StringBuilder();
+				for (Ice.Identity identity: kernel.parents().keySet()) {
+					sbparents.append(Identities.toString(identity));
+					sbparents.append(";");
+				}
+				
+				context.put("parents", sbparents.toString());
 
 				try {
-					multicast.discover(kernel.identity(), context);
+					dmulticast.discover(kernel.identity(), context);
+					cpmulticast.discover(kernel.identity(), context);
 				} catch (Exception ignored) {
 				}
 

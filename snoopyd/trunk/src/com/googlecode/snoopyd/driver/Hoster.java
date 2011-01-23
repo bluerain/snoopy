@@ -43,9 +43,13 @@ public class Hoster extends AbstractDriver implements Driver {
 		
 		try {
 			
-			NetInfo netInfo = sigar.getNetInfo();
-
-			result = netInfo.toMap();
+			Map<String, String> net = sigar.getNetInfo().toMap();
+			Map<String, String> mem = sigar.getMem().toMap();
+			Map<String, String> cpu = sigar.getCpuInfoList()[0].toMap();
+			
+			result.putAll(net);
+			result.putAll(cpu);
+			result.putAll(mem);
 			
 		} catch (SigarException e) {
 			logger.error(e.getMessage());
