@@ -107,7 +107,7 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
 		kernel.unload();
     	kernel.deactivate();
-    	kernel.stop();
+    	kernel.dispose();
     	
     	synchronized (event) {
     		event.notify();

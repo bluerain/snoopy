@@ -29,5 +29,10 @@ public final class Defaults {
 	public static final int DEFAULT_DISCOVER_INTERVAL = 5000;
 	public static final int DEFAULT_DISCOVER_RECIVED_COUTER_THRESHOLD = 6;
 	
+	/*
+	 * This is rate from my first laptop (Samsung R20).    
+	 */
+	public static final int DEFAULT_BASELINE_RATE = 912;
+	
 
 }

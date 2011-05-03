@@ -16,7 +16,6 @@
 
 package com.googlecode.snoopyd.core;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -26,8 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.net.ssl.HostnameVerifier;
 
 import org.apache.log4j.Logger;
 
@@ -55,77 +52,10 @@ import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Kernel implements Loadable, Activable, Startable, Runnable {
-
-//	public static class KernelBox {
-//		
-//		private static Logger logger = Logger.getLogger(KernelBox.class);
-//		
-//		private Map<String, String> box;
-//
-//		public KernelBox() {
-//			this.box = new ConcurrentHashMap<String, String>();
-//		}
-//		
-//		public void put(String key, String value) {
-//			logger.debug(key + " = " + value);
-//			box.put(key, value);
-//		}
-//		
-//		public String get(String key) {
-//			return box.get(key);
-//		}
-//		
-//		public void putInt(String key, int value) {
-//			logger.debug(key + " = " + value);
-//			box.put(key, String.valueOf(value));
-//		}
-//		
-//		public int getInt(String key, int defaultValue) {
-//			return (box.get(key) == null) ? defaultValue : Integer.valueOf(box.get(key));
-//		}
-//	}
-	
-//	public static class KernelInfo {
-//
-//		public final Identity identity;
-//		public final int rate;
-//		public final String primary;
-//		public final String secondary;
-//		public final String state;
-//		public final String mode;
-//
-//		public KernelInfo(Identity identity, int rate, String primary,
-//				String secondary, String state, String mode) {
-//			this.identity = identity;
-//			this.rate = rate;
-//			this.primary = primary;
-//			this.secondary = secondary;
-//			this.state = state;
-//			this.mode = mode;
-//		}
-//
-//		public String toString() {
-//			StringBuilder sb = new StringBuilder();
-//			sb.append("[");
-//			sb.append("identity=" + Identities.toString(identity) + ", ");
-//			sb.append("rate=" + rate + ", ");
-//			sb.append("primary=" + primary + ", ");
-//			sb.append("secondary=" + secondary + ", ");
-//			sb.append("state=" + state + ", ");
-//			sb.append("mode=" + mode);
-//			sb.append("]");
-//
-//			return sb.toString();
-//		}
-//	}
-//
-//	public static class KernelConfiguration {
-//
-//	}
+public class Kernel implements Loadable, Activable, Runnable {
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
-
+	
 	private Identity identity;
 
 	private Ice.Communicator communicator;
@@ -134,11 +64,13 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 	private Ice.ObjectAdapter primary;
 	private Ice.ObjectAdapter secondary;
 
-	// private Configuration configuration;
-
+	private boolean started;
+	
 	private Thread self;
 
 	private KernelState state;
+	
+	private int rate;
 
 	private ConcurrentLinkedQueue<KernelEvent> pool;
 
@@ -154,8 +86,9 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 	
 	public Kernel(Ice.Communicator communicator) {
 
-		// ConfigurationBuilder builder = new ConfigurationBuilder();
-		// Configuration configuration = builder.rate(10).build();
+		this.started = false;
+		
+		this.rate = Integer.MIN_VALUE;
 		
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
 		this.pool.offer(new SnoopydStartedEvent());
@@ -192,6 +125,8 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 
 		logger.debug("init kernel listeners");
 		initKernelListeners();
+		
+		initKernelRate();
 
 	}
 	
@@ -208,7 +143,7 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 	}
 
 	public int rate() {
-		return properties.getPropertyAsInt("Snoopy.Rate");
+		return rate;
 	}
 
 	public String primaryPublishedEndpoints() {
@@ -250,10 +185,6 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 	public KernelState state() {
 		return state;
 	}
-
-//	public void recofigure(KernelConfiguration configuration) {
-//
-//	}
 
 	@Override
 	public void load() {
@@ -309,10 +240,11 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		}
 	}
 	
-	@Override
-	public void start() {
+	public void startAndWait() {
 
 		logger.debug("starting kernel");
+		
+		started = true;
 		
 		primary.activate();
 		secondary.activate();
@@ -327,11 +259,26 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 			logger.error(ex.getMessage());
 		}
 	}
+	
+	public void startLater() {
 
-	@Override
-	public void stop() {
+		logger.debug("starting kernel");
+		
+		started = true;
+		
+		primary.activate();
+		secondary.activate();
+		
+		self = new Thread(this);
+		self.start();
+
+	}
+
+	public void dispose() {
 		
 		logger.debug("stopping kernel");
+		
+		started = false;
 		
 		for (Driver drv: drivers.values()) {
 			
@@ -350,19 +297,8 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		self.interrupt();
 	}
 	
-	@Override
-	public void restart() {
-		
-		logger.debug("restarting kernel");
-
-		stop();
-		start();
-		
-	}
-	
-	@Override
 	public boolean started() {
-		return true;
+		return started;
 	}
 
 	@Override
@@ -395,7 +331,7 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 		pool.offer(event);
 		notify();
 	}
-
+	
 	public Driver driver(Class<?> clazz) {
 		return drivers.get(clazz);
 	}
@@ -468,7 +404,7 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 				((Adapter) adapters.get(DiscovererAdapter.class)).identity());
 	}
 
-	public void initKernelListeners() {
+	private void initKernelListeners() {
 		kernelListeners = new LinkedList<KernelListener>();
 
 		for (Driver driver : drivers.values()) {
@@ -476,5 +412,15 @@ public class Kernel implements Loadable, Activable, Startable, Runnable {
 				kernelListeners.add((KernelListener) driver);
 			}
 		}
+	}
+	
+	private void initKernelRate() {
+		Hoster hoster = (Hoster) drivers.get(Hoster.class);
+		Map<String, String> context = hoster.context();
+		
+		int ram = Integer.parseInt(context.get("Ram"));
+		int mhz = Integer.parseInt(context.get("Mhz"));
+		
+		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.DEFAULT_BASELINE_RATE) * 10);
 	}
 }

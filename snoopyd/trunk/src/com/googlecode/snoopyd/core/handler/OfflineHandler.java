@@ -78,7 +78,7 @@ public class OfflineHandler extends AbstractHandler implements
 
 		kernel.unload();
     	kernel.deactivate();
-    	kernel.stop();
+    	kernel.dispose();
     	
     	synchronized (event) {
     		event.notify();
