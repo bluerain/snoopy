@@ -18,20 +18,29 @@ package com.googlecode.snoopyd.core.handler;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
+import com.googlecode.snoopyd.core.state.KernelListener;
 
 public abstract class AbstractHandler implements KernelHandler {
 
 	private static Logger logger = Logger.getLogger(AbstractHandler.class);
 	
+	protected Kernel kernel;
+	
+	public AbstractHandler(Kernel kernel) {
+		this.kernel = kernel;
+	}
+
 	@Override
 	public void handle(KernelEvent event) {
 
@@ -67,6 +76,10 @@ public abstract class AbstractHandler implements KernelHandler {
 		
 			handle((SnoopydTerminatedEvent) event);
 		
+		} else if (event instanceof KernelStateChangedEvent) {
+
+			handle((KernelStateChangedEvent) event);
+			
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
@@ -74,4 +87,8 @@ public abstract class AbstractHandler implements KernelHandler {
 		}
 	}
 
+	@Override
+	public void handle(KernelStateChangedEvent event) {
+		kernel.toogle22(event.state());
+	}
 }

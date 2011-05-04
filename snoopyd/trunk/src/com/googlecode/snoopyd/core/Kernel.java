@@ -35,6 +35,7 @@ import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
@@ -56,6 +57,10 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
 	
+	public static final String KERNEL_THREAD_NAME = "Snoopy-Kernel-";
+	
+	public static int threadNumber = 0;
+	
 	private Identity identity;
 
 	private Ice.Communicator communicator;
@@ -71,6 +76,8 @@ public class Kernel implements Loadable, Activable, Runnable {
 	private KernelState state;
 	
 	private int rate;
+	
+	private Map<String, String> context;
 
 	private ConcurrentLinkedQueue<KernelEvent> pool;
 
@@ -89,6 +96,8 @@ public class Kernel implements Loadable, Activable, Runnable {
 		this.started = false;
 		
 		this.rate = Integer.MIN_VALUE;
+		
+		this.context = new HashMap<String, String>();
 		
 		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
 		this.pool.offer(new SnoopydStartedEvent());
@@ -136,6 +145,10 @@ public class Kernel implements Loadable, Activable, Runnable {
 		} catch (UnknownHostException ex) {
 			return "localhost";
 		}
+	}
+	
+	public Map<String, String> context() {
+		return context;
 	}
 	
 	public Identity identity() {
@@ -204,21 +217,23 @@ public class Kernel implements Loadable, Activable, Runnable {
 		}
 	}
 
-	public synchronized void toogle(KernelState kernelState) {
+	public synchronized void toogle22(KernelState kernelState) {
 
-		if (this.state.getClass() != kernelState.getClass()) {
-
+		if (Thread.currentThread() != self) {
+			
+			logger.error("only Kernel-Thread can change kernel state");
+			// TODO: throw exception
+			
+		} else if (state.getClass() != kernelState.getClass()) {
+			
 			logger.info("changing kernel state on "
 					+ kernelState.getClass().getSimpleName());
 
-			this.state = kernelState;
+			state = kernelState;
 
 			for (KernelListener listener : kernelListeners) {
 				listener.stateChanged(kernelState);
 			}
-
-		} else {
-
 		}
 	}
 
@@ -251,7 +266,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 		
 		try {
 
-			self = new Thread(this);
+			self = new Thread(this, KERNEL_THREAD_NAME + (++threadNumber));
 			self.start();
 			self.join();
 
@@ -346,6 +361,10 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	public Collection<Adapter> adapters() {
 		return Collections.unmodifiableCollection(adapters.values());
+	}
+	
+	public Collection<KernelListener> listiners() {
+		return Collections.unmodifiableCollection(kernelListeners);
 	}
 
 	public Map<Ice.Identity, Map<String, String>> cache() {

@@ -20,6 +20,7 @@ import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
@@ -30,17 +31,15 @@ import com.googlecode.snoopyd.core.state.OnlineState;
 public class OfflineHandler extends AbstractHandler implements
 		KernelHandler {
 
-	private Kernel kernel;
-
 	public OfflineHandler(Kernel kernel) {
-		this.kernel = kernel;
+		super(kernel);
 	}
 
 	@Override
 	public void handle(NetworkEnabledEvent event) {
 		
-		kernel.toogle(new OnlineState(kernel));		
-	
+		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));		
+
 	}
 
 	@Override
@@ -83,6 +82,5 @@ public class OfflineHandler extends AbstractHandler implements
     	synchronized (event) {
     		event.notify();
 		}
-
 	}
 }

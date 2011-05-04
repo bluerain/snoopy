@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.googlecode.snoopyd.core.event;
 
-import Ice.Identity;
+import com.googlecode.snoopyd.core.state.KernelState;
 
-import com.googlecode.snoopyd.session.ISessionPrx;
+public class KernelStateChangedEvent implements KernelEvent {
 
-public class ChildSessionRecivedEvent implements KernelEvent {
-
-	private Ice.Identity identity;
-	private ISessionPrx session;
-
+	private KernelState state;
 	
-	public ChildSessionRecivedEvent(Identity identity, ISessionPrx session) {
-		this.identity = identity;
-		this.session = session;
+	public KernelStateChangedEvent(KernelState state) {
+		this.state = state;
 	}
 
 	@Override
@@ -36,11 +30,7 @@ public class ChildSessionRecivedEvent implements KernelEvent {
 		return this.getClass().getSimpleName();
 	}
 	
-	public ISessionPrx session() {
-		return session;
-	}
-
-	public Ice.Identity identity() {
-		return identity;
+	public KernelState state() {
+		return state;
 	}
 }

@@ -20,6 +20,7 @@ import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
@@ -40,16 +41,14 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	public static final int TRYS = 3;
 	public static final int SLEEP = 10000;
 
-	private Kernel kernel;
-
 	public SuspenseHandler(Kernel kernel) {
-		this.kernel = kernel;
+		super(kernel);
 	}
 
 	@Override
 	public void handle(NetworkEnabledEvent event) {
 	
-		kernel.toogle(new OnlineState(kernel));
+		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 
 	}
 
@@ -71,7 +70,7 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 
 		kernel.parents().put(kernel.identity(), remoteSession);
 
-		kernel.toogle(new OfflineState(kernel));
+		kernel.handle(new KernelStateChangedEvent(new OfflineState(kernel)));
 	}
 
 	@Override
@@ -82,7 +81,7 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ChildSessionRecivedEvent event) {
 		
-		kernel.childs().put(event.identity(), event.sessoin());
+		kernel.childs().put(event.identity(), event.session());
 		
 	}
 

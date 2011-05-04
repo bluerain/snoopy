@@ -18,11 +18,14 @@ package com.googlecode.snoopyd.core.handler;
 
 import java.util.Map;
 
+import Ice.Identity;
+
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
@@ -30,6 +33,7 @@ import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.OfflineState;
+import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.core.state.PassiveState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
@@ -41,13 +45,18 @@ import com.googlecode.snoopyd.util.Identities;
 
 public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
-	private Kernel kernel;
-
-	private int discoverRecivedCounter;
+	private Ice.Identity leaderIdentity;
+	private int leaderRate;
+	
+	private long startTimeStamp;
 
 	public OnlineHandler(Kernel kernel) {
-		this.kernel = kernel;
-		this.discoverRecivedCounter = 0;
+		super(kernel);
+		
+		this.leaderIdentity = kernel.identity();
+		this.leaderRate = kernel.rate();
+		
+		this.startTimeStamp = System.currentTimeMillis();
 	}
 
 	@Override
@@ -61,12 +70,14 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 		kernel.childs().clear();
 		kernel.parents().clear();
 		
-		kernel.toogle(new OfflineState(kernel));
+		kernel.handle(new KernelStateChangedEvent(new OfflineState(kernel)));
 	}
 
 	@Override
 	public void handle(ChildSessionSendedEvent event) {
 
+		kernel.handle(new KernelStateChangedEvent(new ActiveState(kernel)));
+		
 	}
 
 	@Override
@@ -77,34 +88,21 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(DiscoverRecivedEvent event) {
 
-		discoverRecivedCounter++;
-
-		int oldSize = kernel.cache().size();
 		kernel.cache().put(event.identity(), event.context());
-		int newSize = kernel.cache().size();
 
-		if (oldSize == newSize
-				&& discoverRecivedCounter > Defaults.DEFAULT_DISCOVER_RECIVED_COUTER_THRESHOLD) {
+		Ice.Identity eventIdentity = event.identity();
+		int eventRate = Integer.parseInt(event.context().get("rate"));
+		
+		if (eventRate > leaderRate) {
+			leaderIdentity = eventIdentity;
+			leaderRate = eventRate;
+		}
+		
+		if ((System.currentTimeMillis() - startTimeStamp) > Defaults.DEFAULT_DISCOVER_TIMEOUT) {
 
-			Ice.Identity hostIdentity = kernel.identity();
-			
-			int targetRate = 0;
-			Ice.Identity targetIdentity = null;
+			Map<String, String> targetContext = kernel.cache().get(leaderIdentity);
 
-			Map<Ice.Identity, Map<String, String>> cache = kernel.cache();
-
-			for (Ice.Identity identity : cache.keySet()) {
-				Map<String, String> context = cache.get(identity);
-
-				if (Integer.valueOf(context.get("rate")) > targetRate) {
-					targetRate = Integer.valueOf(context.get("rate"));
-					targetIdentity = identity;
-				}
-			}
-
-			Map<String, String> targetContext = cache.get(targetIdentity);
-
-			String proxy = Identities.toString(targetIdentity) + ": "
+			String proxy = Identities.toString(leaderIdentity) + ": "
 					+ targetContext.get("primary");
 
 			ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel
@@ -117,15 +115,11 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 											kernel))));
 
 			IKernelSessionPrx remoteSession = prx.createKernelSession(
-					hostIdentity, selfSession);
+					kernel.identity(), selfSession);
 
-			kernel.parents().put(targetIdentity, remoteSession);
+			kernel.parents().put(leaderIdentity, remoteSession);
 
-			if (Identities.equals(hostIdentity, targetIdentity)) {
-				kernel.toogle(new ActiveState(kernel));
-			} else {
-				kernel.toogle(new PassiveState(kernel));
-			}
+			kernel.handle(new KernelStateChangedEvent(new PassiveState(kernel)));
 		}
 	}
 
