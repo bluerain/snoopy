@@ -92,7 +92,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	private List<KernelListener> kernelListeners;
 	
-	private 
+	/* private */ 
 	
 	public Kernel(Ice.Communicator communicator) {
 
