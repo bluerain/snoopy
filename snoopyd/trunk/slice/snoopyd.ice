@@ -27,6 +27,10 @@ module com { module googlecode { module snoopyd {
 		interface IDiscoverer;
 		interface ISessionier;
 		interface IController;
+		interface IModuler;
+		interface IInvoker;
+		interface IScheduler;
+		interface IResulter;
 			
 	};
 
@@ -58,7 +62,7 @@ module com { module googlecode { module snoopyd {
 	module driver
 	{
 		
-		dictionary<string, string> HostContext; 
+		dictionary<string, string> StringMap; 
 		
  		interface IDiscoverer 
  		{
@@ -73,12 +77,33 @@ module com { module googlecode { module snoopyd {
  		
  		interface IHoster
  		{
- 			HostContext context();
+ 			StringMap context();
  		};
  		
  		interface IController
  		{
  			void shutdown(); 		
+ 		};
+ 		
+ 		interface IModuler
+ 		{
+ 			void deploy(string id, string code);
+ 			void undeploy(string id);
+ 		};
+ 		
+ 		interface IInvoker
+ 		{
+ 			void invoke(StringMap invokation);  			
+ 		};
+ 		
+ 		interface ISheduler
+ 		{
+ 		
+ 		};
+ 		
+ 		interface IResulter
+ 		{
+
  		};
  		
 	}; 

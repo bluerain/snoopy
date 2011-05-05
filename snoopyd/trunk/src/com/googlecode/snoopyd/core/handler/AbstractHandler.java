@@ -89,6 +89,6 @@ public abstract class AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(KernelStateChangedEvent event) {
-		kernel.toogle22(event.state());
+		kernel.toogle(event.state());
 	}
 }

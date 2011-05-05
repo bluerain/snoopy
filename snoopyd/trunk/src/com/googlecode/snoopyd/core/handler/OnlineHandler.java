@@ -98,7 +98,7 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 			leaderRate = eventRate;
 		}
 		
-		if ((System.currentTimeMillis() - startTimeStamp) > Defaults.DEFAULT_DISCOVER_TIMEOUT) {
+		if ((System.currentTimeMillis() - startTimeStamp) > Defaults.DISCOVER_TIMEOUT) {
 
 			Map<String, String> targetContext = kernel.cache().get(leaderIdentity);
 

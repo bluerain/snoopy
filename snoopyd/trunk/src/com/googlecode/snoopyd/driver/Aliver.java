@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
@@ -36,8 +37,6 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 		Startable, KernelListener {
 
 	private static Logger logger = Logger.getLogger(Aliver.class);
-
-	public static final int ALIVE_INTERVAL = 15000;
 
 	private boolean started;
 
@@ -100,7 +99,7 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 				// //manager.removeParent(identity);
 				// }
 
-				Thread.sleep(Aliver.ALIVE_INTERVAL);
+				Thread.sleep(Defaults.ALIVE_INTERVAL);
 			}
 
 		} catch (InterruptedException ex) {
@@ -117,7 +116,7 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 
 		logger.debug("starting " + name);
 
-		Thread self = new Thread(this);
+		Thread self = new Thread(this, Defaults.ALIVER_THREAD_NAME);
 		self.start();
 
 		started = true;
@@ -164,6 +163,5 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 				stop();
 			}
 		}
-
 	}
 }

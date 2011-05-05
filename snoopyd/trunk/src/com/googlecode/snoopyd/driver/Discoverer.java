@@ -54,7 +54,7 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 
 		logger.debug("starting " + name);
 
-		Thread self = new Thread(this);
+		Thread self = new Thread(this, Defaults.DISCOVERER_THREAD_NAME);
 		self.start();
 
 		started = true;
@@ -134,7 +134,7 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 				} catch (Exception ignored) {
 				}
 
-				Thread.sleep(Defaults.DEFAULT_DISCOVER_INTERVAL);
+				Thread.sleep(Defaults.DISCOVER_INTERVAL);
 			}
 
 		} catch (InterruptedException ex) {

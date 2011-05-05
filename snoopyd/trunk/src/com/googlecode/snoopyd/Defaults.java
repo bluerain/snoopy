@@ -21,18 +21,23 @@ public final class Defaults {
 	public static final String APP_NAME = "snoopyd";
 	public static final String APP_VER = "0.0.0";
 	
-	public static final String DEFAULT_CONFIGURATION = "snoopyd.conf";
+	public static final String CONFIGURATION = "snoopyd.conf";
 	
-	public static final String DEFAULT_PRIMARY_ADAPTER_NAME = "PrimaryAdapter";
-	public static final String DEFAULT_SECONDARY_ADAPTER_NAME = "SecondaryAdapter";
+	public static final String PRIMARY_ADAPTER_NAME = "PrimaryAdapter";
+	public static final String SECONDARY_ADAPTER_NAME = "SecondaryAdapter";
 	
-	public static final int DEFAULT_DISCOVER_INTERVAL = 5000;
-	public static final int DEFAULT_DISCOVER_TIMEOUT = 6 * DEFAULT_DISCOVER_INTERVAL;
+	public static final int DISCOVER_INTERVAL = 5000;
+	public static final int DISCOVER_TIMEOUT = 6 * DISCOVER_INTERVAL;
 	
+	public static final int ALIVE_INTERVAL = 15000;
+	
+	public static final String KERNEL_THREAD_NAME = "Kernel-Thread";
+	public static final String ALIVER_THREAD_NAME = "Aliver-Thread";
+	public static final String DISCOVERER_THREAD_NAME = "Discoverer-Thread";
+	public static final String INVOKER_THREAD_NAME = "Invoker-Thread";
+
 	/*
 	 * This is rate from my first laptop (Samsung R20).    
 	 */
-	public static final int DEFAULT_BASELINE_RATE = 912;
-	
-
+	public static final int BASELINE_RATE = 912;
 }

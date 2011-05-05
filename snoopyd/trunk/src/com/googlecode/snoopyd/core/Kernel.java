@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
@@ -46,8 +47,12 @@ import com.googlecode.snoopyd.driver.Controller;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.Hoster;
+import com.googlecode.snoopyd.driver.Invoker;
 import com.googlecode.snoopyd.driver.Loadable;
+import com.googlecode.snoopyd.driver.Moduler;
 import com.googlecode.snoopyd.driver.Networker;
+import com.googlecode.snoopyd.driver.Resulter;
+import com.googlecode.snoopyd.driver.Scheduler;
 import com.googlecode.snoopyd.driver.Sessionier;
 import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.session.ISessionPrx;
@@ -56,10 +61,6 @@ import com.googlecode.snoopyd.util.Identities;
 public class Kernel implements Loadable, Activable, Runnable {
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
-	
-	public static final String KERNEL_THREAD_NAME = "Snoopy-Kernel-";
-	
-	public static int threadNumber = 0;
 	
 	private Identity identity;
 
@@ -79,7 +80,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 	
 	private Map<String, String> context;
 
-	private ConcurrentLinkedQueue<KernelEvent> pool;
+	private Queue<KernelEvent> pool;
 
 	private HashMap<Class<?>, Driver> drivers;
 	private HashMap<Class<?>, Adapter> adapters;
@@ -91,6 +92,8 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	private List<KernelListener> kernelListeners;
 	
+	private 
+	
 	public Kernel(Ice.Communicator communicator) {
 
 		this.started = false;
@@ -99,7 +102,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 		
 		this.context = new HashMap<String, String>();
 		
-		this.pool = new ConcurrentLinkedQueue<KernelEvent>();
+		this.pool = new LinkedList<KernelEvent>();
 		this.pool.offer(new SnoopydStartedEvent());
 		
 		this.cache = new HashMap<Identity, Map<String, String>>();
@@ -217,7 +220,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 		}
 	}
 
-	public synchronized void toogle22(KernelState kernelState) {
+	public synchronized void toogle(KernelState kernelState) {
 
 		if (Thread.currentThread() != self) {
 			
@@ -266,7 +269,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 		
 		try {
 
-			self = new Thread(this, KERNEL_THREAD_NAME + (++threadNumber));
+			self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
 			self.start();
 			self.join();
 
@@ -389,7 +392,11 @@ public class Kernel implements Loadable, Activable, Runnable {
 		drivers.put(Networker.class, new Networker(this));
 		drivers.put(Hoster.class, new Hoster(this));
 		drivers.put(Controller.class, new Controller(this));
-	
+		drivers.put(Scheduler.class, new Scheduler(this));
+		drivers.put(Resulter.class, new Resulter(this));
+		drivers.put(Moduler.class, new Moduler(this));
+		drivers.put(Invoker.class, new Invoker(this));
+		
 	}
 
 	private void initAdapters() {
@@ -409,7 +416,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	private void initPrimaryAdapter() {
 		primary = communicator
-				.createObjectAdapter(Defaults.DEFAULT_PRIMARY_ADAPTER_NAME);
+				.createObjectAdapter(Defaults.PRIMARY_ADAPTER_NAME);
 
 		primary.add((Ice.Object) adapters.get(SessionierAdapter.class),
 				((Adapter) adapters.get(SessionierAdapter.class)).identity());
@@ -417,7 +424,7 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	private void initSecondaryAdapter() {
 		secondary = communicator
-				.createObjectAdapter(Defaults.DEFAULT_SECONDARY_ADAPTER_NAME);
+				.createObjectAdapter(Defaults.SECONDARY_ADAPTER_NAME);
 
 		secondary.add((Ice.Object) adapters.get(DiscovererAdapter.class),
 				((Adapter) adapters.get(DiscovererAdapter.class)).identity());
@@ -440,6 +447,6 @@ public class Kernel implements Loadable, Activable, Runnable {
 		int ram = Integer.parseInt(context.get("Ram"));
 		int mhz = Integer.parseInt(context.get("Mhz"));
 		
-		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.DEFAULT_BASELINE_RATE) * 10);
+		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.BASELINE_RATE) * 10);
 	}
 }

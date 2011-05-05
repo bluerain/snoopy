@@ -13,22 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.googlecode.snoopyd.driver;
 
-package com.googlecode.snoopyd;
+import org.apache.log4j.Logger;
 
-import com.googlecode.snoopyd.core.Snoopyd;
+import com.googlecode.snoopyd.core.Kernel;
 
+public class Resulter extends AbstractDriver implements Driver {
 
-public class Launcher {
-
-	public static void main(String[] args) {
-
-		Snoopyd snoopyd = new Snoopyd();
-		
-		int status = snoopyd.main(Defaults.APP_NAME, args,
-				System.getProperty("snoopyd.configuration", Defaults.CONFIGURATION));
-
-		System.exit(status);
+	private static Logger logger = Logger.getLogger(Resulter.class);
+	
+	public Resulter(Kernel kernel) {
+		super(Resulter.class.getSimpleName(), kernel);
 	}
-
 }
