@@ -16,6 +16,7 @@
 
 package com.googlecode.snoopyd.core;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -35,7 +37,6 @@ import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
-import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.SuspenseState;
@@ -52,6 +53,7 @@ import com.googlecode.snoopyd.driver.Resulter;
 import com.googlecode.snoopyd.driver.Scheduler;
 import com.googlecode.snoopyd.driver.Sessionier;
 import com.googlecode.snoopyd.driver.Startable;
+import com.googlecode.snoopyd.module.Module;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
@@ -87,10 +89,10 @@ public class Kernel implements Runnable {
 
 	private List<KernelListener> kernelListeners;
 	
-	private Map<String, String> modules; 
+	private HashMap<UUID, Module> modules; 
 	
 	public Kernel(Ice.Communicator communicator) {
-
+	
 		this.rate = Integer.MIN_VALUE;
 		
 		this.context = new HashMap<String, String>();
@@ -132,6 +134,9 @@ public class Kernel implements Runnable {
 
 		logger.debug("init kernel rate");
 		initKernelRate();
+		
+		logger.debug("init kernel modules");
+		initKernelModules();
 		
 		logger.debug("starting kernel thread");
 		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
@@ -416,5 +421,25 @@ public class Kernel implements Runnable {
 		int mhz = Integer.parseInt(context.get("Mhz"));
 		
 		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.BASELINE_RATE) * 10);
+	}
+	
+	private void initKernelModules() {
+	
+		modules = new HashMap<UUID, Module>();
+	
+		String modulesDir  = properties.getProperty("Snoopy.ModulesDir");
+		// String modulesConfig = kernel.properties().getProperty("Snoopy.ModulesConfig");
+		
+		File dir = new File(modulesDir);  
+		String[] list = dir.list();
+		
+		for (String module: list) {
+			
+			if (module.indexOf(".py") != -1) {
+				logger.debug(module);
+			}
+		}
+		
+		
 	}
 }

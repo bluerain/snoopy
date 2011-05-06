@@ -13,30 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.snoopyd.driver;
+package com.googlecode.snoopyd.module;
 
-import java.io.File;
+import java.util.UUID;
 
-import org.apache.log4j.Logger;
+public class PythonModule extends AbstractModule implements Module {
 
-import com.googlecode.snoopyd.core.Kernel;
-
-public class Moduler extends AbstractDriver implements Driver, Activable {
-
-	private static Logger logger = Logger.getLogger(Moduler.class);
-	
-	public Moduler(Kernel kernel) {
-		super(Moduler.class.getSimpleName(), kernel);
+	public PythonModule(UUID uudi, String name) {
+		super(uudi, name);
 	}
 
 	@Override
-	public void activate() {
-		
-		
+	public Object invoke(Object arg) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	@Override
-	public void deactivate() {
-		
-	}
 }
