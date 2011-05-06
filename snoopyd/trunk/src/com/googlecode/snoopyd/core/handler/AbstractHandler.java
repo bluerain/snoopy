@@ -91,4 +91,18 @@ public abstract class AbstractHandler implements KernelHandler {
 	public void handle(KernelStateChangedEvent event) {
 		kernel.toogle(event.state());
 	}
+	
+	@Override
+	public void handle(SnoopydStartedEvent event) {
+		kernel.init();
+	}
+
+	@Override
+	public void handle(SnoopydTerminatedEvent event) {
+    	kernel.dispose();
+    	
+    	synchronized (event) {
+    		event.notify();
+		}
+	}
 }

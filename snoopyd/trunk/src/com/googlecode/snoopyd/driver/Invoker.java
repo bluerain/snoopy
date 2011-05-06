@@ -93,6 +93,11 @@ public class Invoker extends AbstractDriver implements Driver, Runnable,
 		for (;started ;) {
 
 			for (; !pool.isEmpty() && started;) {
+				
+				/*
+				 * module = <MODULE_UUID>
+				 * params = <PARAM1>, <PARAM2> 
+				 */
 				Map<String, String> invokation = pool.poll();
 				
 				// TODO: Hard-Code HERE! Bitch!

@@ -25,6 +25,8 @@ import org.apache.log4j.Logger;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
+import com.googlecode.snoopyd.core.state.KernelListener;
+import com.googlecode.snoopyd.core.state.KernelState;
 
 public class Networker extends AbstractDriver implements Driver, Activable,
 		Runnable {
@@ -40,11 +42,14 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	private Thread self;
 	
 	private int networkState;
+	
+	private boolean started;
 
 	public Networker(Kernel kernel) {
 		super(Networker.class.getSimpleName(), kernel);
 
 		this.networkState = NETWORK_UNDEFINED;
+		this.started = false;
 	}
 
 	@Override
@@ -144,12 +149,16 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 
 	@Override
 	public void activate() {
+		
+		started = true;
 		self = new Thread(this);
 		self.start();
 	}
 
 	@Override
 	public void deactivate() {
+		
+		started = false;
 		self.interrupt();
 	}
 }

@@ -20,7 +20,8 @@ public interface Startable {
 
 	public void start();
 	public void stop();
-	public void restart();
 
 	public boolean started();
+	
+	public void restart();
 }

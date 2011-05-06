@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
 
@@ -36,7 +35,6 @@ import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
-import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
@@ -48,7 +46,6 @@ import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.Hoster;
 import com.googlecode.snoopyd.driver.Invoker;
-import com.googlecode.snoopyd.driver.Loadable;
 import com.googlecode.snoopyd.driver.Moduler;
 import com.googlecode.snoopyd.driver.Networker;
 import com.googlecode.snoopyd.driver.Resulter;
@@ -58,7 +55,7 @@ import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
-public class Kernel implements Loadable, Activable, Runnable {
+public class Kernel implements Runnable {
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
 	
@@ -70,8 +67,6 @@ public class Kernel implements Loadable, Activable, Runnable {
 	private Ice.ObjectAdapter primary;
 	private Ice.ObjectAdapter secondary;
 
-	private boolean started;
-	
 	private Thread self;
 
 	private KernelState state;
@@ -92,19 +87,16 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	private List<KernelListener> kernelListeners;
 	
-	/* private */ 
+	private Map<String, String> modules; 
 	
 	public Kernel(Ice.Communicator communicator) {
 
-		this.started = false;
-		
 		this.rate = Integer.MIN_VALUE;
 		
 		this.context = new HashMap<String, String>();
 		
 		this.pool = new LinkedList<KernelEvent>();
-		this.pool.offer(new SnoopydStartedEvent());
-		
+
 		this.cache = new HashMap<Identity, Map<String, String>>();
 		
 		this.parents = new HashMap<Identity, ISessionPrx>();
@@ -137,9 +129,13 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 		logger.debug("init kernel listeners");
 		initKernelListeners();
-		
-		initKernelRate();
 
+		logger.debug("init kernel rate");
+		initKernelRate();
+		
+		logger.debug("starting kernel thread");
+		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
+		self.start();
 	}
 	
 	public String hostname() {
@@ -202,24 +198,6 @@ public class Kernel implements Loadable, Activable, Runnable {
 		return state;
 	}
 
-	@Override
-	public void load() {
-		for (Driver driver : drivers.values()) {
-			if (driver instanceof Loadable) {
-				((Loadable) driver).load();
-			}
-		}
-	}
-
-	@Override
-	public void unload() {
-		for (Driver driver : drivers.values()) {
-			if (driver instanceof Loadable) {
-				((Loadable) driver).unload();
-			}
-		}
-	}
-
 	public synchronized void toogle(KernelState kernelState) {
 
 		if (Thread.currentThread() != self) {
@@ -240,66 +218,46 @@ public class Kernel implements Loadable, Activable, Runnable {
 		}
 	}
 
-	public void activate() {
+	public void init() {
 
-		for (Driver driver : drivers.values()) {
-			if (driver instanceof Activable) {
-				((Activable) driver).activate();
-			}
-		}
-	}
-
-	public void deactivate() {
-
-		for (Driver driver : drivers.values()) {
-			if (driver instanceof Activable) {
-				((Activable) driver).deactivate();
-			}
-		}
-	}
-	
-	public void startAndWait() {
-
-		logger.debug("starting kernel");
+		checkKernelThread();
 		
-		started = true;
+		logger.debug("init kernel");
+
+		for (Driver drv : drivers.values()) {
+			if (drv instanceof Activable) {
+				logger.debug("... activating " + drv.name());
+				((Activable) drv).activate();
+			}
+		}
+		
+//		for (Driver drv: drivers.values()) {
+//			
+//			if (drv instanceof Startable) {
+//				logger.debug("... starting " + drv.name());
+//				((Startable) drv).start();
+//			}
+//		}
 		
 		primary.activate();
 		secondary.activate();
-		
-		try {
-
-			self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
-			self.start();
-			self.join();
-
-		} catch (InterruptedException ex) {
-			logger.error(ex.getMessage());
-		}
 	}
 	
-	public void startLater() {
-
-		logger.debug("starting kernel");
-		
-		started = true;
-		
-		primary.activate();
-		secondary.activate();
-		
-		self = new Thread(this);
-		self.start();
-
-	}
-
+	
 	public void dispose() {
 		
-		logger.debug("stopping kernel");
+		checkKernelThread();
+			
+		logger.debug("dispose kernel");
 		
-		started = false;
+		for (Driver drv : drivers.values()) {
+			if (drv instanceof Activable) {
+				logger.debug("... deactivating " + drv.name());
+				((Activable) drv).deactivate();
+			}
+		}
 		
 		for (Driver drv: drivers.values()) {
-			
 			if (drv instanceof Startable) {
 				if (((Startable) drv).started()) {
 					logger.debug("... stopping " + drv.name());
@@ -308,17 +266,21 @@ public class Kernel implements Loadable, Activable, Runnable {
 			}
 		}
 		
-		
 		primary.deactivate();
 		secondary.deactivate();
 		
 		self.interrupt();
 	}
 	
-	public boolean started() {
-		return started;
+	public void waitForTerminated() {
+		
+		try {
+			self.join();		
+		} catch (InterruptedException ignored) { 
+		}
+		
 	}
-
+	
 	@Override
 	public void run() {
 
@@ -380,6 +342,12 @@ public class Kernel implements Loadable, Activable, Runnable {
 
 	public Map<Ice.Identity, ISessionPrx> childs() {
 		return childs;
+	}
+	
+	private void checkKernelThread() {
+		if (Thread.currentThread() != self) {
+			throw new RuntimeException("only kernel thread can change kernel state");
+		}
 	}
 	
 	private void initDrivers() {

@@ -95,22 +95,4 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 		kernel.cache().clear();
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}
-
-	@Override
-	public void handle(SnoopydStartedEvent event) {
-		
-	}
-
-	@Override
-	public void handle(SnoopydTerminatedEvent event) {
-
-		kernel.unload();
-    	kernel.deactivate();
-    	kernel.dispose();
-    	
-    	synchronized (event) {
-    		event.notify();
-		}
-
-	}
 }

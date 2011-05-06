@@ -27,4 +27,18 @@ public class Moduler extends AbstractDriver implements Driver {
 		super(Moduler.class.getSimpleName(), kernel);
 	}
 
+//	@Override
+//	public void load() {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	@Override
+//	public void unload() {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//	
+	
+
 }

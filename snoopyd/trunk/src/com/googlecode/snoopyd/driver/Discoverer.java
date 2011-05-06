@@ -128,6 +128,8 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 				
 				context.put("parents", sbparents.toString());
 
+				context.put("modules", "");
+
 				try {
 					dmulticast.discover(kernel.identity(), context);
 					cpmulticast.discover(kernel.identity(), context);

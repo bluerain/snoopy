@@ -127,21 +127,4 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	public void handle(ParentNodeDeadedEvent event) {
 		
 	}
-
-	@Override
-	public void handle(SnoopydStartedEvent event) {
-		
-	}
-
-	@Override
-	public void handle(SnoopydTerminatedEvent event) {
-
-		kernel.unload();
-    	kernel.deactivate();
-    	kernel.dispose();
-    	
-    	synchronized (event) {
-    		event.notify();
-		}
-	}
 }

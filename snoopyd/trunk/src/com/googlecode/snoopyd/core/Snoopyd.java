@@ -45,7 +45,6 @@ public class Snoopyd extends Ice.Application {
 		public void run() {
 
 			KernelEvent event = new SnoopydTerminatedEvent();
-
 			kernel.handle(event);
 
 			synchronized (event) {
@@ -72,24 +71,18 @@ public class Snoopyd extends Ice.Application {
 		logger.debug("setting shutdown hook for snoopyd");
 		setInterruptHook(new ShutdownHook(kernel));
 
-		logger.info("loading kernel drivers:");
-		kernel.load();
+		logger.info("fetching kernel drivers:");
 		for (Driver drv : kernel.drivers()) {
 			logger.debug("... " + drv.name());
 		}
 
-		logger.info("activating drivers adapters: ");
-		kernel.activate();
+		logger.info("fetching drivers adapters: ");
 		for (Adapter adp : kernel.adapters()) {
 			logger.debug("... " + adp.name());
 		}
 
-		logger.info("statring kernel ("
-				+ Identities.toString(kernel.identity()) + ")");
-
 		kernel.handle(new SnoopydStartedEvent());
-
-		kernel.startAndWait();
+		kernel.waitForTerminated();
 		
 		return EXIT_SUCCESS;
 	}
