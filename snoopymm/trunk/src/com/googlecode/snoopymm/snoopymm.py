@@ -14,6 +14,24 @@
 # limitations under the License.
 #
 
-class SnoopyModuleManager(object):
-    pass
+import sys
+import Ice
 
+class ModuleManager(object): 
+    
+    def __init__(self):
+        pass
+    
+    def inokve(self, arg):
+        pass
+
+class Snoopymm(Ice.Application):
+    def run(self, args):
+        print "here"
+        return 0
+    
+def main(args):
+    snoopymm = Snoopymm();
+    sys.exit(snoopymm.main(args[1:], args[1]))
+
+if __name__ == "__main__": main(sys.argv)
