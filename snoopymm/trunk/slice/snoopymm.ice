@@ -20,12 +20,17 @@
 module com { module googlecode { module snoopymm {
 		
 	sequence<string> StringArray;
+
+	exception ModuleNotFoundException
+	{
+	};
 	
 	interface IModuleManager
 	{
-		StringArray launch(string module, StringArray params);	
+		StringArray launch(string muid, StringArray params) throws ModuleNotFoundException;	
 	};
-	
+
+
 }; }; };
 
 #endif

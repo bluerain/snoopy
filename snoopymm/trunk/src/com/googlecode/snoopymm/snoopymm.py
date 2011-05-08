@@ -16,22 +16,27 @@
 
 import sys
 import Ice
+import com.googlecode.snoopymm
 
-class ModuleManager(object): 
-    
-    def __init__(self):
-        pass
-    
-    def inokve(self, arg):
-        pass
+class ModuleManager(com.googlecode.snoopymm.IModuleManager): 
+	def __init__(self, path):
+		self.modulesDir = path
 
+	def launch(self, muid, params, current=None):
+		print self.modulesDir
+    
 class Snoopymm(Ice.Application):
-    def run(self, args):
-        print "here"
-        return 0
+	def run(self, args):
+		moduleManager = ModuleManager(self.communicator().getProperties().getProperty("Snoopy.ModulesDir"))
+		adapter = self.communicator().createObjectAdapter("Adapter")
+		adapter.add(moduleManager, self.communicator().stringToIdentity("ModuleManager"))
+	        adapter.activate()
+		self.communicator().waitForShutdown()
+		self.communicator().destroy()
+		return 0
     
 def main(args):
-    snoopymm = Snoopymm();
-    sys.exit(snoopymm.main(args[1:], args[1]))
+	snoopymm = Snoopymm();
+ 	sys.exit(snoopymm.main(args[1:], args[1]))
 
 if __name__ == "__main__": main(sys.argv)
