@@ -56,8 +56,22 @@ import com.googlecode.snoopyd.driver.Startable;
 import com.googlecode.snoopyd.module.Module;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
+import com.googlecode.snoopymm.IModuleManagerPrx;
+import com.googlecode.snoopymm.IModuleManagerPrxHelper;
+import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class Kernel implements Runnable {
+	
+	public static class KernelException extends RuntimeException {
+
+		public KernelException() {
+			super();
+		}
+
+		public KernelException(String msg) {
+			super(msg);
+		}
+	}
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
 	
@@ -90,6 +104,8 @@ public class Kernel implements Runnable {
 	private List<KernelListener> kernelListeners;
 	
 	private HashMap<UUID, Module> modules; 
+	
+	private IModuleManagerPrx moduleManager;
 	
 	public Kernel(Ice.Communicator communicator) {
 	
@@ -137,6 +153,9 @@ public class Kernel implements Runnable {
 		
 		logger.debug("init kernel modules");
 		initKernelModules();
+		
+		logger.debug("connecting to module manager");
+		initModuleManager();
 		
 		logger.debug("starting kernel thread");
 		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
@@ -439,7 +458,13 @@ public class Kernel implements Runnable {
 				logger.debug(module);
 			}
 		}
-		
-		
+	}
+	
+	private void initModuleManager() {
+		try {
+			moduleManager = IModuleManagerPrxHelper.checkedCast(communicator.propertyToProxy("ModuleManager.Proxy"));
+		} catch (Ice.ConnectionRefusedException ex) {
+			throw new KernelException("could not connect to module manager");
+		}
 	}
 }
