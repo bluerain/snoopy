@@ -16,14 +16,40 @@
 
 import sys
 import Ice
+import os
+import re
 import com.googlecode.snoopymm
 
 class ModuleManager(com.googlecode.snoopymm.IModuleManager): 
 	def __init__(self, path):
 		self.modulesDir = path
 
+	def deploy(self, muid, code, current=None):
+		pass
+	
+	def undeploy(self, muid, current=None):
+		pass
+
+	def fetch(self, current=None):
+		modules = {}
+		files = os.listdir(self.modulesDir)
+		for file in files:
+			if (file.split(".")[1] == "py"):
+				muid = file.split(".")[0]
+				for line in open(os.path.join(self.modulesDir, file), "r").readlines():
+					if line.find("(object)"):
+						classes = line.split("(object)")[0].split(" ") 
+						if len(classes) == 2:
+							modules[muid] = classes[1]
+							break
+
+		return modules
+
 	def launch(self, muid, params, current=None):
-		print self.modulesDir
+		moduleName = self.fetch()[muid]
+		dyncode = "module = __import__(muid); " + "module = module." + moduleName + "(); " + "result = module.invoke(params); "   
+		exec(dyncode)
+		return result
     
 class Snoopymm(Ice.Application):
 	def run(self, args):

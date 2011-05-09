@@ -20,6 +20,7 @@
 module com { module googlecode { module snoopymm {
 		
 	sequence<string> StringArray;
+	dictionary<string, string> StringMap;
 
 	exception ModuleNotFoundException
 	{
@@ -27,6 +28,11 @@ module com { module googlecode { module snoopymm {
 	
 	interface IModuleManager
 	{
+		void deploy(string muid, string code);
+		void undeploy(string muid) throws ModuleNotFoundException;
+		
+		StringMap fetch();
+		
 		StringArray launch(string muid, StringArray params) throws ModuleNotFoundException;	
 	};
 
