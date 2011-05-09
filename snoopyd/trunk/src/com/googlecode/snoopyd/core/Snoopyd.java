@@ -61,7 +61,6 @@ public class Snoopyd extends Ice.Application {
 	public int run(String[] args) {
 		logger.info("running " + Defaults.APP_NAME + " " + Defaults.APP_VER);
 
-		logger.debug("creating kernel: ");
 		Kernel kernel = new Kernel(communicator());
 		
 		logger.debug("... identity: " + Identities.toString(kernel.identity()));

@@ -31,10 +31,13 @@ public final class Defaults {
 	
 	public static final int ALIVE_INTERVAL = 15000;
 	
+	public static final int MODULER_INTERVAL = 15000;
+	
 	public static final String KERNEL_THREAD_NAME = "Kernel-Thread";
 	public static final String ALIVER_THREAD_NAME = "Aliver-Thread";
 	public static final String DISCOVERER_THREAD_NAME = "Discoverer-Thread";
 	public static final String INVOKER_THREAD_NAME = "Invoker-Thread";
+	public static final String MODULER_THREAD_NAME = "Moduler-Thread";
 
 	/*
 	 * This is rate from my first laptop (Samsung R20).    

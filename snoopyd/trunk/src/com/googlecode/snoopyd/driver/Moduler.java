@@ -15,28 +15,110 @@
  */
 package com.googlecode.snoopyd.driver;
 
-import java.io.File;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.state.ActiveState;
+import com.googlecode.snoopyd.core.state.KernelListener;
+import com.googlecode.snoopyd.core.state.KernelState;
+import com.googlecode.snoopyd.core.state.PassiveState;
 
-public class Moduler extends AbstractDriver implements Driver, Activable {
+/**
+ * 
+ * TODO: This should be activable. I Need to review system disign
+ * 
+ * @author vkostyuk
+ *
+ */
+
+public class Moduler extends AbstractDriver implements Driver, Runnable, Startable,
+		KernelListener {
 
 	private static Logger logger = Logger.getLogger(Moduler.class);
+
+	private boolean started;
 	
 	public Moduler(Kernel kernel) {
 		super(Moduler.class.getSimpleName(), kernel);
+		this.started = false;
 	}
 
 	@Override
-	public void activate() {
-		
-		
+	public void start() {
+		logger.debug("starting " + name);
+
+		Thread self = new Thread(this, Defaults.MODULER_THREAD_NAME);
+		self.start();
+
+		started = true;
 	}
 
 	@Override
-	public void deactivate() {
+	public void stop() {
+		logger.debug("stoping " + name);
+
+		started = false;
+
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			logger.warn(e.getMessage());
+		}
+	}
+
+	@Override
+	public boolean started() {
+		return false;
+	}
+
+	@Override
+	public void restart() {
+		logger.debug("restarting " + name);
+
+		stop();
+		start();
+	}
+
+	@Override
+	public void run() {
+
+		for (;started ;) {
+
+			
+			
+			try {
+				Thread.currentThread().sleep(Defaults.MODULER_INTERVAL);
+			} catch (InterruptedException ignored) {
+			}
+		}
 		
+		synchronized (this) {
+			notify();
+		}
+	}
+	
+	private void initModuleManager() {
+		
+	}
+	
+	/**
+	 * TODO: add dispose ModuleManager
+	 */
+	
+	@Override
+	public void stateChanged(KernelState currentState) {
+		if (currentState instanceof ActiveState
+				|| currentState instanceof PassiveState) {
+			if (!started) {
+				start();
+			}
+		} else {
+			if (started) {
+				stop();
+			}
+		}
 	}
 }

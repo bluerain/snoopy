@@ -107,7 +107,7 @@ public class Kernel implements Runnable {
 	
 	private IModuleManagerPrx moduleManager;
 	
-	public Kernel(Ice.Communicator communicator) {
+	public Kernel(Ice.Communicator communicator) throws KernelException {
 	
 		this.rate = Integer.MIN_VALUE;
 		
@@ -151,12 +151,12 @@ public class Kernel implements Runnable {
 		logger.debug("init kernel rate");
 		initKernelRate();
 		
-		logger.debug("init kernel modules");
-		initKernelModules();
-		
-		logger.debug("connecting to module manager");
-		initModuleManager();
-		
+//		logger.debug("init kernel modules");
+//		initKernelModules();
+//		
+//		logger.debug("connecting to module manager");
+//		initModuleManager();
+//		
 		logger.debug("starting kernel thread");
 		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
 		self.start();
@@ -442,27 +442,29 @@ public class Kernel implements Runnable {
 		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.BASELINE_RATE) * 10);
 	}
 	
-	private void initKernelModules() {
-	
-		modules = new HashMap<UUID, Module>();
-	
-		String modulesDir  = properties.getProperty("Snoopy.ModulesDir");
-		// String modulesConfig = kernel.properties().getProperty("Snoopy.ModulesConfig");
-		
-		File dir = new File(modulesDir);  
-		String[] list = dir.list();
-		
-		for (String module: list) {
-			
-			if (module.indexOf(".py") != -1) {
-				logger.debug(module);
-			}
-		}
-	}
+//	private void initKernelModules() {
+//	
+//		modules = new HashMap<UUID, Module>();
+//	
+//		String modulesDir  = properties.getProperty("Snoopy.ModulesDir");
+//		// String modulesConfig = kernel.properties().getProperty("Snoopy.ModulesConfig");
+//		
+//		File dir = new File(modulesDir);  
+//		String[] list = dir.list();
+//		
+//		for (String module: list) {
+//			
+//			if (module.indexOf(".py") != -1) {
+//				logger.debug(module);
+//			}
+//		}
+//	}
 	
 	private void initModuleManager() {
 		try {
+
 			moduleManager = IModuleManagerPrxHelper.checkedCast(communicator.propertyToProxy("ModuleManager.Proxy"));
+			
 		} catch (Ice.ConnectionRefusedException ex) {
 			throw new KernelException("could not connect to module manager");
 		}

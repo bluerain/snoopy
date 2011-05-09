@@ -40,9 +40,9 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	public static final int NETWORKER_INTERVAL = 3000;
 
 	private Thread self;
-	
+
 	private int networkState;
-	
+
 	private boolean started;
 
 	public Networker(Kernel kernel) {
@@ -55,110 +55,120 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	@Override
 	public void run() {
 
-		try {
-			
-			for (;;) {
+		for (; started;) {
 
-				try {
+			try {
 
-					boolean checker = false;
-					
-					Enumeration<NetworkInterface> interfaces = NetworkInterface
-							.getNetworkInterfaces();
+				boolean checker = false;
 
-					while (interfaces.hasMoreElements()) {
-						NetworkInterface nic = interfaces.nextElement();
-						try {
-							
-							logger.debug("checking " + nic.getDisplayName() + " interface :: " + nic.isUp());
-							
-							checker = checker || (nic.isUp() && !nic.isLoopback());
-							
-						} catch (SocketException ignored) { }
-					}
-					
-					if (networkState == NETWORK_UNDEFINED) {
-						if (checker) {
-							
-							logger.debug("network is enabled");
-							
-							networkState = NETWORK_ENABLED;
-							
-							kernel.handle(new NetworkEnabledEvent());
+				Enumeration<NetworkInterface> interfaces = NetworkInterface
+						.getNetworkInterfaces();
 
-						} else {
-							
-							logger.debug("network is disabled");
-							
-							networkState = NETWORK_DISABLED;
+				while (interfaces.hasMoreElements()) {
+					NetworkInterface nic = interfaces.nextElement();
+					try {
 
-							kernel.handle(new NetworkDisabledEvent());
-							
-						}
-					
-					} else if (networkState == NETWORK_DISABLED) {
-						
-						if (checker) {
-							
-							logger.debug("network is enabled");
-							
-							networkState = NETWORK_ENABLED;
-							
-							kernel.handle(new NetworkEnabledEvent());
-						
-						} else {
-						
-							logger.debug("network still disabled");
-						}
-						
-					} else if (networkState == NETWORK_ENABLED) {
-						
-						if (!checker) {
-							
-							logger.debug("network is disabled");
-							
-							networkState = NETWORK_DISABLED;
+						logger.debug("checking " + nic.getDisplayName()
+								+ " interface :: " + nic.isUp());
 
-							kernel.handle(new NetworkDisabledEvent());
-							
-						} else {
-							
-							logger.debug("network still enabled");
-						}
-					}
-					
-				} catch (SocketException ex) {
+						checker = checker || (nic.isUp() && !nic.isLoopback());
 
-					if (networkState == NETWORK_UNDEFINED || networkState == NETWORK_ENABLED) {
-						
-						logger.debug("network is disabled");
-						
-						networkState = NETWORK_DISABLED;
-
-						kernel.handle(new NetworkDisabledEvent());
+					} catch (SocketException ignored) {
 					}
 				}
 
-				Thread.sleep(NETWORKER_INTERVAL);
+				if (networkState == NETWORK_UNDEFINED) {
+					if (checker) {
+
+						logger.debug("network is enabled");
+
+						networkState = NETWORK_ENABLED;
+
+						kernel.handle(new NetworkEnabledEvent());
+
+					} else {
+
+						logger.debug("network is disabled");
+
+						networkState = NETWORK_DISABLED;
+
+						kernel.handle(new NetworkDisabledEvent());
+
+					}
+
+				} else if (networkState == NETWORK_DISABLED) {
+
+					if (checker) {
+
+						logger.debug("network is enabled");
+
+						networkState = NETWORK_ENABLED;
+
+						kernel.handle(new NetworkEnabledEvent());
+
+					} else {
+
+						logger.debug("network still disabled");
+					}
+
+				} else if (networkState == NETWORK_ENABLED) {
+
+					if (!checker) {
+
+						logger.debug("network is disabled");
+
+						networkState = NETWORK_DISABLED;
+
+						kernel.handle(new NetworkDisabledEvent());
+
+					} else {
+
+						logger.debug("network still enabled");
+					}
+				}
+
+			} catch (SocketException ex) {
+
+				if (networkState == NETWORK_UNDEFINED
+						|| networkState == NETWORK_ENABLED) {
+
+					logger.debug("network is disabled");
+
+					networkState = NETWORK_DISABLED;
+
+					kernel.handle(new NetworkDisabledEvent());
+				}
 			}
 
-		} catch (InterruptedException ex) {
-			logger.warn(ex.getMessage());
+			try {
+				Thread.sleep(NETWORKER_INTERVAL);
+			} catch (InterruptedException ignored) {
+			} 
+		}
+		
+		synchronized (this) {
+			notify();
 		}
 	}
 
 	@Override
 	public void activate() {
-		
+
 		started = true;
+
 		self = new Thread(this);
 		self.start();
 	}
 
 	@Override
 	public void deactivate() {
-		
+
 		started = false;
-		self.interrupt();
+
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			logger.warn(e.getMessage());
+		}
 	}
 }
