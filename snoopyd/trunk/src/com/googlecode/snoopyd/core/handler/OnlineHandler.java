@@ -18,8 +18,6 @@ package com.googlecode.snoopyd.core.handler;
 
 import java.util.Map;
 
-import Ice.Identity;
-
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
@@ -29,11 +27,8 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
-import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
-import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.OfflineState;
-import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.core.state.PassiveState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;

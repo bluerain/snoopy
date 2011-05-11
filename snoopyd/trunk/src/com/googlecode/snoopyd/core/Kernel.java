@@ -16,11 +16,11 @@
 
 package com.googlecode.snoopyd.core;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +58,6 @@ import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 import com.googlecode.snoopymm.IModuleManagerPrx;
 import com.googlecode.snoopymm.IModuleManagerPrxHelper;
-import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class Kernel implements Runnable {
 	
@@ -71,6 +70,13 @@ public class Kernel implements Runnable {
 		public KernelException(String msg) {
 			super(msg);
 		}
+	}
+	
+	/*
+	 * this code should be refactored 
+	 */
+	public static enum KernelStatus {
+		NETWORKABLE, MODULABLE		
 	}
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
@@ -86,6 +92,8 @@ public class Kernel implements Runnable {
 	private Thread self;
 
 	private KernelState state;
+	
+	private EnumSet<KernelStatus> statuses;
 	
 	private int rate;
 	
@@ -108,7 +116,9 @@ public class Kernel implements Runnable {
 	private IModuleManagerPrx moduleManager;
 	
 	public Kernel(Ice.Communicator communicator) throws KernelException {
-	
+
+		this.statuses = EnumSet.noneOf(KernelStatus.class);
+		
 		this.rate = Integer.MIN_VALUE;
 		
 		this.context = new HashMap<String, String>();
@@ -222,14 +232,11 @@ public class Kernel implements Runnable {
 		return state;
 	}
 
-	public synchronized void toogle(KernelState kernelState) {
+	public void toogle(KernelState kernelState) {
 
-		if (Thread.currentThread() != self) {
-			
-			logger.error("only Kernel-Thread can change kernel state");
-			// TODO: throw exception
-			
-		} else if (state.getClass() != kernelState.getClass()) {
+		checkKernelThread();
+		
+		if (state.getClass() != kernelState.getClass()) {
 			
 			logger.info("changing kernel state on "
 					+ kernelState.getClass().getSimpleName());
@@ -240,6 +247,25 @@ public class Kernel implements Runnable {
 				listener.stateChanged(kernelState);
 			}
 		}
+	}
+	
+	public void enable(KernelStatus status) {
+
+		checkKernelThread();
+		
+		statuses.add(status);
+
+	}
+	
+	public void disable(KernelStatus status) {
+		
+		checkKernelThread();
+	
+		statuses.remove(status);
+	}
+	
+	public EnumSet<KernelStatus> statuses() {
+		return statuses;
 	}
 
 	public void init() {
@@ -370,7 +396,7 @@ public class Kernel implements Runnable {
 	
 	private void checkKernelThread() {
 		if (Thread.currentThread() != self) {
-			throw new RuntimeException("only kernel thread can change kernel state");
+			throw new KernelException("only kernel thread can change kernel state");
 		}
 	}
 	

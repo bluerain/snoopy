@@ -16,7 +16,10 @@
 
 package com.googlecode.snoopyd.core.handler;
 
+import java.util.EnumSet;
+
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.Kernel.KernelStatus;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
@@ -24,8 +27,6 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
-import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
-import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
@@ -47,7 +48,8 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(NetworkEnabledEvent event) {
-	
+
+		kernel.enable(KernelStatus.NETWORKABLE);
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 
 	}
@@ -70,28 +72,38 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 
 		kernel.parents().put(kernel.identity(), remoteSession);
 
+		
+		kernel.disable(KernelStatus.NETWORKABLE);
 		kernel.handle(new KernelStateChangedEvent(new OfflineState(kernel)));
 	}
 
 	@Override
 	public void handle(ChildSessionSendedEvent event) {
-		
+
 	}
-	
+
 	@Override
 	public void handle(ChildSessionRecivedEvent event) {
-		
+
 		kernel.childs().put(event.identity(), event.session());
-		
+
 	}
 
 	@Override
 	public void handle(DiscoverRecivedEvent event) {
-		
+
 	}
 
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
+
+	}
+
+	@Override
+	public void handle(KernelStateChangedEvent event) {
 		
+		if (kernel.statuses().equals(EnumSet.of(KernelStatus.NETWORKABLE, KernelStatus.MODULABLE))) {
+			super.handle(event);
+		}
 	}
 }

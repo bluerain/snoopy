@@ -22,11 +22,10 @@ import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
-import com.googlecode.snoopyd.core.state.KernelListener;
-import com.googlecode.snoopyd.core.state.KernelState;
 
 public class Networker extends AbstractDriver implements Driver, Activable,
 		Runnable {
@@ -36,10 +35,6 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	public static final int NETWORK_UNDEFINED = -1;
 	public static final int NETWORK_ENABLED = 0;
 	public static final int NETWORK_DISABLED = 1;
-
-	public static final int NETWORKER_INTERVAL = 3000;
-
-	private Thread self;
 
 	private int networkState;
 
@@ -141,7 +136,7 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 			}
 
 			try {
-				Thread.sleep(NETWORKER_INTERVAL);
+				Thread.sleep(Defaults.NETWORKER_INTERVAL);
 			} catch (InterruptedException ignored) {
 			} 
 		}
@@ -156,7 +151,7 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 
 		started = true;
 
-		self = new Thread(this);
+		Thread self = new Thread(this);
 		self.start();
 	}
 

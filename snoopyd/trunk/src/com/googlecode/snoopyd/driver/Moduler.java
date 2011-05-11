@@ -15,71 +15,54 @@
  */
 package com.googlecode.snoopyd.driver;
 
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.state.ActiveState;
-import com.googlecode.snoopyd.core.state.KernelListener;
-import com.googlecode.snoopyd.core.state.KernelState;
-import com.googlecode.snoopyd.core.state.PassiveState;
 
-/**
- * 
- * TODO: This should be activable. I Need to review system disign
- * 
- * @author vkostyuk
- *
- */
-
-public class Moduler extends AbstractDriver implements Driver, Runnable, Startable,
-		KernelListener {
+public class Moduler extends AbstractDriver implements Driver, Activable, Runnable {
 
 	private static Logger logger = Logger.getLogger(Moduler.class);
 
 	private boolean started;
 	
+	public static final int MODULE_MANAGER_UNDEFINED = -1;
+	public static final int MODULE_MANAGER_CONECTED = 0;
+	public static final int MODULE_MANAGER_DISCONECTED = 1;
+
+	private int mmState;
+	
 	public Moduler(Kernel kernel) {
 		super(Moduler.class.getSimpleName(), kernel);
+		
+		this.mmState = MODULE_MANAGER_UNDEFINED;
 		this.started = false;
 	}
+	
 
 	@Override
-	public void start() {
-		logger.debug("starting " + name);
-
-		Thread self = new Thread(this, Defaults.MODULER_THREAD_NAME);
-		self.start();
-
+	public void activate() {
 		started = true;
+		
+		initModuleManager();
+
+		Thread self = new Thread(this);
+		self.start();
 	}
 
-	@Override
-	public void stop() {
-		logger.debug("stoping " + name);
 
+
+	@Override
+	public void deactivate() {
 		started = false;
+		
+		disposeModuleManager();
 
 		try {
 			wait();
 		} catch (InterruptedException e) {
 			logger.warn(e.getMessage());
-		}
-	}
-
-	@Override
-	public boolean started() {
-		return false;
-	}
-
-	@Override
-	public void restart() {
-		logger.debug("restarting " + name);
-
-		stop();
-		start();
+		}		
 	}
 
 	@Override
@@ -87,6 +70,7 @@ public class Moduler extends AbstractDriver implements Driver, Runnable, Startab
 
 		for (;started ;) {
 
+			
 			
 			
 			try {
@@ -104,21 +88,7 @@ public class Moduler extends AbstractDriver implements Driver, Runnable, Startab
 		
 	}
 	
-	/**
-	 * TODO: add dispose ModuleManager
-	 */
-	
-	@Override
-	public void stateChanged(KernelState currentState) {
-		if (currentState instanceof ActiveState
-				|| currentState instanceof PassiveState) {
-			if (!started) {
-				start();
-			}
-		} else {
-			if (started) {
-				stop();
-			}
-		}
+	private void disposeModuleManager() {
+		
 	}
 }
