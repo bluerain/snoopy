@@ -23,6 +23,7 @@ import com.googlecode.snoopyd.core.Kernel.KernelStatus;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.ModuleManagerConnectedEvent;
@@ -92,19 +93,20 @@ public abstract class AbstractHandler implements KernelHandler {
 			
 			handle((ModuleManagerDisconectedEvent) event);
 		
+		} else if (event instanceof InvokationEvent) {
+			
+			handle((InvokationEvent) event);
+			
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
 		
 		}
 	}
-
+	
 	@Override
 	public void handle(ModuleManagerConnectedEvent event) {
-	
-		kernel.enable(KernelStatus.MODULABLE);
-		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
-		
+
 	}
 
 	@Override
@@ -121,6 +123,13 @@ public abstract class AbstractHandler implements KernelHandler {
 		
 	}
 	
+	@Override
+	public void handle(InvokationEvent event) {
+		
+		event.run();
+		
+	}
+
 	@Override
 	public void handle(SnoopydStartedEvent event) {
 		

@@ -19,6 +19,11 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.Kernel.KernelException;
+import com.googlecode.snoopyd.core.event.InvokationEvent;
+import com.googlecode.snoopyd.core.event.ModuleManagerConnectedEvent;
+import com.googlecode.snoopyd.core.event.ModuleManagerDisconectedEvent;
+import com.googlecode.snoopymm.IModuleManagerPrx;
 
 public class Moduler extends AbstractDriver implements Driver, Activable, Runnable {
 
@@ -41,11 +46,9 @@ public class Moduler extends AbstractDriver implements Driver, Activable, Runnab
 	
 
 	@Override
-	public void activate() {
+	public synchronized void activate() {
 		started = true;
 		
-		initModuleManager();
-
 		Thread self = new Thread(this);
 		self.start();
 	}
@@ -53,11 +56,9 @@ public class Moduler extends AbstractDriver implements Driver, Activable, Runnab
 
 
 	@Override
-	public void deactivate() {
+	public synchronized void deactivate() {
 		started = false;
 		
-		disposeModuleManager();
-
 		try {
 			wait();
 		} catch (InterruptedException e) {
@@ -69,12 +70,74 @@ public class Moduler extends AbstractDriver implements Driver, Activable, Runnab
 	public void run() {
 
 		for (;started ;) {
+			
+			if (mmState == MODULE_MANAGER_UNDEFINED) {
+				
+				kernel.handle(new InvokationEvent() {
+					@Override
+					public void run() {
+						try {
+							kernel.initModuleManager();
+							
+							logger.debug("module manager now conected");
 
+							mmState = MODULE_MANAGER_CONECTED;
+							kernel.handle(new ModuleManagerConnectedEvent());
+							
+						} catch (KernelException ex) {
+							mmState = MODULE_MANAGER_DISCONECTED;
+							logger.debug("module manager still disconected");
+						}
+					}
+				});			
 			
+			} else if (mmState == MODULE_MANAGER_DISCONECTED) {
+				
+				kernel.handle(new InvokationEvent() {
+					@Override
+					public void run() {
+						try {
+							kernel.initModuleManager();
+							logger.debug("module manager now conected");
+
+							mmState = MODULE_MANAGER_CONECTED;
+							kernel.handle(new ModuleManagerConnectedEvent());
+						} catch (KernelException ex) {
+							mmState = MODULE_MANAGER_DISCONECTED;
+							logger.debug("module manager stil disconected");
+						}
+					}
+				});			
+				
+			} else if (mmState == MODULE_MANAGER_CONECTED) {
+
+				IModuleManagerPrx moduleManager = kernel.moduleManager();
 			
+				try {
+					moduleManager.ice_ping();
+				
+					if (mmState == MODULE_MANAGER_CONECTED) {
+					
+						logger.debug("module manager still conected");
+
+					} else if (mmState == MODULE_MANAGER_DISCONECTED) {
+					
+						logger.debug("module manager now conected");
+					
+						mmState = MODULE_MANAGER_CONECTED;
+					}
+				
+				} catch (Exception ex) {
+			
+					logger.debug("module manager now disconected");
+					
+					mmState = MODULE_MANAGER_DISCONECTED;
+					kernel.handle(new ModuleManagerDisconectedEvent());
+				}
+			}
 			
 			try {
-				Thread.currentThread().sleep(Defaults.MODULER_INTERVAL);
+				Thread.sleep(Defaults.MODULER_INTERVAL);
 			} catch (InterruptedException ignored) {
 			}
 		}
@@ -84,11 +147,16 @@ public class Moduler extends AbstractDriver implements Driver, Activable, Runnab
 		}
 	}
 	
-	private void initModuleManager() {
-		
-	}
-	
 	private void disposeModuleManager() {
+		
+		kernel.handle(new InvokationEvent() {
+			@Override
+			public void run() {
+				kernel.disposeModuleManager();
+			}
+		});
+		
+		mmState = MODULE_MANAGER_DISCONECTED;
 		
 	}
 }

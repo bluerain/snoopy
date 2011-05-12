@@ -24,6 +24,7 @@ import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
+import com.googlecode.snoopyd.core.event.ModuleManagerConnectedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
@@ -50,9 +51,11 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	public void handle(NetworkEnabledEvent event) {
 
 		kernel.enable(KernelStatus.NETWORKABLE);
-		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
-
-	}
+		
+		if (kernel.statuses().equals(EnumSet.of(KernelStatus.NETWORKABLE, KernelStatus.MODULABLE))) {
+			kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
+		}
+	}		
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
@@ -98,12 +101,14 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	public void handle(ParentNodeDeadedEvent event) {
 
 	}
-
+	
 	@Override
-	public void handle(KernelStateChangedEvent event) {
+	public void handle(ModuleManagerConnectedEvent event) {
+	
+		kernel.enable(KernelStatus.MODULABLE);
 		
 		if (kernel.statuses().equals(EnumSet.of(KernelStatus.NETWORKABLE, KernelStatus.MODULABLE))) {
-			super.handle(event);
+			kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 		}
 	}
 }

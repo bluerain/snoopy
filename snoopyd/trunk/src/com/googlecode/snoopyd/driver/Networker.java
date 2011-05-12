@@ -147,7 +147,7 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	}
 
 	@Override
-	public void activate() {
+	public synchronized void  activate() {
 
 		started = true;
 
@@ -156,7 +156,7 @@ public class Networker extends AbstractDriver implements Driver, Activable,
 	}
 
 	@Override
-	public void deactivate() {
+	public synchronized void deactivate() {
 
 		started = false;
 

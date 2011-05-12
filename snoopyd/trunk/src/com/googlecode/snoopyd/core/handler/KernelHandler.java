@@ -19,6 +19,7 @@ package com.googlecode.snoopyd.core.handler;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.ModuleManagerConnectedEvent;
@@ -54,5 +55,7 @@ public interface KernelHandler {
 	public void handle(ModuleManagerConnectedEvent event);
 	
 	public void handle(ModuleManagerDisconectedEvent event);
+	
+	public void handle(InvokationEvent event);
 
 }

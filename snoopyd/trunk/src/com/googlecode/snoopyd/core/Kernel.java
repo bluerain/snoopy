@@ -231,6 +231,10 @@ public class Kernel implements Runnable {
 	public KernelState state() {
 		return state;
 	}
+	
+	public IModuleManagerPrx moduleManager() {
+		return moduleManager;
+	}
 
 	public void toogle(KernelState kernelState) {
 
@@ -340,7 +344,7 @@ public class Kernel implements Runnable {
 				
 				KernelEvent event = pool.poll();
 
-				logger.debug("handle " + event.getClass().getSimpleName() + " with " + state.handler().getClass().getSimpleName());
+				logger.debug("handle " + event.name() + " with " + state.handler().getClass().getSimpleName());
 
 				state.handler().handle(event);
 
@@ -486,7 +490,10 @@ public class Kernel implements Runnable {
 //		}
 //	}
 	
-	private void initModuleManager() {
+	public void initModuleManager() {
+		
+		checkKernelThread();
+		
 		try {
 
 			moduleManager = IModuleManagerPrxHelper.checkedCast(communicator.propertyToProxy("ModuleManager.Proxy"));
@@ -494,5 +501,12 @@ public class Kernel implements Runnable {
 		} catch (Ice.ConnectionRefusedException ex) {
 			throw new KernelException("could not connect to module manager");
 		}
+	}
+	
+	public void disposeModuleManager() {
+		
+		checkKernelThread();
+
+		moduleManager = null;
 	}
 }
