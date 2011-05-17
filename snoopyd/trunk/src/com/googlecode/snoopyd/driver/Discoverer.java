@@ -44,7 +44,12 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 	}
 
 	public void discover(Ice.Identity identity, Map<String, String> context) {
-		logger.debug("recive discover from " + Identities.toString(identity));
+		StringBuilder sb = new StringBuilder();
+		for (String key: context.keySet()) {
+			sb.append(key + "=" + context.get(key) + ":");
+		}
+		
+		logger.debug("recive discover (" + sb.toString() + ") from " + Identities.toString(identity));
 
 		kernel.handle(new DiscoverRecivedEvent(identity, context));
 	}
@@ -111,6 +116,7 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 
 				context.put("identity", Identities.toString(kernel.identity()));
 				context.put("hostname", kernel.hostname());
+				context.put("os", kernel.os());
 				context.put("rate", String.valueOf(kernel.rate()));
 				context.put("primary", kernel.primaryPublishedEndpoints());
 				context.put("secondary", kernel.secondaryPublishedEndpoints());
@@ -131,8 +137,6 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 				}
 
 				context.put("parents", sbparents.toString());
-
-				context.put("modules", "");
 
 				try {
 					dmulticast.discover(kernel.identity(), context);

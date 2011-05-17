@@ -61,6 +61,7 @@ import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 import com.googlecode.snoopymm.IModuleManagerPrx;
 import com.googlecode.snoopymm.IModuleManagerPrxHelper;
+import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class Kernel implements Runnable {
 	
@@ -176,6 +177,10 @@ public class Kernel implements Runnable {
 		} catch (UnknownHostException ex) {
 			return "localhost";
 		}
+	}
+	
+	public String os() {
+		return System.getProperty("os.name");
 	}
 	
 	public Map<String, String> context() {
@@ -512,7 +517,7 @@ public class Kernel implements Runnable {
 		checkKernelThread();
 		
 		try {
-
+			
 			moduleManager = IModuleManagerPrxHelper.checkedCast(communicator.propertyToProxy("ModuleManager.Proxy"));
 			
 		} catch (Ice.ConnectionRefusedException ex) {
