@@ -21,6 +21,8 @@
 
 module com { module googlecode { module snoopyd {
 
+	//["java:serializable:java.util.Date"] sequence<byte> JavaUtilDate;
+
 	module driver
 	{
 		interface IHoster;
@@ -28,9 +30,9 @@ module com { module googlecode { module snoopyd {
 		interface ISessionier;
 		interface IController;
 		interface IModuler;
-		interface IInvoker;
 		interface IScheduler;
 		interface IResulter;
+		interface IConfigurer;
 			
 	};
 
@@ -44,17 +46,16 @@ module com { module googlecode { module snoopyd {
 		
 		interface IKernelSession extends ISession
 		{
-			
-				
-			void helloKernel();
+			driver::IModuler* moduler();
+			driver::IResulter* resulter();
 		};
 	
 		interface IUserSession extends ISession
 		{
 			driver::IHoster* hoster();
 			driver::IController* controller();
-		
-			void helloUser();
+			driver::IModuler* moduler();
+			driver::IConfigurer* configurer();
 		};
 	
 	};
@@ -63,6 +64,7 @@ module com { module googlecode { module snoopyd {
 	{
 		
 		dictionary<string, string> StringMap; 
+		sequence<string> StringArray;
 		
  		interface IDiscoverer 
  		{
@@ -87,23 +89,31 @@ module com { module googlecode { module snoopyd {
  		
  		interface IModuler
  		{
- 			void deploy(string id, string code);
- 			void undeploy(string id);
+ 			StringMap fetch();
+ 			void deploy(string muid, string code);
+ 			void undeploy(string muid);
+		
+			void launch(string muid, StringArray params);
+			 			
  		};
  		
- 		interface IInvoker
+ 		interface IScheduler
  		{
- 			void invoke(StringMap invokation);  			
- 		};
- 		
- 		interface ISheduler
- 		{
- 		
+ 			StringMap timetable();
+ 			
+ 			void scheduleWithDelay(string muid, long delay);
+ 			//void scheduleWithDate(string muid, JavaUtilDate date);
+ 			
  		};
  		
  		interface IResulter
  		{
-
+			void store();
+ 		};
+ 		
+ 		interface IConfigurer
+ 		{
+ 			void reconfigure(StringMap configuration);
  		};
  		
 	}; 
