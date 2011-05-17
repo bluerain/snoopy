@@ -19,12 +19,10 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
-import com.googlecode.snoopyd.core.state.PassiveState;
 
 public class Scheduler extends AbstractDriver implements Driver, Startable,
 		KernelListener {

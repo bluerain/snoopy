@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.hyperic.sigar.NetInfo;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
@@ -32,7 +31,7 @@ public class Hoster extends AbstractDriver implements Driver {
 	private Sigar sigar;
 	
 	public Hoster(Kernel kernel) {
-		super(Networker.class.getSimpleName(), kernel);
+		super(Hoster.class.getSimpleName(), kernel);
 		
 		this.sigar = new Sigar();
 	}

@@ -15,6 +15,8 @@
  */
 package com.googlecode.snoopyd.driver;
 
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
@@ -44,6 +46,9 @@ public class Moduler extends AbstractDriver implements Driver, Activable, Runnab
 		this.started = false;
 	}
 	
+	public Map<String, String> fetch() {
+		return kernel.moduleManager().fetch();
+	}
 
 	@Override
 	public synchronized void activate() {

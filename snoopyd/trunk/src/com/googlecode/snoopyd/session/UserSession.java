@@ -16,15 +16,23 @@
 
 package com.googlecode.snoopyd.session;
 
+import com.googlecode.snoopyd.adapter.ConfigurerAdapter;
 import com.googlecode.snoopyd.adapter.ControllerAdapter;
 import com.googlecode.snoopyd.adapter.HosterAdapter;
+import com.googlecode.snoopyd.adapter.ModulerAdapter;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.driver.Configurer;
 import com.googlecode.snoopyd.driver.Controller;
 import com.googlecode.snoopyd.driver.Hoster;
+import com.googlecode.snoopyd.driver.IConfigurerPrx;
+import com.googlecode.snoopyd.driver.IConfigurerPrxHelper;
 import com.googlecode.snoopyd.driver.IControllerPrx;
 import com.googlecode.snoopyd.driver.IControllerPrxHelper;
 import com.googlecode.snoopyd.driver.IHosterPrx;
 import com.googlecode.snoopyd.driver.IHosterPrxHelper;
+import com.googlecode.snoopyd.driver.IModulerPrx;
+import com.googlecode.snoopyd.driver.IModulerPrxHelper;
+import com.googlecode.snoopyd.driver.Moduler;
 
 public class UserSession {
 
@@ -56,8 +64,23 @@ public class UserSession {
 		return remoteController;
 	}
 
-	public void helloUser() {
-		System.out.println("HELO USER!");
+	public IModulerPrx moduler() {
+
+		IModulerPrx remoteModuler = IModulerPrxHelper.uncheckedCast(kernel
+				.primary().addWithUUID(
+						new ModulerAdapter((Moduler) kernel
+								.driver(Moduler.class))));
+
+		return remoteModuler;
 	}
 
+	public IConfigurerPrx configurer() {
+
+		IConfigurerPrx remoteConfigurer = IConfigurerPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
+						new ConfigurerAdapter((Configurer) kernel
+								.driver(Configurer.class))));
+
+		return remoteConfigurer;
+	}
 }

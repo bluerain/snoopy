@@ -13,44 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.googlecode.snoopyd.adapter;
 
-package com.googlecode.snoopyd.session;
-
-import com.googlecode.snoopyd.driver.IModulerPrx;
-import com.googlecode.snoopyd.driver.IResulterPrx;
+import java.util.Map;
 
 import Ice.Current;
 
-public class KernelSessionAdapter extends _IKernelSessionDisp {
+import com.googlecode.snoopyd.driver.Moduler;
+import com.googlecode.snoopyd.driver._IModulerDisp;
 
-	private KernelSession kernelSession;
+public class ModulerAdapter extends _IModulerDisp {
+
+	private Moduler moduler;
 	
-	public KernelSessionAdapter(KernelSession kernelSession) {
-		this.kernelSession = kernelSession;
+	public ModulerAdapter(Moduler moduler) {
+		this.moduler = moduler;
 	}
 
 	@Override
-	public void destroy(Current __current) {
+	public Map<String, String> fetch(Current __current) {
+		return moduler.fetch();
+	}
+
+	@Override
+	public void deploy(String muid, String code, Current __current) {
+		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void refresh(Current __current) {
-
+	public void undeploy(String muid, Current __current) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public IModulerPrx moduler(Current __current) {
+	public void launch(String muid, String[] params, Current __current) {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
-
-	@Override
-	public IResulterPrx resulter(Current __current) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	
-	
 }

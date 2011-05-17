@@ -28,6 +28,10 @@ import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.PassiveState;
 
+/*
+ * TODO: remove it
+ */
+
 public class Invoker extends AbstractDriver implements Driver, Runnable,
 		Startable, KernelListener {
 
