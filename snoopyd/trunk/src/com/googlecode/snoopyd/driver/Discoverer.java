@@ -91,13 +91,17 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 	@Override
 	public void run() {
 
-		IDiscovererPrx dmulticast = IDiscovererPrxHelper.uncheckedCast(kernel
-				.communicator().propertyToProxy("Discoverer.Multicast"));
-		dmulticast = IDiscovererPrxHelper.checkedCast(dmulticast.ice_datagram());
-		
-		IDiscovererPrx cpmulticast = IDiscovererPrxHelper.uncheckedCast(kernel
-				.communicator().propertyToProxy("ControlPanel.Multicast"));
-		cpmulticast = IDiscovererPrxHelper.checkedCast(cpmulticast.ice_datagram());
+		com.googlecode.snoopyd.driver.IDiscovererPrx dmulticast = com.googlecode.snoopyd.driver.IDiscovererPrxHelper
+				.uncheckedCast(kernel.communicator().propertyToProxy(
+						"Discoverer.Multicast"));
+		dmulticast = com.googlecode.snoopyd.driver.IDiscovererPrxHelper
+				.checkedCast(dmulticast.ice_datagram());
+
+		com.googlecode.snoopycp.core.IDiscovererPrx cpmulticast = com.googlecode.snoopycp.core.IDiscovererPrxHelper
+				.uncheckedCast(kernel.communicator().propertyToProxy(
+						"ControlPanel.Multicast"));
+		cpmulticast = com.googlecode.snoopycp.core.IDiscovererPrxHelper
+				.checkedCast(cpmulticast.ice_datagram());
 
 		try {
 
@@ -111,21 +115,21 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 				context.put("primary", kernel.primaryPublishedEndpoints());
 				context.put("secondary", kernel.secondaryPublishedEndpoints());
 				context.put("state", kernel.state().getClass().getSimpleName());
-				
+
 				StringBuilder sbchilds = new StringBuilder();
-				for (Ice.Identity identity: kernel.childs().keySet()) {
+				for (Ice.Identity identity : kernel.childs().keySet()) {
 					sbchilds.append(Identities.toString(identity));
 					sbchilds.append(";");
 				}
-				
+
 				context.put("childs", sbchilds.toString());
-				
+
 				StringBuilder sbparents = new StringBuilder();
-				for (Ice.Identity identity: kernel.parents().keySet()) {
+				for (Ice.Identity identity : kernel.parents().keySet()) {
 					sbparents.append(Identities.toString(identity));
 					sbparents.append(";");
 				}
-				
+
 				context.put("parents", sbparents.toString());
 
 				context.put("modules", "");
@@ -154,10 +158,11 @@ public class Discoverer extends AbstractDriver implements Driver, Runnable,
 			if (!started) {
 				start();
 			}
-		} else if (currentState instanceof OfflineState || currentState instanceof SuspenseState) {
+		} else if (currentState instanceof OfflineState
+				|| currentState instanceof SuspenseState) {
 			if (started) {
 				stop();
 			}
-		} 
+		}
 	}
 }
