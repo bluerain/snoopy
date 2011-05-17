@@ -37,6 +37,9 @@ import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.filter.KernelFilter;
+import com.googlecode.snoopyd.core.filter.KernelFilter.FilterAction;
+import com.googlecode.snoopyd.core.filter.ToogleFilter;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.SuspenseState;
@@ -72,9 +75,6 @@ public class Kernel implements Runnable {
 		}
 	}
 	
-	/*
-	 * this code should be refactored 
-	 */
 	public static enum KernelStatus {
 		NETWORKABLE, MODULABLE		
 	}
@@ -110,6 +110,7 @@ public class Kernel implements Runnable {
 	private Map<Ice.Identity, Map<String, String>> cache;
 
 	private List<KernelListener> kernelListeners;
+	private List<KernelFilter> kernelFilters;
 	
 	private HashMap<UUID, Module> modules; 
 	
@@ -157,16 +158,13 @@ public class Kernel implements Runnable {
 
 		logger.debug("init kernel listeners");
 		initKernelListeners();
+		
+		logger.debug("init kernel filters");
+		initKernelFilters();
 
 		logger.debug("init kernel rate");
 		initKernelRate();
 		
-//		logger.debug("init kernel modules");
-//		initKernelModules();
-//		
-//		logger.debug("connecting to module manager");
-//		initModuleManager();
-//		
 		logger.debug("starting kernel thread");
 		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
 		self.start();
@@ -343,11 +341,24 @@ public class Kernel implements Runnable {
 			for (; !pool.isEmpty();) {
 				
 				KernelEvent event = pool.poll();
-
-				logger.debug("handle " + event.name() + " with " + state.handler().getClass().getSimpleName());
-
-				state.handler().handle(event);
-
+				
+				boolean eventFiltered = false;
+				KernelFilter usedFilter = null;
+				
+				for (KernelFilter filter: kernelFilters) {
+					if (FilterAction.REJECT == filter.accept(event)) {
+						eventFiltered = true;
+						usedFilter = filter;
+						break;
+					}
+				}
+				
+				if (eventFiltered) {
+					logger.debug("filter " + event.name() + " with " + usedFilter.getClass().getSimpleName());
+				} else {
+					logger.debug("handle " + event.name() + " with " + state.handler().getClass().getSimpleName());
+					state.handler().handle(event);
+				}
 			}
 
 			synchronized (this) {
@@ -460,6 +471,12 @@ public class Kernel implements Runnable {
 				kernelListeners.add((KernelListener) driver);
 			}
 		}
+	}
+	
+	private void initKernelFilters() {
+		kernelFilters = new LinkedList<KernelFilter>();
+		
+		kernelFilters.add(new ToogleFilter(this));
 	}
 	
 	private void initKernelRate() {

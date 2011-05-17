@@ -51,10 +51,7 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	public void handle(NetworkEnabledEvent event) {
 
 		kernel.enable(KernelStatus.NETWORKABLE);
-		
-		if (kernel.statuses().equals(EnumSet.of(KernelStatus.NETWORKABLE, KernelStatus.MODULABLE))) {
-			kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
-		}
+		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}		
 
 	@Override
@@ -106,9 +103,6 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	public void handle(ModuleManagerConnectedEvent event) {
 	
 		kernel.enable(KernelStatus.MODULABLE);
-		
-		if (kernel.statuses().equals(EnumSet.of(KernelStatus.NETWORKABLE, KernelStatus.MODULABLE))) {
-			kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
-		}
+		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}
 }

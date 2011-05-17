@@ -29,7 +29,6 @@ import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.core.state.SuspenseState;
-import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 
 public class Discoverer extends AbstractDriver implements Driver, Runnable,
