@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.snoopyd.driver;
+package com.googlecode.snoopyd.adapter;
 
-import java.util.Map;
+import Ice.Current;
 
-import org.apache.log4j.Logger;
+import com.googlecode.snoopyd.driver.Resulter;
+import com.googlecode.snoopyd.driver._IResulterDisp;
 
-import com.googlecode.snoopyd.core.Kernel;
+public class ResulterAdapter extends _IResulterDisp {
 
-public class Configurer extends AbstractDriver implements Driver {
+	private Resulter resulter;
 	
-	private static Logger logger = Logger.getLogger(Configurer.class);
-	
-	public Configurer(Kernel kernel) {
-		super(Configurer.class.getSimpleName(), kernel);
+	public ResulterAdapter(Resulter resulter) {
+		this.resulter = resulter;
 	}
-	
-	public void reconfigure(Map<String, String> configuration) {
-		
+
+	@Override
+	public void store(Current __current) {
+		resulter.store();
 	}
+
 }

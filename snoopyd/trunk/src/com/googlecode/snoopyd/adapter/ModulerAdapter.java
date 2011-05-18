@@ -21,6 +21,7 @@ import Ice.Current;
 
 import com.googlecode.snoopyd.driver.Moduler;
 import com.googlecode.snoopyd.driver._IModulerDisp;
+import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class ModulerAdapter extends _IModulerDisp {
 
@@ -37,19 +38,24 @@ public class ModulerAdapter extends _IModulerDisp {
 
 	@Override
 	public void deploy(String muid, String code, Current __current) {
-		// TODO Auto-generated method stub
-		
+		moduler.deploy(muid, code);
 	}
 
 	@Override
 	public void undeploy(String muid, Current __current) {
-		// TODO Auto-generated method stub
-		
+		try {
+			moduler.undeploy(muid);
+		} catch (ModuleNotFoundException ex) {
+			
+		}
 	}
 
 	@Override
-	public void launch(String muid, String[] params, Current __current) {
-		// TODO Auto-generated method stub
-		
+	public String[] launch(String muid, String[] params, Current __current) {
+		try {
+			return moduler.launch(muid, params);
+		} catch (ModuleNotFoundException ex) {
+			return null;
+		}
 	}
 }

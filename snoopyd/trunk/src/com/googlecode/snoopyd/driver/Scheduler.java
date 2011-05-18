@@ -66,6 +66,10 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		this.timers = new HashMap<String, Timer>();
 		this.params = new HashMap<String, List<String>>();
 	}
+	
+	public void synchronize(Ice.Identity identity, ISchedulerPrx remoteScheduler) {
+		
+	}
 
 	public void schedule(String muid, long delay) {
 
@@ -78,10 +82,14 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 	}
 
 	public Map<String, String> timetable() {
+		// TODO:
+		
 		return null;
 	}
 
 	public Map<String, String> statetable() {
+		// TODO:
+		
 		return null;
 	}
 

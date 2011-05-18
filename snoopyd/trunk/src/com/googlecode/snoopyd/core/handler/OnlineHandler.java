@@ -20,13 +20,14 @@ import java.util.Map;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionRecivedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.OfflineState;
@@ -70,18 +71,6 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	}
 
 	@Override
-	public void handle(ChildSessionSendedEvent event) {
-
-		kernel.handle(new KernelStateChangedEvent(new ActiveState(kernel)));
-		
-	}
-
-	@Override
-	public void handle(ChildSessionRecivedEvent event) {
-		
-	}
-
-	@Override
 	public void handle(DiscoverRecivedEvent event) {
 
 		kernel.cache().put(event.identity(), event.context());
@@ -110,12 +99,11 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 									new KernelSessionAdapter(new KernelSession(
 											kernel))));
 
-			IKernelSessionPrx remoteSession = prx.createKernelSession(
+			IKernelSessionPrx leaderSession = prx.createKernelSession(
 					kernel.identity(), selfSession);
 
-			kernel.parents().put(leaderIdentity, remoteSession);
-
-			kernel.handle(new KernelStateChangedEvent(new PassiveState(kernel)));
+			kernel.handle(new ChildSessionSendedEvent(kernel.identity(), selfSession));
+			kernel.handle(new ParentSessionRecivedEvent(leaderIdentity, leaderSession));
 		}
 	}
 
@@ -127,5 +115,22 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ScheduleTimeComeEvent event) {
 		
+	}
+
+	@Override
+	public void handle(ParentSessionRecivedEvent event) {
+		super.handle(event);
+		
+		if (event.identity().equals(kernel.identity())) {
+			kernel.handle(new KernelStateChangedEvent(new ActiveState(kernel)));
+		} else {
+			kernel.handle(new KernelStateChangedEvent(new PassiveState(kernel)));
+		}
+	}
+
+	@Override
+	public void handle(ParentSessionSendedEvent event) {
+		super.handle(event);
+		kernel.handle(new KernelStateChangedEvent(new ActiveState(kernel)));
 	}
 }

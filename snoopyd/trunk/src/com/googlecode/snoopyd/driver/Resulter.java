@@ -26,4 +26,8 @@ public class Resulter extends AbstractDriver implements Driver {
 	public Resulter(Kernel kernel) {
 		super(Resulter.class.getSimpleName(), kernel);
 	}
+	
+	public void store() {
+		
+	}
 }

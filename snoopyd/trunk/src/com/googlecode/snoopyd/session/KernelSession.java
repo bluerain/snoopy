@@ -16,18 +16,56 @@
 
 package com.googlecode.snoopyd.session;
 
+import com.googlecode.snoopyd.adapter.ModulerAdapter;
+import com.googlecode.snoopyd.adapter.ResulterAdapter;
+import com.googlecode.snoopyd.adapter.SchedulerAdapter;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.driver.IModulerPrx;
+import com.googlecode.snoopyd.driver.IModulerPrxHelper;
+import com.googlecode.snoopyd.driver.IResulterPrx;
+import com.googlecode.snoopyd.driver.IResulterPrxHelper;
+import com.googlecode.snoopyd.driver.ISchedulerPrx;
+import com.googlecode.snoopyd.driver.ISchedulerPrxHelper;
+import com.googlecode.snoopyd.driver.Moduler;
+import com.googlecode.snoopyd.driver.Resulter;
+import com.googlecode.snoopyd.driver.Scheduler;
 
 public class KernelSession {
 
 	private Kernel kernel;
-	
+
 	public KernelSession(Kernel kernel) {
 		this.kernel = kernel;
 	}
 
-	public void helloKernel() {
-		System.out.println("HELO KERNEL!");		
+	public ISchedulerPrx scheduler() {
+
+		ISchedulerPrx remoteScheduler = ISchedulerPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
+						new SchedulerAdapter((Scheduler) kernel
+								.driver(Scheduler.class))));
+
+		return remoteScheduler;
 	}
-	
+
+	public IModulerPrx moduler() {
+
+		IModulerPrx remoteModuler = IModulerPrxHelper.uncheckedCast(kernel
+				.primary().addWithUUID(
+						new ModulerAdapter((Moduler) kernel
+								.driver(Moduler.class))));
+
+		return remoteModuler;
+	}
+
+	public IResulterPrx resulter() {
+
+		IResulterPrx remoteResulter = IResulterPrxHelper.uncheckedCast(kernel
+				.primary().addWithUUID(
+						new ResulterAdapter((Resulter) kernel
+								.driver(Resulter.class))));
+
+		return remoteResulter;
+
+	}
 }

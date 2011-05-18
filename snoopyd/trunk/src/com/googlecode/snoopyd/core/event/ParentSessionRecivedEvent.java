@@ -16,19 +16,28 @@
 
 package com.googlecode.snoopyd.core.event;
 
+import Ice.Identity;
+
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 
 public class ParentSessionRecivedEvent implements KernelEvent {
 
+	private Ice.Identity identity;
 	private IKernelSessionPrx session;
-	
-	public ParentSessionRecivedEvent(IKernelSessionPrx session) {
+
+	public ParentSessionRecivedEvent(Identity identity,
+			IKernelSessionPrx session) {
+		this.identity = identity;
 		this.session = session;
 	}
 
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();
+	}
+	
+	public Ice.Identity identity() {
+		return identity;
 	}
 	
 	public IKernelSessionPrx sesssion() {

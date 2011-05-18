@@ -20,6 +20,7 @@ import com.googlecode.snoopyd.adapter.ConfigurerAdapter;
 import com.googlecode.snoopyd.adapter.ControllerAdapter;
 import com.googlecode.snoopyd.adapter.HosterAdapter;
 import com.googlecode.snoopyd.adapter.ModulerAdapter;
+import com.googlecode.snoopyd.adapter.SchedulerAdapter;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.driver.Configurer;
 import com.googlecode.snoopyd.driver.Controller;
@@ -32,7 +33,10 @@ import com.googlecode.snoopyd.driver.IHosterPrx;
 import com.googlecode.snoopyd.driver.IHosterPrxHelper;
 import com.googlecode.snoopyd.driver.IModulerPrx;
 import com.googlecode.snoopyd.driver.IModulerPrxHelper;
+import com.googlecode.snoopyd.driver.ISchedulerPrx;
+import com.googlecode.snoopyd.driver.ISchedulerPrxHelper;
 import com.googlecode.snoopyd.driver.Moduler;
+import com.googlecode.snoopyd.driver.Scheduler;
 
 public class UserSession {
 
@@ -82,5 +86,16 @@ public class UserSession {
 								.driver(Configurer.class))));
 
 		return remoteConfigurer;
+	}
+
+	public ISchedulerPrx scheduler() {
+
+		ISchedulerPrx remoteScheduler = ISchedulerPrxHelper
+				.uncheckedCast(kernel.primary().addWithUUID(
+						new SchedulerAdapter((Scheduler) kernel
+								.driver(Scheduler.class))));
+
+		return remoteScheduler;
+
 	}
 }

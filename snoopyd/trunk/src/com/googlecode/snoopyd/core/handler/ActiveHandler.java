@@ -20,8 +20,6 @@ import Ice.ConnectionRefusedException;
 
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.Kernel.KernelException;
-import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
-import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.ExceptionEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
@@ -32,6 +30,7 @@ import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
+import com.googlecode.snoopyd.driver.IModulerPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
@@ -39,7 +38,6 @@ import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
 import com.googlecode.snoopyd.util.Identities;
-import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
@@ -77,18 +75,6 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 	}
 
 	@Override
-	public void handle(ChildSessionSendedEvent event) {
-
-	}
-
-	@Override
-	public void handle(ChildSessionRecivedEvent event) {
-		
-		kernel.childs().put(event.identity(), event.session());
-		
-	}
-
-	@Override
 	public void handle(DiscoverRecivedEvent event) {
 		kernel.cache().put(event.identity(), event.context());
 	}
@@ -110,8 +96,10 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 			@Override
 			public void run() {
 				try {
-					kernel.moduleManager().launch(fevent.muid(), fevent.params());
-				} catch (ModuleNotFoundException ex) {
+					
+					IKernelSessionPrx session = (IKernelSessionPrx) kernel.childs().get(kernel.identity());
+					IModulerPrx moduler = session.moduler();
+					moduler.launch(fevent.muid(), fevent.params());
 					
 				} catch (ConnectionRefusedException ex) {
 					kernel.handle(new ExceptionEvent(new KernelException("could not connect to module manager")));

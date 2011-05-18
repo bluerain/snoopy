@@ -20,8 +20,14 @@ import com.googlecode.snoopyd.session.IKernelSessionPrx;
 
 public class ParentSessionSendedEvent implements KernelEvent {
 
+	private Ice.Identity identity;
 	private IKernelSessionPrx session;
-	
+
+	public ParentSessionSendedEvent(Ice.Identity identity, IKernelSessionPrx session) {
+		this.identity = identity;
+		this.session = session;
+	}
+
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();
@@ -29,5 +35,9 @@ public class ParentSessionSendedEvent implements KernelEvent {
 
 	public IKernelSessionPrx session() {
 		return session;
+	}
+	
+	public Ice.Identity identity() {
+		return identity;
 	}
 }

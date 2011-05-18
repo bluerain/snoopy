@@ -26,7 +26,10 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionRecivedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
+import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 
@@ -57,5 +60,11 @@ public interface KernelHandler {
 	public void handle(ScheduleTimeComeEvent event);
 	
 	public void handle(ExceptionEvent event);
+	
+	public void handle(ScheduleUpdatedEvent event);
+	
+	public void handle(ParentSessionRecivedEvent event);
+	
+	public void handle(ParentSessionSendedEvent event);
 
 }
