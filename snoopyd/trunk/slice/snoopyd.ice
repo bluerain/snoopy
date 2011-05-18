@@ -48,6 +48,7 @@ module com { module googlecode { module snoopyd {
 		{
 			driver::IModuler* moduler();
 			driver::IResulter* resulter();
+			driver::IScheduler* scheduler();
 		};
 	
 		interface IUserSession extends ISession
@@ -56,6 +57,7 @@ module com { module googlecode { module snoopyd {
 			driver::IController* controller();
 			driver::IModuler* moduler();
 			driver::IConfigurer* configurer();
+			driver::IScheduler* scheduler();
 		};
 	
 	};
@@ -93,7 +95,7 @@ module com { module googlecode { module snoopyd {
  			void deploy(string muid, string code);
  			void undeploy(string muid);
 		
-			void launch(string muid, StringArray params);
+			StringArray launch(string muid, StringArray params);
 			 			
  		};
  		
