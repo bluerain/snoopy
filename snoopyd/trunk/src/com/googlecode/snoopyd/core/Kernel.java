@@ -20,7 +20,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +34,6 @@ import Ice.Identity;
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
-import com.googlecode.snoopyd.adapter.ModulerAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.filter.KernelFilter;
@@ -51,7 +49,6 @@ import com.googlecode.snoopyd.driver.Controller;
 import com.googlecode.snoopyd.driver.Discoverer;
 import com.googlecode.snoopyd.driver.Driver;
 import com.googlecode.snoopyd.driver.Hoster;
-import com.googlecode.snoopyd.driver.Invoker;
 import com.googlecode.snoopyd.driver.Moduler;
 import com.googlecode.snoopyd.driver.Networker;
 import com.googlecode.snoopyd.driver.Resulter;
@@ -63,7 +60,6 @@ import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 import com.googlecode.snoopymm.IModuleManagerPrx;
 import com.googlecode.snoopymm.IModuleManagerPrxHelper;
-import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class Kernel implements Runnable {
 
@@ -76,10 +72,6 @@ public class Kernel implements Runnable {
 		public KernelException(String msg) {
 			super(msg);
 		}
-	}
-
-	public static enum KernelStatus {
-		NETWORKABLE, MODULABLE
 	}
 
 	public static Logger logger = Logger.getLogger(Kernel.class);
@@ -95,8 +87,6 @@ public class Kernel implements Runnable {
 	private Thread self;
 
 	private KernelState state;
-
-	private EnumSet<KernelStatus> statuses;
 
 	private int rate;
 
@@ -120,8 +110,6 @@ public class Kernel implements Runnable {
 	private IModuleManagerPrx moduleManager;
 
 	public Kernel(Ice.Communicator communicator) throws KernelException {
-
-		this.statuses = EnumSet.noneOf(KernelStatus.class);
 
 		this.rate = Integer.MIN_VALUE;
 
@@ -258,25 +246,6 @@ public class Kernel implements Runnable {
 		}
 	}
 
-	public void enable(KernelStatus status) {
-
-		checkKernelThread();
-
-		statuses.add(status);
-
-	}
-
-	public void disable(KernelStatus status) {
-
-		checkKernelThread();
-
-		statuses.remove(status);
-	}
-
-	public EnumSet<KernelStatus> statuses() {
-		return statuses;
-	}
-
 	public void init() {
 
 		checkKernelThread();
@@ -290,13 +259,14 @@ public class Kernel implements Runnable {
 			}
 		}
 
-		// for (Driver drv: drivers.values()) {
-		//
-		// if (drv instanceof Startable) {
-		// logger.debug("... starting " + drv.name());
-		// ((Startable) drv).start();
-		// }
-		// }
+		try {
+
+			moduleManager = IModuleManagerPrxHelper.checkedCast(communicator
+					.propertyToProxy("ModuleManager.Proxy"));
+
+		} catch (Ice.ConnectionRefusedException ex) {
+			throw new KernelException("could not connect to module manager");
+		}
 
 		primary.activate();
 		secondary.activate();
@@ -315,6 +285,7 @@ public class Kernel implements Runnable {
 			}
 		}
 
+		// TODO: remove it
 		for (Driver drv : drivers.values()) {
 			if (drv instanceof Startable) {
 				if (((Startable) drv).started()) {
@@ -342,40 +313,46 @@ public class Kernel implements Runnable {
 	@Override
 	public void run() {
 
-		for (;;) {
+		try {
 
-			for (; !pool.isEmpty();) {
+			for (;;) {
 
-				KernelEvent event = pool.poll();
+				for (; !pool.isEmpty();) {
 
-				boolean eventFiltered = false;
-				KernelFilter usedFilter = null;
+					KernelEvent event = pool.poll();
 
-				for (KernelFilter filter : kernelFilters) {
-					if (FilterAction.REJECT == filter.accept(event)) {
-						eventFiltered = true;
-						usedFilter = filter;
-						break;
+					boolean eventFiltered = false;
+					KernelFilter usedFilter = null;
+
+					for (KernelFilter filter : kernelFilters) {
+						if (FilterAction.REJECT == filter.accept(event)) {
+							eventFiltered = true;
+							usedFilter = filter;
+							break;
+						}
+					}
+
+					if (eventFiltered) {
+						logger.debug("filter " + event.name() + " with "
+								+ usedFilter.getClass().getSimpleName());
+					} else {
+						logger.debug("handle " + event.name() + " with "
+								+ state.handler().getClass().getSimpleName());
+						state.handler().handle(event);
 					}
 				}
 
-				if (eventFiltered) {
-					logger.debug("filter " + event.name() + " with "
-							+ usedFilter.getClass().getSimpleName());
-				} else {
-					logger.debug("handle " + event.name() + " with "
-							+ state.handler().getClass().getSimpleName());
-					state.handler().handle(event);
+				synchronized (this) {
+					try {
+						wait();
+					} catch (InterruptedException ignored) {
+					}
 				}
 			}
 
-			synchronized (this) {
-				try {
-					wait();
-				} catch (InterruptedException ignored) {
-				}
-			}
-
+		} catch (KernelException ex) {
+			logger.error(ex.getMessage());
+			dispose();
 		}
 	}
 
@@ -437,7 +414,6 @@ public class Kernel implements Runnable {
 		drivers.put(Scheduler.class, new Scheduler(this));
 		drivers.put(Resulter.class, new Resulter(this));
 		drivers.put(Moduler.class, new Moduler(this));
-		// drivers.put(Invoker.class, new Invoker(this));
 		drivers.put(Configurer.class, new Configurer(this));
 
 	}
@@ -496,45 +472,5 @@ public class Kernel implements Runnable {
 		int mhz = Integer.parseInt(context.get("Mhz"));
 
 		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.BASELINE_RATE) * 10);
-	}
-
-	// private void initKernelModules() {
-	//
-	// modules = new HashMap<UUID, Module>();
-	//
-	// String modulesDir = properties.getProperty("Snoopy.ModulesDir");
-	// // String modulesConfig =
-	// kernel.properties().getProperty("Snoopy.ModulesConfig");
-	//
-	// File dir = new File(modulesDir);
-	// String[] list = dir.list();
-	//
-	// for (String module: list) {
-	//
-	// if (module.indexOf(".py") != -1) {
-	// logger.debug(module);
-	// }
-	// }
-	// }
-
-	public void initModuleManager() {
-
-		checkKernelThread();
-
-		try {
-
-			moduleManager = IModuleManagerPrxHelper.checkedCast(communicator
-					.propertyToProxy("ModuleManager.Proxy"));
-
-		} catch (Ice.ConnectionRefusedException ex) {
-			throw new KernelException("could not connect to module manager");
-		}
-	}
-
-	public void disposeModuleManager() {
-
-		checkKernelThread();
-
-		moduleManager = null;
 	}
 }

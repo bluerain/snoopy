@@ -16,10 +16,15 @@
 
 package com.googlecode.snoopyd.core.handler;
 
+import Ice.ConnectionRefusedException;
+
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.Kernel.KernelException;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.ExceptionEvent;
+import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
@@ -34,6 +39,7 @@ import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
 import com.googlecode.snoopyd.util.Identities;
+import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
@@ -96,6 +102,21 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(ScheduleTimeComeEvent event) {
+
+		final ScheduleTimeComeEvent fevent = event;
 		
+		kernel.handle(new InvokationEvent() {
+			
+			@Override
+			public void run() {
+				try {
+					kernel.moduleManager().launch(fevent.muid(), fevent.params());
+				} catch (ModuleNotFoundException ex) {
+					
+				} catch (ConnectionRefusedException ex) {
+					kernel.handle(new ExceptionEvent(new KernelException("could not connect to module manager")));
+				}
+			}
+		});
 	}
 }

@@ -15,10 +15,22 @@
  */
 package com.googlecode.snoopyd.core.event;
 
-public class ModuleManagerDisconectedEvent implements KernelEvent {
+public class ExceptionEvent implements KernelEvent {
 
+	private Throwable exception;
+
+	public ExceptionEvent(Throwable exception) {
+		super();
+		this.exception = exception;
+	}
+
+	public Throwable exception() {
+		return exception;
+	}
+	
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();
 	}
+
 }
