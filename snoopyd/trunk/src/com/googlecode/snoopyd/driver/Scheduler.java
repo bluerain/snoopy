@@ -58,8 +58,6 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 
 	private boolean started;
 
-	private Timer self;
-
 	public Scheduler(Kernel kernel) {
 		super(Scheduler.class.getSimpleName(), kernel);
 

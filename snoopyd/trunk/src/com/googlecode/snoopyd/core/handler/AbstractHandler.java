@@ -105,7 +105,15 @@ public abstract class AbstractHandler implements KernelHandler {
 	
 	@Override
 	public void handle(ExceptionEvent event) {
-		throw (KernelException) event.exception();
+		
+		if (event.exception() instanceof KernelException) {
+		
+			throw (KernelException) event.exception();
+		
+		} else {
+			
+			kernel.proccess(event.exception());
+		}
 	}
 
 	@Override
