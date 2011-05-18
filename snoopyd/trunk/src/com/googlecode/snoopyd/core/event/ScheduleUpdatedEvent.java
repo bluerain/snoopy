@@ -15,8 +15,10 @@
  */
 package com.googlecode.snoopyd.core.event;
 
-public class ScheduleUpdatedEvent implements KernelEvent {
+import Ice.Identity;
 
+public class ScheduleUpdatedEvent implements KernelEvent {
+	
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();

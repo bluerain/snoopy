@@ -29,6 +29,7 @@ import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ParentSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ParentSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
+import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.PassiveState;
@@ -126,6 +127,8 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 		} else {
 			kernel.handle(new KernelStateChangedEvent(new PassiveState(kernel)));
 		}
+		
+		kernel.handle(new ScheduleUpdatedEvent());
 	}
 
 	@Override

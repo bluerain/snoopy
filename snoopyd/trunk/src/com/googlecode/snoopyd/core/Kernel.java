@@ -36,6 +36,7 @@ import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.filter.KernelFilter;
 import com.googlecode.snoopyd.core.filter.KernelFilter.FilterAction;
 import com.googlecode.snoopyd.core.filter.ToogleFilter;
@@ -55,7 +56,11 @@ import com.googlecode.snoopyd.driver.Resulter;
 import com.googlecode.snoopyd.driver.Scheduler;
 import com.googlecode.snoopyd.driver.Sessionier;
 import com.googlecode.snoopyd.driver.Startable;
+import com.googlecode.snoopyd.session.IKernelSessionPrx;
+import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.ISessionPrx;
+import com.googlecode.snoopyd.session.KernelSession;
+import com.googlecode.snoopyd.session.KernelSessionAdapter;
 import com.googlecode.snoopyd.util.Identities;
 import com.googlecode.snoopymm.IModuleManagerPrx;
 import com.googlecode.snoopymm.IModuleManagerPrxHelper;
@@ -105,6 +110,8 @@ public class Kernel implements Runnable {
 	private List<KernelFilter> kernelFilters;
 
 	private IModuleManagerPrx moduleManager;
+	
+	private IKernelSessionPrx selfSession;
 
 	public Kernel(Ice.Communicator communicator) throws KernelException {
 
@@ -153,6 +160,9 @@ public class Kernel implements Runnable {
 		logger.debug("init kernel rate");
 		initKernelRate();
 
+		logger.debug("init self session");
+		initSelfSession();
+		
 		logger.debug("starting kernel thread");
 		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
 		self.start();
@@ -180,6 +190,10 @@ public class Kernel implements Runnable {
 
 	public int rate() {
 		return rate;
+	}
+	
+	public IKernelSessionPrx self() {
+		return selfSession;
 	}
 
 	public String primaryPublishedEndpoints() {
@@ -362,6 +376,10 @@ public class Kernel implements Runnable {
 		pool.offer(event);
 		notify();
 	}
+	
+	public KernelEvent peek() {
+		return pool.peek();
+	}
 
 	public Driver driver(Class<?> clazz) {
 		return drivers.get(clazz);
@@ -473,5 +491,11 @@ public class Kernel implements Runnable {
 		int mhz = Integer.parseInt(context.get("Mhz"));
 
 		rate = (int) (((ram * 0.5 + mhz * 0.5) / Defaults.BASELINE_RATE) * 10);
+	}
+	
+	private void initSelfSession() {
+		selfSession = IKernelSessionPrxHelper
+		.uncheckedCast(primary().addWithUUID(
+				new KernelSessionAdapter(new KernelSession(this))));
 	}
 }

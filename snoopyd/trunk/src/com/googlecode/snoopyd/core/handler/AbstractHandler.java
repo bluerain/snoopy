@@ -37,6 +37,8 @@ import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
+import com.googlecode.snoopyd.driver.ISchedulerPrx;
+import com.googlecode.snoopyd.session.IKernelSessionPrx;
 
 public abstract class AbstractHandler implements KernelHandler {
 
@@ -121,11 +123,13 @@ public abstract class AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ScheduleUpdatedEvent event) {
 		
-//		Scheduler selfScheduler = (Scheduler) kernel.driver(Scheduler.class);
-//		IKernelSessionPrx remoteSession = (IKernelSessionPrx) event.session();
-//		ISchedulerPrx remoteScheduler = remoteSession.scheduler();
-//		
-//		selfScheduler.synchronize(event.identity(), remoteScheduler);	
+		for (Ice.Identity identity: kernel.parents().keySet()) {
+			
+			IKernelSessionPrx parentSession = (IKernelSessionPrx) kernel.parents().get(identity);
+			ISchedulerPrx parentScheduler = parentSession.scheduler();
+			
+			parentScheduler.synchronize(kernel.identity(), kernel.self().scheduler());
+		}
 	}
 	
 	@Override
@@ -146,13 +150,7 @@ public abstract class AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ChildSessionRecivedEvent event) {
 		kernel.childs().put(event.identity(), event.session());
-		
-//		Scheduler selfScheduler = (Scheduler) kernel.driver(Scheduler.class);
-//		IKernelSessionPrx remoteSession = (IKernelSessionPrx) event.session();
-//		ISchedulerPrx remoteScheduler = remoteSession.scheduler();
-//		
-//		selfScheduler.synchronize(event.identity(), remoteScheduler);
-	}
+	}		
 
 	@Override
 	public void handle(ExceptionEvent event) {
