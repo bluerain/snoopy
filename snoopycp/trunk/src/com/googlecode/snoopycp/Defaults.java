@@ -24,4 +24,6 @@ public final class Defaults {
 	public static final String DEFAULT_CONFIGURATION = "snoopycp.conf";
 
 	public static final String DEFAULT_ADAPTER_NAME = "Adapter";
+        
+        public static final String PATH_TO_SHARE = "/com/googlecode/snoopycp/share/";
 }

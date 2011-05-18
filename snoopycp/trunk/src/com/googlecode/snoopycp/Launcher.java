@@ -17,6 +17,7 @@
 package com.googlecode.snoopycp;
 
 import com.googlecode.snoopycp.core.Snoopycp;
+import com.googlecode.snoopycp.ui.View;
 
 public class Launcher {
 
@@ -27,6 +28,7 @@ public class Launcher {
                 System.getProperty("snoopycp.configuration", Defaults.DEFAULT_CONFIGURATION));
 
         System.exit(status);
+        //new View2().setVisible(true);
 
     }
 }

@@ -17,27 +17,13 @@ package com.googlecode.snoopycp.model;
 
 import Ice.Identity;
 import com.googlecode.snoopycp.core.Domain;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.Constants;
 import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 public class TreeModel extends DefaultTreeModel implements javax.swing.tree.TreeModel {
 
-    public static class Node {
-
-        public final Ice.Identity identity;
-        public final String name;
-
-        public Node(Identity identity, String name) {
-            this.identity = identity;
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
     private Domain domain;
 
     public TreeModel(Domain domain) {
@@ -47,18 +33,36 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
     }
 
     public void update() {
-
         DefaultMutableTreeNode domainRoot = (DefaultMutableTreeNode) root;
         domainRoot.removeAllChildren();
 
         Set<String> hosts = domain.hosts();
+        String osName = null;
+        Node.OsType os;
+
 
         for (String host : hosts) {
             Ice.Identity identity = domain.enviroment().get(host);
-            if (identity == null) {
-                domainRoot.add(new DefaultMutableTreeNode(new Node(identity, host + " [died]")));
+            osName = domain.osPull().get(identity);
+            if (osName.indexOf("Win") != -1) {
+                os = Node.OsType.WIN;
+            } else if (osName.indexOf("lin") != -1 || osName.indexOf("Lin") != -1) {
+                os = Node.OsType.LIN;
             } else {
-                domainRoot.add(new DefaultMutableTreeNode(new Node(identity, host)));
+                os = Node.OsType.UNKNOWN;
+            }
+
+            DefaultMutableTreeNode node;
+            if (identity == null) {
+                node = new DefaultMutableTreeNode(new Node(identity, host + " [died]", Node.Type.NODE, os), true);
+            } else {
+                node = new DefaultMutableTreeNode(new Node(identity, host, Node.Type.NODE, os), true);
+            }
+            domainRoot.add(node);
+
+            for (String moduleID : domain.moduler(identity).values()) {
+                node.add(new DefaultMutableTreeNode(
+                        new Node(null, moduleID, Node.Type.MODULE, null), false));
             }
         }
     }

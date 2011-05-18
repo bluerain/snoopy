@@ -18,7 +18,6 @@ package com.googlecode.snoopycp.core;
 
 import Ice.Current;
 import Ice.Identity;
-import com.googlecode.snoopyd.driver._IDiscovererDisp;
 
 public class DiscovererAdapter extends _IDiscovererDisp {
 

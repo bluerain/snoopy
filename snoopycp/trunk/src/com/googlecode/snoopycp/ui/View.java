@@ -1,17 +1,12 @@
-/**
- * Copyright 2011 Snoopy Project
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * View2.java
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Created on 15.05.2011, 19:21:33
  */
 package com.googlecode.snoopycp.ui;
 
@@ -38,11 +33,14 @@ public class View extends javax.swing.JFrame implements Observer {
     private GraphModel graphModel;
     private VisualizationViewer<String, String> visualizationViewer;
     private Layout<String, String> layout;
-
+    private netMapIFrame nmif = new netMapIFrame();
+    
+    /** Creates new form View2 */
     public View() {
         initComponents();
+        this.setLocationRelativeTo(null);
     }
-
+    
     public View(DomainController controller) {
         this();
 
@@ -53,32 +51,19 @@ public class View extends javax.swing.JFrame implements Observer {
         this.graphModel = controller.createGraphModel();
 
         this.tree.setModel(treeModel);
-        this.table.setModel(tableModel);
+        this.tree.setCellRenderer(new IconTreeCellRenderer());
+        //this.table.setModel(tableModel);
 
         this.layout = new FRLayout<String, String>(graphModel.graph(), new Dimension(300, 300));
         this.visualizationViewer = new VisualizationViewer<String, String>(layout);
         this.visualizationViewer.getRenderContext().setVertexLabelTransformer(controller.createLabelTransformer());
         this.visualizationViewer.getRenderContext().setVertexFillPaintTransformer(controller.createFillTransformer());
 
-        this.graphPanel.setLayout(new GridLayout(1, 1));
-        this.graphPanel.add(visualizationViewer);
+        //nmif.graphPanel
+        nmif.add(visualizationViewer);
         //this.graphPanel.updateUI();
 
         update(null, null);
-
-        pack();
-    }
-
-    public void update(Observable o, Object arg) {
-
-        logger.debug("update ui");
-
-        treeModel.update();
-        tree.updateUI();
-
-        graphModel.update();
-        visualizationViewer.updateUI();
-        graphPanel.updateUI();
 
         pack();
     }
@@ -92,108 +77,171 @@ public class View extends javax.swing.JFrame implements Observer {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jToolBar = new javax.swing.JToolBar();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jsp = new javax.swing.JSplitPane();
+        jdp = new javax.swing.JDesktopPane();
+        jscp = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        table = new javax.swing.JTable();
-        graphPanel = new javax.swing.JPanel();
+        jMenuBar = new javax.swing.JMenuBar();
+        menuFile = new javax.swing.JMenu();
+        menuItemExit = new javax.swing.JMenuItem();
+        menuEdit = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        menuNetwork = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        menuHelp = new javax.swing.JMenu();
+        menuItemAbout = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        tree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                treeValueChanged(evt);
+        jToolBar.setRollover(true);
+
+        jButton1.setText("jButton1");
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar.add(jButton1);
+
+        jButton2.setText("jButton2");
+        jButton2.setFocusable(false);
+        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar.add(jButton2);
+
+        jButton3.setText("jButton3");
+        jButton3.setFocusable(false);
+        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar.add(jButton3);
+
+        jsp.setDividerLocation(130);
+        jsp.setRightComponent(jdp);
+
+        jscp.setViewportView(tree);
+
+        jsp.setLeftComponent(jscp);
+
+        menuFile.setText("File");
+
+        menuItemExit.setText("Exit");
+        menuFile.add(menuItemExit);
+
+        jMenuBar.add(menuFile);
+
+        menuEdit.setText("Edit");
+
+        jMenuItem2.setText("jMenuItem2");
+        menuEdit.add(jMenuItem2);
+
+        jMenuBar.add(menuEdit);
+
+        menuNetwork.setText("Network");
+        menuNetwork.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuNetworkActionPerformed(evt);
             }
         });
-        jScrollPane1.setViewportView(tree);
 
-        table.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane2.setViewportView(table);
-
-        graphPanel.setBackground(new java.awt.Color(255, 255, 255));
-        graphPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                graphPanelComponentResized(evt);
+        jMenuItem1.setText("view full map");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
             }
         });
+        menuNetwork.add(jMenuItem1);
 
-        javax.swing.GroupLayout graphPanelLayout = new javax.swing.GroupLayout(graphPanel);
-        graphPanel.setLayout(graphPanelLayout);
-        graphPanelLayout.setHorizontalGroup(
-            graphPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 455, Short.MAX_VALUE)
-        );
-        graphPanelLayout.setVerticalGroup(
-            graphPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 231, Short.MAX_VALUE)
-        );
+        jMenuBar.add(menuNetwork);
+
+        menuHelp.setText("Help");
+
+        menuItemAbout.setText("About");
+        menuItemAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemAboutActionPerformed(evt);
+            }
+        });
+        menuHelp.add(menuItemAbout);
+
+        jMenuBar.add(menuHelp);
+
+        setJMenuBar(jMenuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
-                .addContainerGap())
+            .addComponent(jToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+            .addComponent(jsp, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(graphPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addComponent(jToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jsp, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
+    private void menuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemAboutActionPerformed
+        AboutDialog ad = new AboutDialog(this, true);
+        ad.setVisible(true);
+    }//GEN-LAST:event_menuItemAboutActionPerformed
 
-        try {
+    private void menuNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNetworkActionPerformed
+    }//GEN-LAST:event_menuNetworkActionPerformed
 
-            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent();
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        
+        nmif.setClosable(true);
+        nmif.setResizable(true);
+        nmif.setSize(400, 150);
+        int x = (this.jdp.getSize().width / 2) - (nmif.getSize().width / 2);
+        int y = (this.jdp.getSize().height / 2) - (nmif.getSize().height / 2);
+        nmif.setLocation(x, y);
+        this.jdp.add(nmif);
+        nmif.show();
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-            TreeModel.Node object = (TreeModel.Node) selectedNode.getUserObject();
-
-            tableModel.update(object.identity);
-            table.updateUI();
-            
-        } catch (ClassCastException ex) {
-        }
-    }//GEN-LAST:event_treeValueChanged
-
-    private void graphPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_graphPanelComponentResized
-        //layout.setSize(graphPanel.getSize());
-        //layout.setLocation(, null)
-        // layout.reset();
-        //layout.initialize();
-        //logger.debug(layout.getSize());
-    }//GEN-LAST:event_graphPanelComponentResized
+    /**
+     * @param args the command line arguments
+     */
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel graphPanel;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable table;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JMenuBar jMenuBar;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JToolBar jToolBar;
+    private javax.swing.JDesktopPane jdp;
+    private javax.swing.JScrollPane jscp;
+    private javax.swing.JSplitPane jsp;
+    private javax.swing.JMenu menuEdit;
+    private javax.swing.JMenu menuFile;
+    private javax.swing.JMenu menuHelp;
+    private javax.swing.JMenuItem menuItemAbout;
+    private javax.swing.JMenuItem menuItemExit;
+    private javax.swing.JMenu menuNetwork;
     private javax.swing.JTree tree;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void update(Observable o, Object o1) {
+        logger.debug("update ui");
+
+        treeModel.update();
+        tree.updateUI();
+
+        graphModel.update();
+        visualizationViewer.updateUI();
+        nmif.updatePanel();
+
+        pack();
+    }
 }

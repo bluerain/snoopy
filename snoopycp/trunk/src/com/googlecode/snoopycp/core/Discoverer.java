@@ -34,6 +34,8 @@ public class Discoverer {
 
         logger.debug("discoverer recieved from " + Identities.toString(identity));
         domain.cacheit(identity, context);
+        
+        //System.out.println("OS type: " + context.get("os"));
 
     }
 
