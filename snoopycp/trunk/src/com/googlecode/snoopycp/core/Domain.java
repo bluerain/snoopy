@@ -21,6 +21,7 @@ import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.util.Identities;
 import com.googlecode.snoopyd.driver.IControllerPrx;
 import com.googlecode.snoopyd.driver.IHosterPrx;
+import com.googlecode.snoopyd.driver.IModulerPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
 import com.googlecode.snoopyd.session.IUserSessionPrx;
@@ -48,6 +49,8 @@ public class Domain extends Observable implements Runnable {
     private Map<Ice.Identity, IHosterPrx> hosters;
     private Map<Ice.Identity, IControllerPrx> controllers;
     private Map<Ice.Identity, Integer> hashes;
+    private Map<Ice.Identity, String> osPull;
+    private Map<Ice.Identity, Map<String, String>> modulers;
 
     public Domain(Communicator communicator, String name) {
 
@@ -66,6 +69,8 @@ public class Domain extends Observable implements Runnable {
         this.sessions = new ConcurrentHashMap<Ice.Identity, IUserSessionPrx>();
         this.hosters = new ConcurrentHashMap<Ice.Identity, IHosterPrx>();
         this.controllers = new ConcurrentHashMap<Identity, IControllerPrx>();
+        this.osPull = new ConcurrentHashMap<Ice.Identity, String>();
+        this.modulers = new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
 
         this.hashes = new HashMap<Identity, Integer>();
 
@@ -107,6 +112,8 @@ public class Domain extends Observable implements Runnable {
                 hosts.add(context.get("hostname"));
 
                 enviroment.put(context.get("hostname"), identity);
+                
+                osPull.put(identity, context.get("os"));
 
                 String proxy = Identities.toString(identity) + ": " + context.get("primary");
 
@@ -117,6 +124,9 @@ public class Domain extends Observable implements Runnable {
 
                 IHosterPrx remoteHoster = remoteSessionPrx.hoster();
                 hosters.put(identity, remoteHoster);
+                
+                IModulerPrx remoteModuler = remoteSessionPrx.moduler();
+                modulers.put(identity, remoteModuler.fetch());
 
                 changed = true;
             }
@@ -137,6 +147,10 @@ public class Domain extends Observable implements Runnable {
 
     public Set<String> hosts() {
         return hosts;
+    }
+    
+    public Map<Ice.Identity, String> osPull() {
+        return osPull;
     }
 
     public boolean died(Ice.Identity identity) {
@@ -161,6 +175,10 @@ public class Domain extends Observable implements Runnable {
 
     public IControllerPrx controller(Ice.Identity identity) {
         return controllers.get(identity);
+    }
+    
+    public Map<String, String> moduler(Ice.Identity _identity) {
+        return modulers.get(_identity);
     }
 
     public void run() {
