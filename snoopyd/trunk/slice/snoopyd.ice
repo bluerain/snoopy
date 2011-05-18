@@ -100,9 +100,11 @@ module com { module googlecode { module snoopyd {
  		interface IScheduler
  		{
  			StringMap timetable();
+ 			StringMap statetable();
  			
- 			void scheduleWithDelay(string muid, long delay);
- 			//void scheduleWithDate(string muid, JavaUtilDate date);
+ 			void schedule(string muid, long delay);
+ 			
+ 			void toogle(string muid); 
  			
  		};
  		
