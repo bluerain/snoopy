@@ -17,6 +17,7 @@ package com.googlecode.snoopyd.core.filter;
 
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 
 public class ToogleFilter extends AbstractKernelFilter implements KernelFilter {
 	
@@ -29,12 +30,9 @@ public class ToogleFilter extends AbstractKernelFilter implements KernelFilter {
 		
 		FilterAction action = FilterAction.ACCEPT;
 		
-//		if (event instanceof KernelStateChangedEvent && ((KernelStateChangedEvent) event).state() instanceof OnlineState) {
-//
-//			if (!kernel.statuses().equals(EnumSet.of(KernelStatus.NETWORKABLE, KernelStatus.MODULABLE))) {
-//				action = FilterAction.REJECT;
-//			}
-//		}
+		if (event instanceof KernelStateChangedEvent && kernel.peek() instanceof KernelStateChangedEvent) {
+			action = FilterAction.REJECT;		
+		}
 		
 		return action;
 	}

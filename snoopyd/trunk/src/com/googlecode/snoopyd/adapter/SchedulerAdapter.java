@@ -18,6 +18,7 @@ package com.googlecode.snoopyd.adapter;
 import java.util.Map;
 
 import Ice.Current;
+import Ice.Identity;
 
 import com.googlecode.snoopyd.driver.ISchedulerPrx;
 import com.googlecode.snoopyd.driver.Scheduler;
@@ -52,7 +53,8 @@ public class SchedulerAdapter extends _ISchedulerDisp {
 	}
 
 	@Override
-	public void synchronize(ISchedulerPrx scheduler, Current __current) {
-		scheduler.synchronize(scheduler);
+	public void synchronize(Identity identity, ISchedulerPrx remoteScheduler,
+			Current __current) {
+		scheduler.synchronize(identity, remoteScheduler);
 	}
 }
