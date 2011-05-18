@@ -25,11 +25,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
 import Ice.Identity;
+import IceInternal.Ex;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.Adapter;
@@ -55,7 +55,6 @@ import com.googlecode.snoopyd.driver.Resulter;
 import com.googlecode.snoopyd.driver.Scheduler;
 import com.googlecode.snoopyd.driver.Sessionier;
 import com.googlecode.snoopyd.driver.Startable;
-import com.googlecode.snoopyd.module.Module;
 import com.googlecode.snoopyd.session.ISessionPrx;
 import com.googlecode.snoopyd.util.Identities;
 import com.googlecode.snoopymm.IModuleManagerPrx;
@@ -104,8 +103,6 @@ public class Kernel implements Runnable {
 
 	private List<KernelListener> kernelListeners;
 	private List<KernelFilter> kernelFilters;
-
-	private HashMap<UUID, Module> modules;
 
 	private IModuleManagerPrx moduleManager;
 
@@ -227,6 +224,10 @@ public class Kernel implements Runnable {
 
 	public IModuleManagerPrx moduleManager() {
 		return moduleManager;
+	}
+	
+	public void proccess(Throwable exception) {
+		logger.error(exception.getMessage());
 	}
 
 	public void toogle(KernelState kernelState) {
