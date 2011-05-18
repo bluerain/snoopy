@@ -24,6 +24,7 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.OnlineState;
 
 public class OfflineHandler extends AbstractHandler implements
@@ -62,6 +63,11 @@ public class OfflineHandler extends AbstractHandler implements
 
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
+		
+	}
+
+	@Override
+	public void handle(ScheduleTimeComeEvent event) {
 		
 	}
 }

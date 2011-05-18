@@ -16,8 +16,6 @@
 
 package com.googlecode.snoopyd.core.handler;
 
-import java.util.EnumSet;
-
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.Kernel.KernelStatus;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
@@ -28,6 +26,7 @@ import com.googlecode.snoopyd.core.event.ModuleManagerConnectedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
@@ -104,5 +103,10 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	
 		kernel.enable(KernelStatus.MODULABLE);
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
+	}
+
+	@Override
+	public void handle(ScheduleTimeComeEvent event) {
+		
 	}
 }

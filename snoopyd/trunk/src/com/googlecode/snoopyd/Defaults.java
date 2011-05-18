@@ -40,7 +40,7 @@ public final class Defaults {
 	public static final String DISCOVERER_THREAD_NAME = "Discoverer-Thread";
 	public static final String INVOKER_THREAD_NAME = "Invoker-Thread";
 	public static final String MODULER_THREAD_NAME = "Moduler-Thread";
-	public static final String SCHEDULER_THREAD_NAME = "Scheduler-Thread";
+	public static final String TIMER_THREAD_NAME = "Timer-Thread";
 
 	/*
 	 * This is rate from my first laptop (Samsung R20).    

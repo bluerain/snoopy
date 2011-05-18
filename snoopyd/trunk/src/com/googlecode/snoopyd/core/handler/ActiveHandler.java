@@ -24,6 +24,7 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
@@ -92,6 +93,9 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 		kernel.cache().clear();
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}
-	
-	
+
+	@Override
+	public void handle(ScheduleTimeComeEvent event) {
+		
+	}
 }

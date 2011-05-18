@@ -27,6 +27,7 @@ import com.googlecode.snoopyd.core.event.ModuleManagerDisconectedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 
@@ -57,5 +58,7 @@ public interface KernelHandler {
 	public void handle(ModuleManagerDisconectedEvent event);
 	
 	public void handle(InvokationEvent event);
+	
+	public void handle(ScheduleTimeComeEvent event);
 
 }
