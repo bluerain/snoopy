@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
-import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionSendedEvent;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
@@ -50,7 +50,7 @@ public class Sessionier extends AbstractDriver implements Driver,
 				.uncheckedCast(kernel.primary().addWithUUID(
 						new KernelSessionAdapter(new KernelSession(kernel))));
 
-		kernel.handle(new ChildSessionSendedEvent(identity, remoteSession));
+		kernel.handle(new ParentSessionSendedEvent(kernel.identity(), remoteSession));
 
 		return remoteSession;
 	}

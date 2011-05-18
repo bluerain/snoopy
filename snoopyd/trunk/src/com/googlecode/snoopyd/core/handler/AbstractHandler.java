@@ -31,7 +31,10 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionRecivedEvent;
+import com.googlecode.snoopyd.core.event.ParentSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
+import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 
@@ -96,6 +99,18 @@ public abstract class AbstractHandler implements KernelHandler {
 			
 			handle((ExceptionEvent) event);
 			
+		} else if (event instanceof ScheduleUpdatedEvent) {
+			
+			handle((ScheduleUpdatedEvent) event);
+		
+		} else if (event instanceof ParentSessionRecivedEvent) {
+			
+			handle((ParentSessionRecivedEvent) event);
+			
+		} else if (event instanceof ParentSessionSendedEvent) {
+			
+			handle((ParentSessionSendedEvent) event);
+			
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
@@ -103,6 +118,42 @@ public abstract class AbstractHandler implements KernelHandler {
 		}
 	}
 	
+	@Override
+	public void handle(ScheduleUpdatedEvent event) {
+		
+//		Scheduler selfScheduler = (Scheduler) kernel.driver(Scheduler.class);
+//		IKernelSessionPrx remoteSession = (IKernelSessionPrx) event.session();
+//		ISchedulerPrx remoteScheduler = remoteSession.scheduler();
+//		
+//		selfScheduler.synchronize(event.identity(), remoteScheduler);	
+	}
+	
+	@Override
+	public void handle(ParentSessionRecivedEvent event) {
+		kernel.parents().put(event.identity(), event.sesssion());
+	}
+
+	@Override
+	public void handle(ParentSessionSendedEvent event) {
+		
+	}
+
+	@Override
+	public void handle(ChildSessionSendedEvent event) {
+		
+	}
+
+	@Override
+	public void handle(ChildSessionRecivedEvent event) {
+		kernel.childs().put(event.identity(), event.session());
+		
+//		Scheduler selfScheduler = (Scheduler) kernel.driver(Scheduler.class);
+//		IKernelSessionPrx remoteSession = (IKernelSessionPrx) event.session();
+//		ISchedulerPrx remoteScheduler = remoteSession.scheduler();
+//		
+//		selfScheduler.synchronize(event.identity(), remoteScheduler);
+	}
+
 	@Override
 	public void handle(ExceptionEvent event) {
 		

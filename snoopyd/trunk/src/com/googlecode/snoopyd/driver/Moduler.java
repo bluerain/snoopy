@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class Moduler extends AbstractDriver implements Driver {
 
@@ -31,5 +32,17 @@ public class Moduler extends AbstractDriver implements Driver {
 
 	public Map<String, String> fetch() {
 		return kernel.moduleManager().fetch();
+	}
+	
+	public String[] launch(String muid, String[] params) throws ModuleNotFoundException {
+		return kernel.moduleManager().launch(muid, params);
+	}
+	
+	public void deploy(String muid, String code) {
+		kernel.moduleManager().deploy(muid, code);
+	}
+	
+	public void undeploy(String muid) throws ModuleNotFoundException {
+		kernel.moduleManager().undeploy(muid);
 	}
 }

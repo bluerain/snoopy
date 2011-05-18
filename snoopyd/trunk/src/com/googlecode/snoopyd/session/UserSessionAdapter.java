@@ -20,6 +20,7 @@ import com.googlecode.snoopyd.driver.IConfigurerPrx;
 import com.googlecode.snoopyd.driver.IControllerPrx;
 import com.googlecode.snoopyd.driver.IHosterPrx;
 import com.googlecode.snoopyd.driver.IModulerPrx;
+import com.googlecode.snoopyd.driver.ISchedulerPrx;
 
 import Ice.Current;
 
@@ -33,7 +34,6 @@ public class UserSessionAdapter extends _IUserSessionDisp {
 
 	@Override
 	public void destroy(Current __current) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -60,5 +60,10 @@ public class UserSessionAdapter extends _IUserSessionDisp {
 	@Override
 	public IConfigurerPrx configurer(Current __current) {
 		return userSession.configurer();
+	}
+
+	@Override
+	public ISchedulerPrx scheduler(Current __current) {
+		return userSession.scheduler();
 	}
 }

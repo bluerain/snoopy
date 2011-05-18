@@ -47,16 +47,6 @@ public class OfflineHandler extends AbstractHandler implements
 	}
 
 	@Override
-	public void handle(ChildSessionSendedEvent event) {
-		
-	}
-
-	@Override
-	public void handle(ChildSessionRecivedEvent event) {
-		
-	}
-
-	@Override
 	public void handle(DiscoverRecivedEvent event) {
 		
 	}

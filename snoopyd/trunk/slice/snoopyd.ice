@@ -101,6 +101,8 @@ module com { module googlecode { module snoopyd {
  		
  		interface IScheduler
  		{
+ 			void synchronize(IScheduler* scheduler);
+ 			 			
  			StringMap timetable();
  			StringMap statetable();
  			
