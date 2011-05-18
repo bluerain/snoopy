@@ -18,24 +18,22 @@ package com.googlecode.snoopyd.core.handler;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.Kernel.KernelStatus;
+import com.googlecode.snoopyd.core.Kernel.KernelException;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
+import com.googlecode.snoopyd.core.event.ExceptionEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
-import com.googlecode.snoopyd.core.event.ModuleManagerConnectedEvent;
-import com.googlecode.snoopyd.core.event.ModuleManagerDisconectedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
-import com.googlecode.snoopyd.core.state.OnlineState;
-import com.googlecode.snoopyd.core.state.SuspenseState;
 
 public abstract class AbstractHandler implements KernelHandler {
 
@@ -86,14 +84,6 @@ public abstract class AbstractHandler implements KernelHandler {
 
 			handle((KernelStateChangedEvent) event);
 			
-		} else if (event instanceof ModuleManagerConnectedEvent) {
-			
-			handle((ModuleManagerConnectedEvent) event);
-		
-		} else if (event instanceof ModuleManagerDisconectedEvent) {
-			
-			handle((ModuleManagerDisconectedEvent) event);
-		
 		} else if (event instanceof InvokationEvent) {
 			
 			handle((InvokationEvent) event);
@@ -102,6 +92,10 @@ public abstract class AbstractHandler implements KernelHandler {
 			
 			handle((ScheduleTimeComeEvent) event);
 		
+		} else if (event instanceof ExceptionEvent) {
+			
+			handle((ExceptionEvent) event);
+			
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
@@ -110,17 +104,10 @@ public abstract class AbstractHandler implements KernelHandler {
 	}
 	
 	@Override
-	public void handle(ModuleManagerConnectedEvent event) {
-
+	public void handle(ExceptionEvent event) {
+		throw (KernelException) event.exception();
 	}
 
-	@Override
-	public void handle(ModuleManagerDisconectedEvent event) {
-		
-		kernel.disable(KernelStatus.MODULABLE);
-		kernel.handle(new KernelStateChangedEvent(new SuspenseState(kernel)));
-	}
-	
 	@Override
 	public void handle(KernelStateChangedEvent event) {
 		kernel.toogle(event.state());
@@ -128,7 +115,10 @@ public abstract class AbstractHandler implements KernelHandler {
 	
 	@Override
 	public void handle(InvokationEvent event) {
-		event.run();
+		
+		Thread thread = new Thread(event, Defaults.INVOKATION_THREAD_NAME + "-" + java.util.UUID.randomUUID().toString());
+		thread.start();
+
 	}
 
 	@Override

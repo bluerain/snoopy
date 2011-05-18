@@ -41,6 +41,8 @@ public final class Defaults {
 	public static final String INVOKER_THREAD_NAME = "Invoker-Thread";
 	public static final String MODULER_THREAD_NAME = "Moduler-Thread";
 	public static final String TIMER_THREAD_NAME = "Timer-Thread";
+	public static final String INVOKATION_THREAD_NAME = "Invokation-Thread";
+	
 
 	/*
 	 * This is rate from my first laptop (Samsung R20).    
