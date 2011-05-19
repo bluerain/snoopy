@@ -19,6 +19,7 @@ package com.googlecode.snoopyd.core.handler;
 import org.apache.log4j.Logger;
 
 import Ice.Identity;
+import Ice.IntSeqHelper;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
@@ -30,6 +31,7 @@ import com.googlecode.snoopyd.core.event.ExceptionEvent;
 import com.googlecode.snoopyd.core.event.ForceStartEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.KernelReconfiguredEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
@@ -125,6 +127,10 @@ public abstract class AbstractHandler implements KernelHandler {
 			
 			handle((ForceStartEvent) event);
 		
+		} else if (event instanceof KernelReconfiguredEvent) {
+			
+			handle((KernelReconfiguredEvent) event);
+		
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
@@ -132,6 +138,11 @@ public abstract class AbstractHandler implements KernelHandler {
 		}
 	}
 	
+	@Override
+	public void handle(KernelReconfiguredEvent event) {
+		kernel.reconfigure(event.configuration());
+	}
+
 	@Override
 	public void handle(ForceStartEvent event) {
 		

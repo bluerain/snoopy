@@ -326,7 +326,7 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			Document dom = db.parse(new File(kernel.properties().getProperty(
-					"Snoopy.SchedulerConfig")));
+					"Snoopy.SchedulerConfiguration")));
 
 			Element root = dom.getDocumentElement();
 
@@ -428,7 +428,7 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		      }
 
             OutputStreamWriter sw = new OutputStreamWriter(new FileOutputStream(new File(kernel.properties().getProperty(
-					"Snoopy.SchedulerConfig"))));
+					"Snoopy.SchedulerConfiguration"))));
             StreamResult result = new StreamResult(sw);
             DOMSource source = new DOMSource(doc);
             trans.transform(source, result);
