@@ -2,7 +2,6 @@ package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.model.Node;
-import com.googlecode.snoopycp.model.Node;
 import java.awt.Component;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
