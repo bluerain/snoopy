@@ -18,7 +18,6 @@ package com.googlecode.snoopyd.driver;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,68 +40,167 @@ import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
+import com.googlecode.snoopyd.util.Identities;
 
 public class Scheduler extends AbstractDriver implements Driver, Startable,
 		KernelListener {
-
+	
 	public static enum ScheduleState {
 		ON, OFF
 	}
 
+	public static class Schedule {
+		
+		private HashMap<String, List<Long>> timetable;
+		private Map<String, ScheduleState> states;
+		private Map<String, List<String>> params;
+		
+		public Schedule() {
+			
+			this.timetable = new HashMap<String, List<Long>>();
+			this.states = new HashMap<String, Scheduler.ScheduleState>();
+			this.params = new HashMap<String, List<String>>();			
+		}
+
+		public HashMap<String, List<Long>> timetable() {
+			return timetable;
+		}
+
+		public Map<String, ScheduleState> statetable() {
+			return states;
+		}
+
+		public Map<String, List<String>> paramstable() {
+			return params;
+		}
+	}
+
+
 	private static Logger logger = Logger.getLogger(Scheduler.class);
 
-	private Map<String, List<Long>> schedule;
-	private Map<String, ScheduleState> states;
+	private Schedule self;
+	private HashMap<Ice.Identity , Schedule> childs;
+	
 	private Map<String, Timer> timers;
-	private Map<String, List<String>> params;
-
+		
 	private boolean started;
 
 	public Scheduler(Kernel kernel) {
 		super(Scheduler.class.getSimpleName(), kernel);
 
-		this.schedule = new HashMap<String, List<Long>>();
-		this.states = new HashMap<String, Scheduler.ScheduleState>();
+		this.self = new Schedule();
+		this.childs = new HashMap<Ice.Identity, Schedule>();
+		
 		this.timers = new HashMap<String, Timer>();
-		this.params = new HashMap<String, List<String>>();
 	}
 	
 	public void synchronize(Ice.Identity identity, ISchedulerPrx remoteScheduler) {
 		
+		logger.debug("synchronized shceduler with " + Identities.toString(identity));
+		
+		Schedule childSchedule = new Schedule();
+		
+		Map<String, String> remoteTimetable = remoteScheduler.timetable();
+		Map<String, String> remoteStatetable = remoteScheduler.statetable();
+		Map<String, String> remoteParamtable = remoteScheduler.paramtable();
+		
+		
+		for (String muid: remoteTimetable.keySet()) {
+			List<Long> times = new ArrayList<Long>();
+			for (String time: remoteTimetable.get(muid).split(";")) {
+				times.add(Long.parseLong(time));
+			}
+			childSchedule.timetable().put(muid, times);
+		}
+		
+		for (String muid: remoteStatetable.keySet()) {
+			if (remoteStatetable.get(muid).equals("ON")) {
+				childSchedule.statetable().put(muid, ScheduleState.ON);
+			} else {
+				childSchedule.statetable().put(muid, ScheduleState.OFF);
+			}
+		}
+		
+		for (String muid: remoteParamtable.keySet()) {
+			List<String> params = new ArrayList<String>();
+			for (String param: remoteParamtable.get(muid).split(";")) {
+				params.add(param);
+			}
+			childSchedule.paramstable().put(muid, params);
+		}
+		
+		childs.put(identity, childSchedule);
+		
+		update();
 	}
 
 	public void schedule(String muid, long delay) {
 
-		if (schedule.containsKey(muid)) {
-			schedule.get(muid).add(delay);
-		} else {
-			schedule.put(muid, Arrays.asList(delay));
-			states.put(muid, ScheduleState.ON);
-		}
+//		if (schedule.containsKey(muid)) {
+//			schedule.get(muid).add(delay);
+//		} else {
+//			schedule.put(muid, Arrays.asList(delay));
+//			states.put(muid, ScheduleState.ON);
+//		}
 	}
 
 	public Map<String, String> timetable() {
-		// TODO:
 		
-		return null;
+		Map<String, String> result = new HashMap<String, String>();
+		
+		for (String muid: self.timetable().keySet()) {
+
+			StringBuilder sb = new StringBuilder();
+			for (Long time: self.timetable().get(muid)) {
+				sb.append(time);
+				sb.append(";");
+			}
+			
+			result.put(muid, sb.toString());
+		}
+		
+		return result;
 	}
 
 	public Map<String, String> statetable() {
-		// TODO:
 		
-		return null;
+		Map<String, String> result = new HashMap<String, String>();
+		
+		for (String muid: self.statetable().keySet()) {
+			result.put(muid, self.statetable().get(muid).toString());
+		}
+		
+		return result;
+	}
+	
+	public Map<String, String> paramtable() {
+		
+		Map<String, String> result = new HashMap<String, String>();
+		
+		for (String muid: self.paramstable().keySet()) {
+
+			StringBuilder sb = new StringBuilder();
+			for (String param: self.paramstable().get(muid)) {
+				sb.append(param);
+				sb.append(";");
+			}
+			
+			result.put(muid, sb.toString());
+		}
+		
+		return result;
 	}
 
 	public void toogle(String muid) {
-		ScheduleState state = states.get(muid);
-
-		if (state == ScheduleState.OFF) {
-			states.put(muid, ScheduleState.ON);
-		} else {
-			states.put(muid, ScheduleState.OFF);
-		}
-		
-		update();
+//		ScheduleState state = states.get(muid);
+//
+//		if (state == ScheduleState.OFF) {
+//			states.put(muid, ScheduleState.ON);
+//		} else {
+//			states.put(muid, ScheduleState.OFF);
+//		}
+//		
+//		update();
 	}
 
 	@Override
@@ -112,18 +210,18 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		started = true;
 		
 		loadScheduleConfig();
-		update();
-
+		// update();
 	}
 
 	@Override
 	public synchronized void stop() {
 		logger.debug("stoping " + name);
 		
-		for (Timer timer: timers.values()) {
-			timer.cancel();
+		for (String muid: timers.keySet()) {
+			timers.get(muid).cancel();
 		}
 		
+		saveScheduleConfig();
 	}
 
 	@Override
@@ -154,28 +252,41 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 	}
 	
 	private void update() {
-
-		for (String muid: schedule.keySet()) {
-			if (states.get(muid) == ScheduleState.ON) {
-				final String fmuid = muid;
-				final String[] prms = params.get(muid).toArray(
-						new String[params.get(muid).size()]);
+		
+		logger.debug("updating scheduler");
+		
+		synchronized(timers) {
+			
+			for (String muid: timers.keySet()) {
+				timers.get(muid).cancel();
+			}
+			
+			timers.clear();
+			
+			for (Ice.Identity identity: childs.keySet()) {
+				Schedule childSchedule = childs.get(identity);
 				
-				Timer timer = new Timer(Defaults.TIMER_THREAD_NAME + "-" + muid);
-
-				for (Long delay : schedule.get(muid)) {
-					timer.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							kernel.handle(new ScheduleTimeComeEvent(fmuid, prms));	
+				final Ice.Identity fidentity = identity;
+				
+				for (String muid: childSchedule.timetable().keySet()) {
+					if (childSchedule.statetable().get(muid) == ScheduleState.ON) {
+						final String fmuid = muid;
+						final String[] fprms = childSchedule.paramstable().get(muid).toArray(
+								new String[childSchedule.paramstable().get(muid).size()]);
+						
+						Timer timer = new Timer(Defaults.TIMER_THREAD_NAME + "-" + muid);
+						for (Long delay : childSchedule.timetable().get(muid)) {
+							timer.schedule(new TimerTask() {
+								@Override
+								public void run() {
+									kernel.handle(new ScheduleTimeComeEvent(fidentity, fmuid, fprms));	
+								}
+							}, 0, delay.longValue());
 						}
-					}, 0, delay.longValue());
+						
+						timers.put(muid, timer);
+					} 
 				}
-
-				timers.put(muid, timer);
-				
-			} else {
-				
 			}
 		}
 	}
@@ -211,13 +322,13 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 					paramsList.add(value);
 				}
 				
-				schedule.put(muid, delaysList);
-				params.put(muid, paramsList);
+				self.timetable().put(muid, delaysList);
+				self.paramstable().put(muid, paramsList);
 				
 				if (state.equals("ON")) {
-					states.put(muid, ScheduleState.ON);
+					self.statetable().put(muid, ScheduleState.ON);
 				} else {
-					states.put(muid, ScheduleState.OFF);
+					self.statetable().put(muid, ScheduleState.OFF);
 				}
 			}
 
@@ -228,5 +339,9 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		} catch (SAXException ex) {
 			
 		}
+	}
+	
+	private void saveScheduleConfig() {
+		
 	}
 }

@@ -97,9 +97,9 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 			public void run() {
 				try {
 					
-					IKernelSessionPrx session = (IKernelSessionPrx) kernel.childs().get(kernel.identity());
+					IKernelSessionPrx session = (IKernelSessionPrx) kernel.childs().get(fevent.identity());
 					IModulerPrx moduler = session.moduler();
-					moduler.launch(fevent.muid(), fevent.params());
+					String result[] = moduler.launch(fevent.muid(), fevent.params());
 					
 				} catch (ConnectionRefusedException ex) {
 					kernel.handle(new ExceptionEvent(new KernelException("could not connect to module manager")));

@@ -29,14 +29,12 @@ import java.util.Queue;
 import org.apache.log4j.Logger;
 
 import Ice.Identity;
-import IceInternal.Ex;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.adapter.Adapter;
 import com.googlecode.snoopyd.adapter.DiscovererAdapter;
 import com.googlecode.snoopyd.adapter.SessionierAdapter;
 import com.googlecode.snoopyd.core.event.KernelEvent;
-import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.filter.KernelFilter;
 import com.googlecode.snoopyd.core.filter.KernelFilter.FilterAction;
 import com.googlecode.snoopyd.core.filter.ToogleFilter;
@@ -112,6 +110,8 @@ public class Kernel implements Runnable {
 	private IModuleManagerPrx moduleManager;
 	
 	private IKernelSessionPrx selfSession;
+	
+	private boolean started;
 
 	public Kernel(Ice.Communicator communicator) throws KernelException {
 
@@ -166,6 +166,7 @@ public class Kernel implements Runnable {
 		logger.debug("starting kernel thread");
 		self = new Thread(this, Defaults.KERNEL_THREAD_NAME);
 		self.start();
+		started = true;
 	}
 
 	public String hostname() {
@@ -293,6 +294,10 @@ public class Kernel implements Runnable {
 
 		logger.debug("dispose kernel");
 
+		started = false;
+		
+		self.interrupt();
+
 		for (Driver drv : drivers.values()) {
 			if (drv instanceof Activable) {
 				logger.debug("... deactivating " + drv.name());
@@ -300,7 +305,6 @@ public class Kernel implements Runnable {
 			}
 		}
 
-		// TODO: remove it
 		for (Driver drv : drivers.values()) {
 			if (drv instanceof Startable) {
 				if (((Startable) drv).started()) {
@@ -312,8 +316,6 @@ public class Kernel implements Runnable {
 
 		primary.deactivate();
 		secondary.deactivate();
-
-		self.interrupt();
 	}
 
 	public void waitForTerminated() {
@@ -330,9 +332,9 @@ public class Kernel implements Runnable {
 
 		try {
 
-			for (;;) {
+			for (;started; ) {
 
-				for (; !pool.isEmpty();) {
+				for (; !pool.isEmpty() && started; ) {
 
 					KernelEvent event = pool.poll();
 
