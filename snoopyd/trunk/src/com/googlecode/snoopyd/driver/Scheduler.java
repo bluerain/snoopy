@@ -155,6 +155,8 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 			self.timetable().put(muid, Arrays.asList(delay));
 			self.statetable().put(muid, ScheduleState.ON);
 		}
+		
+		update();
 	}
 	
 	public void force(Ice.Identity identity, String muid, String[] params) {
@@ -339,7 +341,7 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 				List<Long> delaysList = new ArrayList<Long>();
 				NodeList delays = module.getElementsByTagName("delay");
 				for (int j = 0; j < delays.getLength(); j++) {
-					Element delay = (Element) delays.item(i);
+					Element delay = (Element) delays.item(j);
 					String value = delay.getAttribute("value");
 					delaysList.add(Long.parseLong(value));
 				}
@@ -347,7 +349,7 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 				List<String> paramsList = new ArrayList<String>();
 				NodeList prms = module.getElementsByTagName("param");
 				for (int j = 0; j < prms.getLength(); j++) {
-					Element param = (Element) prms.item(i);
+					Element param = (Element) prms.item(j);
 					String value = param.getAttribute("value");
 					paramsList.add(value);
 				}

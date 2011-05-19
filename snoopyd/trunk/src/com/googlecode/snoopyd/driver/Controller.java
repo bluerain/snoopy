@@ -18,18 +18,21 @@ package com.googlecode.snoopyd.driver;
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.SnoopydTerminatedEvent;
 
 public class Controller extends AbstractDriver implements Driver {
 	
-	private static Logger logger = Logger.getLogger(Hoster.class);
+	private static Logger logger = Logger.getLogger(Controller.class);
 
 	public Controller(Kernel kernel) {
 		super(Controller.class.getSimpleName(), kernel);
 	}
 	
 	public void shutdown() {
-		
+
 		logger.debug("shutdown command received");
+		
+		kernel.handle(new SnoopydTerminatedEvent());
 	}
 
 }
