@@ -33,6 +33,7 @@ import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ParentSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ParentSessionSendedEvent;
+import com.googlecode.snoopyd.core.event.ResultRecievedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.event.SnoopydStartedEvent;
@@ -113,6 +114,10 @@ public abstract class AbstractHandler implements KernelHandler {
 			
 			handle((ParentSessionSendedEvent) event);
 			
+		} else if (event instanceof ResultRecievedEvent) {
+			
+			handle((ResultRecievedEvent) event);
+		
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
@@ -120,6 +125,11 @@ public abstract class AbstractHandler implements KernelHandler {
 		}
 	}
 	
+	@Override
+	public void handle(ResultRecievedEvent event) {
+		
+	}
+
 	@Override
 	public void handle(ScheduleUpdatedEvent event) {
 		

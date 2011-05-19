@@ -17,17 +17,13 @@
 package com.googlecode.snoopyd.session;
 
 import com.googlecode.snoopyd.adapter.ModulerAdapter;
-import com.googlecode.snoopyd.adapter.ResulterAdapter;
 import com.googlecode.snoopyd.adapter.SchedulerAdapter;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.driver.IModulerPrx;
 import com.googlecode.snoopyd.driver.IModulerPrxHelper;
-import com.googlecode.snoopyd.driver.IResulterPrx;
-import com.googlecode.snoopyd.driver.IResulterPrxHelper;
 import com.googlecode.snoopyd.driver.ISchedulerPrx;
 import com.googlecode.snoopyd.driver.ISchedulerPrxHelper;
 import com.googlecode.snoopyd.driver.Moduler;
-import com.googlecode.snoopyd.driver.Resulter;
 import com.googlecode.snoopyd.driver.Scheduler;
 
 public class KernelSession {
@@ -56,16 +52,5 @@ public class KernelSession {
 								.driver(Moduler.class))));
 
 		return remoteModuler;
-	}
-
-	public IResulterPrx resulter() {
-
-		IResulterPrx remoteResulter = IResulterPrxHelper.uncheckedCast(kernel
-				.primary().addWithUUID(
-						new ResulterAdapter((Resulter) kernel
-								.driver(Resulter.class))));
-
-		return remoteResulter;
-
 	}
 }

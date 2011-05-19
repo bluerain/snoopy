@@ -29,7 +29,6 @@ module com { module googlecode { module snoopyd {
 		interface IController;
 		interface IModuler;
 		interface IScheduler;
-		interface IResulter;
 		interface IConfigurer;
 			
 	};
@@ -45,7 +44,6 @@ module com { module googlecode { module snoopyd {
 		interface IKernelSession extends ISession
 		{
 			driver::IModuler* moduler();
-			driver::IResulter* resulter();
 			driver::IScheduler* scheduler();
 		};
 	
@@ -109,11 +107,6 @@ module com { module googlecode { module snoopyd {
  			
  			void toogle(string muid); 
  			
- 		};
- 		
- 		interface IResulter
- 		{
-			void store();
  		};
  		
  		interface IConfigurer
