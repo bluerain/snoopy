@@ -60,6 +60,9 @@ module com { module googlecode { module snoopyd {
 	
 	module driver
 	{
+		exception ModuleNotFoundException
+		{
+		};
 		
 		dictionary<string, string> StringMap; 
 		sequence<string> StringArray;
@@ -89,10 +92,12 @@ module com { module googlecode { module snoopyd {
  		{
  			StringMap fetch();
  			void deploy(string muid, string code);
- 			void undeploy(string muid);
+ 			void undeploy(string muid) throws ModuleNotFoundException;
 		
-			StringArray launch(string muid, StringArray params);
-			 			
+			StringArray launch(string muid, StringArray params) throws ModuleNotFoundException;
+			
+			void force(string muid, StringArray params);
+
  		};
  		
  		interface IScheduler
@@ -104,6 +109,8 @@ module com { module googlecode { module snoopyd {
  			StringMap paramtable();
  			
  			void schedule(string muid, long delay);
+ 			
+ 			void force(Ice::Identity identity, string muid, StringArray params);
  			
  			void toogle(string muid); 
  			

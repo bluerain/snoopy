@@ -20,6 +20,7 @@ import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.ExceptionEvent;
+import com.googlecode.snoopyd.core.event.ForceStartEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
@@ -69,5 +70,7 @@ public interface KernelHandler {
 	public void handle(ParentSessionSendedEvent event);
 	
 	public void handle(ResultRecievedEvent event);
+	
+	public void handle(ForceStartEvent event);
 
 }

@@ -40,6 +40,7 @@ import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
 import com.googlecode.snoopyd.util.Identities;
+import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
@@ -101,9 +102,15 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 					
 					IKernelSessionPrx session = (IKernelSessionPrx) kernel.childs().get(fevent.identity());
 					IModulerPrx moduler = session.moduler();
-					String result[] = moduler.launch(fevent.muid(), fevent.params());
 					
-					kernel.handle(new ResultRecievedEvent(fevent.identity(), fevent.muid(), result));
+					try {
+					
+						String result[] = moduler.launch(fevent.muid(), fevent.params());
+						kernel.handle(new ResultRecievedEvent(fevent.identity(), fevent.muid(), result));
+					
+					} catch (com.googlecode.snoopyd.driver.ModuleNotFoundException ex) {
+						
+					}
 					
 				} catch (ConnectionRefusedException ex) {
 					kernel.handle(new ExceptionEvent(new KernelException("could not connect to module manager")));

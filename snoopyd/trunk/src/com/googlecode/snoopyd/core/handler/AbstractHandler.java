@@ -18,6 +18,8 @@ package com.googlecode.snoopyd.core.handler;
 
 import org.apache.log4j.Logger;
 
+import Ice.Identity;
+
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.Kernel.KernelException;
@@ -25,6 +27,7 @@ import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.ExceptionEvent;
+import com.googlecode.snoopyd.core.event.ForceStartEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
@@ -118,6 +121,10 @@ public abstract class AbstractHandler implements KernelHandler {
 			
 			handle((ResultRecievedEvent) event);
 		
+		} else if (event instanceof ForceStartEvent) {
+			
+			handle((ForceStartEvent) event);
+		
 		} else {
 		
 			logger.warn("not found handler for " + event.name());
@@ -125,6 +132,18 @@ public abstract class AbstractHandler implements KernelHandler {
 		}
 	}
 	
+	@Override
+	public void handle(ForceStartEvent event) {
+		
+		for (Ice.Identity identity: kernel.parents().keySet()) {
+			
+			IKernelSessionPrx parentSession = (IKernelSessionPrx) kernel.parents().get(identity);
+			ISchedulerPrx parentScheduler = parentSession.scheduler();
+			
+			parentScheduler.force(kernel.identity(), event.muid(), event.params());
+		}
+	}
+
 	@Override
 	public void handle(ResultRecievedEvent event) {
 		
