@@ -19,38 +19,40 @@ package com.googlecode.snoopycp.controller;
 import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.ui.View;
 import com.googlecode.snoopycp.core.Domain;
+import com.googlecode.snoopyd.driver.IModulerPrx;
 import org.apache.log4j.Logger;
 
 
 public class Coordinator {
 
-    public static class Refresher extends Thread {
-
-        private View view;
-
-        public Refresher(View view) {
-            this.view = view;
-        }
-
-        @Override
-        public void run() {
-
-            for (;;) {
-
-                view.update(null, null);
-
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException ex) {
-                }
-            }
-        }
-    }
+//    public static class Refresher extends Thread {
+//
+//        private View view;
+//
+//        public Refresher(View view) {
+//            this.view = view;
+//        }
+//
+//        @Override
+//        public void run() {
+//
+//            for (;;) {
+//
+//                view.update(null, null);
+//
+//                try {
+//                    Thread.sleep(10000);
+//                } catch (InterruptedException ex) {
+//                }
+//            }
+//        }
+//    }
     
     public static Logger logger = Logger.getLogger(Coordinator.class);
 
     private Domain domain;
     private View view;
+    IModulerPrx moduler;
 
     public Coordinator(Domain domain, View view) {
         this.domain = domain;
@@ -83,5 +85,9 @@ public class Coordinator {
         synchronized(this) {
             notify();
         }
+    }
+    
+    public void forceStart() {
+        
     }
 }

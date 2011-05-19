@@ -34,15 +34,15 @@ public class GraphModel {
 
     public void update() {
 
-        for (String host : domain.hosts()) {
+        for (String host : domain.getHosts()) {
 
             graph.addVertex(host);
 
-            Ice.Identity identity = domain.enviroment().get(host);
+            Ice.Identity identity = domain.getEnviroment().get(host);
 
             if (identity != null) {
 
-                Map<String, String> ctx = domain.cache(identity);
+                Map<String, String> ctx = domain.getCache(identity);
 
                 for (String child : ctx.get("childs").split(";")) {
 
@@ -50,8 +50,8 @@ public class GraphModel {
 
                         Ice.Identity childIdentity = Identities.stringToIdentity(child);
 
-                        for (String childhost : domain.hosts()) {
-                            if (childIdentity.equals(domain.enviroment().get(childhost))) {
+                        for (String childhost : domain.getHosts()) {
+                            if (childIdentity.equals(domain.getEnviroment().get(childhost))) {
 
                                 String edgeString = Identities.toString(Identities.xor(identity, childIdentity));
                                 graph.addEdge(edgeString, host, childhost);

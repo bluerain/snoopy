@@ -12,29 +12,22 @@ package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.controller.DomainController;
 import com.googlecode.snoopycp.model.GraphModel;
-import com.googlecode.snoopycp.model.TableModel;
 import com.googlecode.snoopycp.model.TreeModel;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 public class View extends javax.swing.JFrame implements Observer {
 
     public static Logger logger = Logger.getLogger(View.class);
     private DomainController controller;
-    private TableModel tableModel;
+//    private TableModel tableModel;
     private TreeModel treeModel;
     private GraphModel graphModel;
     private VisualizationViewer<String, String> visualizationViewer;
@@ -56,7 +49,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
         this.controller = controller;
 
-        this.tableModel = controller.createTableModel();
+//        this.tableModel = controller.createTableModel();
         this.treeModel = controller.createTreeModel();
         this.graphModel = controller.createGraphModel();
 
@@ -128,14 +121,9 @@ public class View extends javax.swing.JFrame implements Observer {
         jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar.add(jButton3);
 
-        jsp.setDividerLocation(130);
+        jsp.setDividerLocation(180);
         jsp.setRightComponent(jdp);
 
-        tree.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                treeMouseReleased(evt);
-            }
-        });
         jscp.setViewportView(tree);
 
         jsp.setLeftComponent(jscp);
@@ -228,23 +216,6 @@ public class View extends javax.swing.JFrame implements Observer {
         this.jdp.add(nmif);
         nmif.show();
     }//GEN-LAST:event_jMenuItem1ActionPerformed
-
-    private void treeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseReleased
-//        JPopupMenu popup;
-//        JMenuItem mi;
-//        popup = new JPopupMenu();
-//        mi = new JMenuItem("Insert a children");
-//        //mi.addActionListener(this);
-//        mi.setActionCommand("insert");
-//        popup.add(mi);
-//        mi = new JMenuItem("Remove this node");
-//        //mi.addActionListener(this);
-//        mi.setActionCommand("remove");
-//        popup.add(mi);
-//        popup.setOpaque(true);
-//        popup.setLightWeightPopupEnabled(true);
-//        tree.setComponentPopupMenu(popup);
-    }//GEN-LAST:event_treeMouseReleased
 
     private void menuItemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExitActionPerformed
         System.exit(0);

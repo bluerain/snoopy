@@ -3,6 +3,7 @@ package com.googlecode.snoopycp.ui;
 import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.model.Node;
 import java.awt.Component;
+import java.util.HashMap;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.ImageIcon;
@@ -22,21 +23,18 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
             setForeground(getTextNonSelectionColor());
         }
 
-
-
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         if (node.getUserObject() instanceof String) {
-            setIcon(getImageIcon("point.jpg"));
+            setIcon(getImageIcon("network.png"));
         } else {
             Node userObj = (Node) node.getUserObject();
             switch (userObj.nodeType) {
                 case DOMEN:
-                    setIcon(getImageIcon("point.jpg"));
+                    setIcon(getImageIcon("network.png"));
                     break;
                 case NODE:
                     if (userObj.os == Node.OsType.WIN) {
                         setIcon(getImageIcon("logo_win.jpg"));
-                        //setIcon(new ImageIcon(getClass().getResource("point.jpg")));
                     } else if (userObj.os == Node.OsType.LIN) {
                         setIcon(getImageIcon("logo_lin.jpg"));
                     } else {
@@ -45,7 +43,12 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
                     break;
                 case MODULE:
                     // TODO status of module
-                    setIcon(getImageIcon("status-offline.png"));
+                    HashMap<String, String> map = (HashMap) userObj.scheduler.statetable();
+                    if (map.get(userObj.muid).equalsIgnoreCase("on")) {
+                        setIcon(getImageIcon("status-online.png"));
+                    } else {
+                        setIcon(getImageIcon("status-offline.png"));
+                    }
                     break;
                 default:
                     setIcon(getImageIcon("jpg"));

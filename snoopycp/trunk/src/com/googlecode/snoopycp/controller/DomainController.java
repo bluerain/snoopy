@@ -58,11 +58,11 @@ public class DomainController {
 
             public Paint transform(String vertex) {
 
-                if (domain.enviroment().get(vertex) == null) {
+                if (domain.getEnviroment().get(vertex) == null) {
                     return Color.GRAY;
                 } else  {
-                    Ice.Identity identity = domain.enviroment().get(vertex);
-                    String state = domain.cache(identity).get("state");
+                    Ice.Identity identity = domain.getEnviroment().get(vertex);
+                    String state = domain.getCache(identity).get("state");
                     
                     if (state.equals("OnlineState")) {
                         return Color.YELLOW;
