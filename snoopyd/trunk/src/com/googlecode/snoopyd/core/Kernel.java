@@ -313,8 +313,6 @@ public class Kernel implements Runnable {
 
 		started = false;
 		
-		self.interrupt();
-
 		for (Driver drv : drivers.values()) {
 			if (drv instanceof Activable) {
 				logger.debug("... deactivating " + drv.name());
@@ -331,10 +329,13 @@ public class Kernel implements Runnable {
 			}
 		}
 		
+
 		saveConfiguration();
 
 		primary.deactivate();
 		secondary.deactivate();
+
+		self.interrupt();
 	}
 
 	public void waitForTerminated() {
@@ -534,8 +535,9 @@ public class Kernel implements Runnable {
 	private void saveConfiguration() {
 		try {
 			configuration.store(new FileOutputStream(new File(properties().getProperty("Snoopy.KernelConfiguration"))), "Snoopy.KernelConfiguration");
-		} catch (FileNotFoundException e) {
-		} catch (IOException e) {
-		}	
+		} catch (FileNotFoundException ex) {
+		} catch (IOException ex) {
+		} catch (NullPointerException ex) {
+		}
 	}
 }

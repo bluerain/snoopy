@@ -18,9 +18,6 @@ package com.googlecode.snoopyd.core.handler;
 
 import org.apache.log4j.Logger;
 
-import Ice.Identity;
-import Ice.IntSeqHelper;
-
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.Kernel.KernelException;
@@ -140,7 +137,9 @@ public abstract class AbstractHandler implements KernelHandler {
 	
 	@Override
 	public void handle(KernelReconfiguredEvent event) {
+
 		kernel.reconfigure(event.configuration());
+	
 	}
 
 	@Override
