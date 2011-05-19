@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,12 +149,12 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 
 	public void schedule(String muid, long delay) {
 
-		// if (schedule.containsKey(muid)) {
-		// schedule.get(muid).add(delay);
-		// } else {
-		// schedule.put(muid, Arrays.asList(delay));
-		// states.put(muid, ScheduleState.ON);
-		// }
+		if (self.timetable().containsKey("muid")) {
+			self.timetable().get(muid).add(delay);
+		} else {
+			self.timetable().put(muid, Arrays.asList(delay));
+			self.statetable().put(muid, ScheduleState.ON);
+		}
 	}
 	
 	public void force(Ice.Identity identity, String muid, String[] params) {
@@ -208,15 +209,15 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 	}
 
 	public void toogle(String muid) {
-		// ScheduleState state = states.get(muid);
-		//
-		// if (state == ScheduleState.OFF) {
-		// states.put(muid, ScheduleState.ON);
-		// } else {
-		// states.put(muid, ScheduleState.OFF);
-		// }
-		//
-		// update();
+		ScheduleState state = self.statetable().get(muid);
+		
+		if (state == ScheduleState.OFF) {
+			self.statetable().put(muid, ScheduleState.ON);
+		} else {
+			self.statetable().put(muid, ScheduleState.OFF);
+		}
+		
+		update();
 	}
 
 	@Override
@@ -224,7 +225,6 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		logger.debug("starting " + name);
 
 		started = true;
-		// update();
 	}
 
 	@Override
