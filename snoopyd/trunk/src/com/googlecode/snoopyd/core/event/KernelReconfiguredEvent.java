@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.snoopyd.driver;
+package com.googlecode.snoopyd.core.event;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+public class KernelReconfiguredEvent implements KernelEvent {
 
-import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.event.KernelReconfiguredEvent;
-
-public class Configurer extends AbstractDriver implements Driver {
+	private Map<String, String> configuration;
 	
-	private static Logger logger = Logger.getLogger(Configurer.class);
-	
-	public Configurer(Kernel kernel) {
-		super(Configurer.class.getSimpleName(), kernel);
+	public KernelReconfiguredEvent(Map<String, String> configuration) {
+		this.configuration = configuration;
 	}
-	
-	public void reconfigure(Map<String, String> configuration) {
-		kernel.handle(new KernelReconfiguredEvent(configuration));
+
+	public Map<String, String> configuration() {
+		return configuration;
+	}
+
+	@Override
+	public String name() {
+		return this.getClass().getSimpleName();
 	}
 }

@@ -23,6 +23,7 @@ import com.googlecode.snoopyd.core.event.ExceptionEvent;
 import com.googlecode.snoopyd.core.event.ForceStartEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelEvent;
+import com.googlecode.snoopyd.core.event.KernelReconfiguredEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
@@ -72,5 +73,7 @@ public interface KernelHandler {
 	public void handle(ResultRecievedEvent event);
 	
 	public void handle(ForceStartEvent event);
+	
+	public void handle(KernelReconfiguredEvent event);
 
 }

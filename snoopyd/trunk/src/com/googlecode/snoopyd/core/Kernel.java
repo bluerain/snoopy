@@ -16,6 +16,11 @@
 
 package com.googlecode.snoopyd.core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -24,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
@@ -92,7 +98,7 @@ public class Kernel implements Runnable {
 
 	private int rate;
 
-	private Map<String, String> context;
+	private Properties configuration;
 
 	private Queue<KernelEvent> pool;
 
@@ -116,8 +122,6 @@ public class Kernel implements Runnable {
 	public Kernel(Ice.Communicator communicator) throws KernelException {
 
 		this.rate = Integer.MIN_VALUE;
-
-		this.context = new HashMap<String, String>();
 
 		this.pool = new LinkedList<KernelEvent>();
 
@@ -181,8 +185,18 @@ public class Kernel implements Runnable {
 		return System.getProperty("os.name");
 	}
 
-	public Map<String, String> context() {
-		return context;
+	public Properties configuration() {
+		return configuration;
+	}
+	
+	public void reconfigure(Map<String, String> configuration) {
+		
+		checkKernelThread();
+		
+		for (String key: configuration.keySet()) {
+			this.configuration.put(key, configuration.get(key));
+		}
+
 	}
 
 	public Identity identity() {
@@ -283,7 +297,10 @@ public class Kernel implements Runnable {
 		} catch (Ice.ConnectionRefusedException ex) {
 			throw new KernelException("could not connect to module manager");
 		}
-
+		
+		
+		loadConfiguration();
+		
 		primary.activate();
 		secondary.activate();
 	}
@@ -313,6 +330,8 @@ public class Kernel implements Runnable {
 				}
 			}
 		}
+		
+		saveConfiguration();
 
 		primary.deactivate();
 		secondary.deactivate();
@@ -499,5 +518,24 @@ public class Kernel implements Runnable {
 		selfSession = IKernelSessionPrxHelper
 		.uncheckedCast(primary().addWithUUID(
 				new KernelSessionAdapter(new KernelSession(this))));
+	}
+	
+	private void loadConfiguration() {
+		try {
+		
+			configuration = new Properties();
+			configuration.load(new FileInputStream(new File(properties().getProperty("Snoopy.KernelConfiguration"))));
+
+		} catch (FileNotFoundException ex) {
+		} catch (IOException ex) {
+		}			
+	}
+	
+	private void saveConfiguration() {
+		try {
+			configuration.store(new FileOutputStream(new File(properties().getProperty("Snoopy.KernelConfiguration"))), "Snoopy.KernelConfiguration");
+		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
+		}	
 	}
 }
