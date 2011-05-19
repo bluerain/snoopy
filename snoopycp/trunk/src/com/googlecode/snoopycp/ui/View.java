@@ -18,10 +18,16 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
-import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 public class View extends javax.swing.JFrame implements Observer {
@@ -34,13 +40,17 @@ public class View extends javax.swing.JFrame implements Observer {
     private VisualizationViewer<String, String> visualizationViewer;
     private Layout<String, String> layout;
     private netMapIFrame nmif = new netMapIFrame();
-    
+    JPopupMenu popup;
+    JMenuItem mi;
+
     /** Creates new form View2 */
     public View() {
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        
     }
-    
+
     public View(DomainController controller) {
         this();
 
@@ -52,6 +62,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
         this.tree.setModel(treeModel);
         this.tree.setCellRenderer(new IconTreeCellRenderer());
+        treeModel.setPopupMenu(this.tree);
         //this.table.setModel(tableModel);
 
         this.layout = new FRLayout<String, String>(graphModel.graph(), new Dimension(300, 300));
@@ -120,13 +131,24 @@ public class View extends javax.swing.JFrame implements Observer {
         jsp.setDividerLocation(130);
         jsp.setRightComponent(jdp);
 
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                treeMouseReleased(evt);
+            }
+        });
         jscp.setViewportView(tree);
 
         jsp.setLeftComponent(jscp);
 
         menuFile.setText("File");
 
+        menuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         menuItemExit.setText("Exit");
+        menuItemExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemExitActionPerformed(evt);
+            }
+        });
         menuFile.add(menuItemExit);
 
         jMenuBar.add(menuFile);
@@ -196,7 +218,7 @@ public class View extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_menuNetworkActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        
+
         nmif.setClosable(true);
         nmif.setResizable(true);
         nmif.setSize(400, 150);
@@ -207,10 +229,29 @@ public class View extends javax.swing.JFrame implements Observer {
         nmif.show();
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void treeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseReleased
+//        JPopupMenu popup;
+//        JMenuItem mi;
+//        popup = new JPopupMenu();
+//        mi = new JMenuItem("Insert a children");
+//        //mi.addActionListener(this);
+//        mi.setActionCommand("insert");
+//        popup.add(mi);
+//        mi = new JMenuItem("Remove this node");
+//        //mi.addActionListener(this);
+//        mi.setActionCommand("remove");
+//        popup.add(mi);
+//        popup.setOpaque(true);
+//        popup.setLightWeightPopupEnabled(true);
+//        tree.setComponentPopupMenu(popup);
+    }//GEN-LAST:event_treeMouseReleased
+
+    private void menuItemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_menuItemExitActionPerformed
     /**
      * @param args the command line arguments
      */
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
