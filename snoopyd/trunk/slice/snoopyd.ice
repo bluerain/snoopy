@@ -21,8 +21,6 @@
 
 module com { module googlecode { module snoopyd {
 
-	//["java:serializable:java.util.Date"] sequence<byte> JavaUtilDate;
-
 	module driver
 	{
 		interface IHoster;
@@ -105,6 +103,7 @@ module com { module googlecode { module snoopyd {
  			 			
  			StringMap timetable();
  			StringMap statetable();
+ 			StringMap paramtable();
  			
  			void schedule(string muid, long delay);
  			
