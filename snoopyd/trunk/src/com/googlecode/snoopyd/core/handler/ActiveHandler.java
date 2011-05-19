@@ -27,12 +27,14 @@ import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
 import com.googlecode.snoopyd.core.event.NetworkEnabledEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
+import com.googlecode.snoopyd.core.event.ResultRecievedEvent;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
 import com.googlecode.snoopyd.core.state.OfflineState;
 import com.googlecode.snoopyd.core.state.OnlineState;
 import com.googlecode.snoopyd.driver.IModulerPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
+import com.googlecode.snoopyd.driver.Resulter;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
@@ -101,10 +103,20 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 					IModulerPrx moduler = session.moduler();
 					String result[] = moduler.launch(fevent.muid(), fevent.params());
 					
+					kernel.handle(new ResultRecievedEvent(fevent.identity(), fevent.muid(), result));
+					
 				} catch (ConnectionRefusedException ex) {
 					kernel.handle(new ExceptionEvent(new KernelException("could not connect to module manager")));
 				}
 			}
 		});
+	}
+
+	@Override
+	public void handle(ResultRecievedEvent event) {
+		super.handle(event);
+		
+		Resulter resulter = (Resulter) kernel.driver(Resulter.class);
+		resulter.store(event.identity(), event.muid(), event.result());
 	}
 }

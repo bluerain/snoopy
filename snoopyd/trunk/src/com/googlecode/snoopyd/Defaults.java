@@ -35,6 +35,8 @@ public final class Defaults {
 	
 	public static final int NETWORKER_INTERVAL = 3000;
 	
+	public static final int RESULTER_THRESHHOLD = 5;
+	
 	public static final String KERNEL_THREAD_NAME = "Kernel-Thread";
 	public static final String ALIVER_THREAD_NAME = "Aliver-Thread";
 	public static final String DISCOVERER_THREAD_NAME = "Discoverer-Thread";
@@ -42,8 +44,8 @@ public final class Defaults {
 	public static final String MODULER_THREAD_NAME = "Moduler-Thread";
 	public static final String TIMER_THREAD_NAME = "Timer-Thread";
 	public static final String INVOKATION_THREAD_NAME = "Invokation-Thread";
+	public static final String RESULTER_THREAD_NAME = "Resulter-Thread";
 	
-
 	/*
 	 * This is rate from my first laptop (Samsung R20).    
 	 */

@@ -19,7 +19,6 @@ package com.googlecode.snoopyd.session;
 import Ice.Current;
 
 import com.googlecode.snoopyd.driver.IModulerPrx;
-import com.googlecode.snoopyd.driver.IResulterPrx;
 import com.googlecode.snoopyd.driver.ISchedulerPrx;
 
 public class KernelSessionAdapter extends _IKernelSessionDisp {
@@ -43,11 +42,6 @@ public class KernelSessionAdapter extends _IKernelSessionDisp {
 	@Override
 	public IModulerPrx moduler(Current __current) {
 		return kernelSession.moduler();
-	}
-
-	@Override
-	public IResulterPrx resulter(Current __current) {
-		return kernelSession.resulter();
 	}
 
 	@Override

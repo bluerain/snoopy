@@ -13,24 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.snoopyd.adapter;
+package com.googlecode.snoopyd.core.event;
 
-import Ice.Current;
+import Ice.Identity;
 
-import com.googlecode.snoopyd.driver.Resulter;
-import com.googlecode.snoopyd.driver._IResulterDisp;
+public class ResultRecievedEvent implements KernelEvent {
 
-public class ResulterAdapter extends _IResulterDisp {
-
-	private Resulter resulter;
+	private Ice.Identity identity;
+	private String muid;
+	private String[] result;
 	
-	public ResulterAdapter(Resulter resulter) {
-		this.resulter = resulter;
+	public ResultRecievedEvent(Identity identity, String muid, String[] result) {
+		super();
+		this.identity = identity;
+		this.muid = muid;
+		this.result = result;
+	}
+	
+	public Ice.Identity identity() {
+		return identity;
+	}
+	
+	public String muid() {
+		return muid;
+	}
+	
+	public String[] result() {
+		return result;
 	}
 
 	@Override
-	public void store(Current __current) {
-		resulter.store();
+	public String name() {
+		return this.getClass().getSimpleName();
 	}
-
 }
