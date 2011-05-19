@@ -20,9 +20,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import java.util.Set;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
@@ -37,7 +37,11 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
     private JPopupMenu popupNode;
     private JPopupMenu popupModule;
     private JPopupMenu popupDomen;
-    private JMenuItem mi;
+    private JMenuItem menuItem;     // template for all popup menu
+    private Ice.Identity currentId; // Identity of current selected node
+    private TreePath selectedPath;
+    private DefaultMutableTreeNode selectedNode;
+    private Node userObj;           // User object initilation of node
 
     public TreeModel(Domain domain) {
         super(new DefaultMutableTreeNode(domain.name())); // call constructor of superclass
@@ -49,14 +53,14 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         DefaultMutableTreeNode domainRoot = (DefaultMutableTreeNode) root;
         domainRoot.removeAllChildren(); // Clean tree
 
-        Set<String> hosts = domain.hosts(); // get all host from cache
+        Set<String> hosts = domain.getHosts(); // get all host from cache
         String osName = null;
         Node.OsType os;
 
 
         for (String host : hosts) {
-            Ice.Identity identity = domain.enviroment().get(host);
-            osName = domain.osPull().get(identity);
+            Ice.Identity identity = domain.getEnviroment().get(host);
+            osName = domain.getOsPull().get(identity);
             if (osName.indexOf("Win") != -1) {
                 os = Node.OsType.WIN;
             } else if (osName.indexOf("lin") != -1 || osName.indexOf("Lin") != -1) {
@@ -65,7 +69,7 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
                 os = Node.OsType.UNKNOWN;
             }
 
-            DefaultMutableTreeNode node; 
+            DefaultMutableTreeNode node;
             if (identity == null) {
                 node = new DefaultMutableTreeNode(new Node(identity, host + " [died]", Node.Type.NODE, os), true);
             } else {
@@ -74,9 +78,11 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
             domainRoot.add(node); // add node in tree
 
             // Adding all modules of Node in the tree
-            for (String moduleID : domain.moduler(identity).values()) {
+            HashMap<String, String> fullKeys = (HashMap) domain.getModuler(identity).fetch();
+            Set<String> keys = fullKeys.keySet();
+            for (String moduleID : keys) {
                 node.add(new DefaultMutableTreeNode(
-                        new Node(null, moduleID, Node.Type.MODULE, null), false));
+                        new Node(identity, fullKeys.get(moduleID), moduleID, Node.Type.MODULE, domain.getScheduler(identity)), false));
             }
         }
     }
@@ -98,6 +104,10 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         return popup;
     }
 
+    /**
+     * Bind popup menu on _tree on mouse right click
+     * @param _tree tree for popup menu binding
+     */
     public void setPopupMenu(JTree _tree) {
         final JTree tree = _tree;
         tree.addMouseListener(new MouseAdapter() {
@@ -107,16 +117,17 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
                 if (e.isPopupTrigger()) {
                     int selRow = tree.getRowForLocation(e.getX(), e.getY());
                     if (selRow >= 0) {
-                        TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-                        tree.setSelectionPath(selPath);
+                        selectedPath = tree.getPathForLocation(e.getX(), e.getY());
+                        tree.setSelectionPath(selectedPath);
                         Object obj = tree.getLastSelectedPathComponent();
                         if (obj != null) {
-                            DefaultMutableTreeNode node = (DefaultMutableTreeNode) obj;
-                            final Object tmp = node.getUserObject();
+                            selectedNode = (DefaultMutableTreeNode) obj;
+                            final Object tmp = selectedNode.getUserObject();
                             if (tmp instanceof String) {
                             } else {
-                                com.googlecode.snoopycp.model.Node userObj = (Node) tmp;
+                                userObj = (Node) tmp;
                                 final Node.Type popupType = userObj.nodeType;
+                                currentId = userObj.identity;
                                 getPopupMenu(popupType).show(e.getComponent(), e.getX(), e.getY());
                             }
                         }
@@ -129,34 +140,72 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
     private void initPopup() {
         // Init popup menu for Module
         popupModule = new JPopupMenu();
-        mi = new JMenuItem("Force start");
-        popupModule.add(mi);
-        mi.addActionListener(new ActionListener() {
+        menuItem = new JMenuItem("Force start");
+        popupModule.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Hello");
+                domain.forceStart(currentId, userObj.muid);
             }
         });
-        mi = new JMenuItem("Properties");
-        popupModule.add(mi);
+        menuItem = new JMenuItem("Properties");
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                domain.properties(currentId, userObj.name);
+            }
+        });
+        popupModule.add(menuItem);
         popupModule.setOpaque(true);
         popupModule.setLightWeightPopupEnabled(true);
-        
+
         // Init popup menu for Node
         popupNode = new JPopupMenu();
-        mi = new JMenuItem("Configure");
-        popupNode.add(mi);
-        mi = new JMenuItem("Stop");
+        menuItem = new JMenuItem("Configure");
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        popupNode.add(menuItem);
+        menuItem = new JMenuItem("Stop");
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
         popupNode.add(new JSeparator(SwingConstants.HORIZONTAL));
-        popupNode.add(mi);
-        mi = new JMenuItem("Info");
-        popupNode.add(mi);
-        
+        popupNode.add(menuItem);
+        menuItem = new JMenuItem("Info");
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        popupNode.add(menuItem);
+
         // Init popup menu for Domen (Not showing)
         popupDomen = new JPopupMenu();
-        mi = new JMenuItem("Bla-bla");
-        popupDomen.add(mi);
-        mi = new JMenuItem("Force");
-        popupDomen.add(mi);
+        menuItem = new JMenuItem("Bla-bla");
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        popupDomen.add(menuItem);
+        menuItem = new JMenuItem("Force");
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        popupDomen.add(menuItem);
     }
 }

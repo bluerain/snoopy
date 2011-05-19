@@ -76,9 +76,9 @@ public class TableModel extends AbstractTableModel implements javax.swing.table.
         try {
             if (identity != null) {
 
-                domain.hoster(identity).ice_ping();
+                domain.getHoster(identity).ice_ping();
 
-                Map<String, String> data = domain.hoster(identity).context();
+                Map<String, String> data = domain.getHoster(identity).context();
 
                 size = data.size();
 

@@ -142,7 +142,7 @@
     </Container>
     <Container class="javax.swing.JSplitPane" name="jsp">
       <Properties>
-        <Property name="dividerLocation" type="int" value="130"/>
+        <Property name="dividerLocation" type="int" value="180"/>
       </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
@@ -169,9 +169,6 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JTree" name="tree">
-              <Events>
-                <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="treeMouseReleased"/>
-              </Events>
             </Component>
           </SubComponents>
         </Container>
