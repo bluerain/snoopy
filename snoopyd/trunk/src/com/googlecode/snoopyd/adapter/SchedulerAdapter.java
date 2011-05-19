@@ -62,4 +62,10 @@ public class SchedulerAdapter extends _ISchedulerDisp {
 	public Map<String, String> paramtable(Current __current) {
 		return scheduler.paramtable();
 	}
+
+	@Override
+	public void force(Identity identity, String muid, String[] params,
+			Current __current) {
+		scheduler.force(identity, muid, params);
+	}
 }

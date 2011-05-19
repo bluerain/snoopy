@@ -155,6 +155,10 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		// states.put(muid, ScheduleState.ON);
 		// }
 	}
+	
+	public void force(Ice.Identity identity, String muid, String[] params) {
+		kernel.handle(new ScheduleTimeComeEvent(identity, muid, params));
+	}
 
 	public Map<String, String> timetable() {
 

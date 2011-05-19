@@ -26,7 +26,7 @@ import com.googlecode.snoopymm.ModuleNotFoundException;
 public class ModulerAdapter extends _IModulerDisp {
 
 	private Moduler moduler;
-	
+
 	public ModulerAdapter(Moduler moduler) {
 		this.moduler = moduler;
 	}
@@ -46,16 +46,18 @@ public class ModulerAdapter extends _IModulerDisp {
 		try {
 			moduler.undeploy(muid);
 		} catch (ModuleNotFoundException ex) {
-			
+
 		}
 	}
 
 	@Override
-	public String[] launch(String muid, String[] params, Current __current) {
-		try {
-			return moduler.launch(muid, params);
-		} catch (ModuleNotFoundException ex) {
-			return null;
-		}
+	public String[] launch(String muid, String[] params, Current __current)
+			throws com.googlecode.snoopyd.driver.ModuleNotFoundException {
+		return moduler.launch(muid, params);
+	}
+
+	@Override
+	public void force(String muid, String[] params, Current __current) {
+		moduler.force(muid, params);
 	}
 }
