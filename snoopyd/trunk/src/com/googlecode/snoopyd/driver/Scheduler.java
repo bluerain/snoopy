@@ -16,7 +16,10 @@
 package com.googlecode.snoopyd.driver;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,9 +30,17 @@ import java.util.TimerTask;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -97,7 +108,7 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 
 	public void synchronize(Ice.Identity identity, ISchedulerPrx remoteScheduler) {
 
-		logger.debug("synchronized shceduler with "
+		logger.debug("synchronize shceduler with "
 				+ Identities.toString(identity));
 
 		Schedule childSchedule = new Schedule();
@@ -357,6 +368,75 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 	}
 
 	private void saveScheduleConfig() {
+		
+		try {
+		
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.newDocument();
+			
+			Element root = doc.createElement("modules");
+			doc.appendChild(root);
+			
+			for (String muid: self.timetable().keySet()) {
+				Element module = doc.createElement("module");
+				module.setAttribute("muid", muid);
+				if (self.statetable().get(muid) == ScheduleState.ON) {
+					module.setAttribute("state", "ON");
+				} else {
+					module.setAttribute("state", "OFF");
+				}
+				
+				Element schedule = doc.createElement("schedule");
+				for (Long time: self.timetable().get(muid)) {
+					Element delay = doc.createElement("delay");
+					delay.setAttribute("value", time.toString());
+					schedule.appendChild(delay);
+				}
+				
+				module.appendChild(schedule);
+				
+				Element params = doc.createElement("params");
+				for (String value: self.paramstable().get(muid)) {
+					Element param = doc.createElement("param");
+					param.setAttribute("value", value);
+					params.appendChild(param);
+				}
+				
+				module.appendChild(params);
+				root.appendChild(module);
+			}
+			
+			TransformerFactory transfac = TransformerFactory.newInstance();
+            Transformer trans = transfac.newTransformer();
+            trans.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            trans.setOutputProperty(OutputKeys.STANDALONE, "no");
+            trans.setOutputProperty(OutputKeys.INDENT, "yes");
+            
+            DocumentType dt = doc.getDoctype();
+		      if (dt != null) {
+		        String pub = dt.getPublicId();
+		        if (pub != null) {
+		          trans.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, pub);
+		        }
+		        trans.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
+		      }
 
+            OutputStreamWriter sw = new OutputStreamWriter(new FileOutputStream(new File(kernel.properties().getProperty(
+					"Snoopy.SchedulerConfig"))));
+            StreamResult result = new StreamResult(sw);
+            DOMSource source = new DOMSource(doc);
+            trans.transform(source, result);
+        
+		} catch (ParserConfigurationException ex) {
+			
+		} catch (TransformerConfigurationException ex) {
+			
+		} catch (TransformerException ex) {
+			
+		} catch (FileNotFoundException ex) {
+			
+		}
 	}
 }

@@ -81,7 +81,7 @@ public class Resulter extends AbstractDriver implements Driver, Startable,
 	}
 
 	@Override
-	public void start() {
+	public synchronized void start() {
 		logger.debug("starting " + name);
 
 		Thread self = new Thread(this, Defaults.RESULTER_THREAD_NAME);
@@ -91,7 +91,7 @@ public class Resulter extends AbstractDriver implements Driver, Startable,
 	}
 
 	@Override
-	public void stop() {
+	public synchronized void stop() {
 		logger.debug("stoping " + name);
 
 		started = false;
@@ -105,12 +105,12 @@ public class Resulter extends AbstractDriver implements Driver, Startable,
 	}
 
 	@Override
-	public boolean started() {
+	public synchronized boolean started() {
 		return started;
 	}
 
 	@Override
-	public void restart() {
+	public synchronized void restart() {
 		logger.debug("restarting " + name);
 
 		stop();
