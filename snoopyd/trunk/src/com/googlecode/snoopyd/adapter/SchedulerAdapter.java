@@ -57,4 +57,9 @@ public class SchedulerAdapter extends _ISchedulerDisp {
 			Current __current) {
 		scheduler.synchronize(identity, remoteScheduler);
 	}
+
+	@Override
+	public Map<String, String> paramtable(Current __current) {
+		return scheduler.paramtable();
+	}
 }

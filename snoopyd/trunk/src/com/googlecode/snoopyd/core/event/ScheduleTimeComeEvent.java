@@ -17,10 +17,12 @@ package com.googlecode.snoopyd.core.event;
 
 public class ScheduleTimeComeEvent implements KernelEvent {
 
+	private Ice.Identity identity;
 	private String muid;
 	private String[] params;
 	
-	public ScheduleTimeComeEvent(String muid, String[] params) {
+	public ScheduleTimeComeEvent(Ice.Identity identity, String muid, String[] params) {
+		this.identity = identity;
 		this.muid = muid;
 		this.params = params;
 	}
@@ -28,6 +30,10 @@ public class ScheduleTimeComeEvent implements KernelEvent {
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();
+	}
+	
+	public Ice.Identity identity() {
+		return identity;
 	}
 	
 	public String muid() {
