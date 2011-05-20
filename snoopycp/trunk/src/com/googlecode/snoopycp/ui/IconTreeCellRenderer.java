@@ -25,7 +25,7 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
 
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         if (node.getUserObject() instanceof String) {
-            setIcon(getImageIcon("network.png"));
+            setIcon(getImageIcon("globe-network.png"));
         } else {
             Node userObj = (Node) node.getUserObject();
             switch (userObj.nodeType) {
@@ -42,8 +42,7 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
                     }
                     break;
                 case MODULE:
-                    // TODO status of module
-                    HashMap<String, String> map = (HashMap) userObj.scheduler.statetable();
+                    HashMap<String, String> map = (HashMap) userObj.moduleStatuses;
                     if (map.get(userObj.muid).equalsIgnoreCase("on")) {
                         setIcon(getImageIcon("status-online.png"));
                     } else {
@@ -51,7 +50,7 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
                     }
                     break;
                 default:
-                    setIcon(getImageIcon("jpg"));
+                    setIcon(getImageIcon("logo_qst.jpg"));
             }
         }
 

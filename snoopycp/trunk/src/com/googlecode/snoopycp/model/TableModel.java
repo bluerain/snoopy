@@ -16,13 +16,16 @@
 package com.googlecode.snoopycp.model;
 
 import com.googlecode.snoopycp.core.Domain;
+import com.googlecode.snoopycp.util.Identities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 public class TableModel extends AbstractTableModel implements javax.swing.table.TableModel {
 
+    //public static final Logger logger = Logger.getLogger(TableModel.class);
     public static final String[] COLUMNS = {"Property", "Value"};
     private Domain domain;
     private List<String> keys;
@@ -72,22 +75,30 @@ public class TableModel extends AbstractTableModel implements javax.swing.table.
         values.clear();
 
         size = 0;
+        
+        //System.out.println("asdfasdf");
+        System.out.println(Identities.toString(identity));
 
         try {
             if (identity != null) {
 
-                domain.getHoster(identity).ice_ping();
+                System.out.println("adsfasdf");
+                domain.hoster(identity).ice_ping();
 
-                Map<String, String> data = domain.getHoster(identity).context();
+                Map<String, String> data = domain.hoster(identity).context();
 
                 size = data.size();
+                System.out.print(size +"---- ");
 
                 for (String key : data.keySet()) {
                     keys.add(key);
+                    System.out.print(key+": ");
                     values.add(data.get(key));
+                    System.out.println(data.get(key));
                 }
             }
         } catch (Exception ex) {
+            System.out.println("TableModel.update: " + ex.getMessage());
         }
     }
 }

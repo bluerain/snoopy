@@ -38,9 +38,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Network"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuNetworkActionPerformed"/>
-          </Events>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
               <Properties>
@@ -92,8 +89,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jToolBar" alignment="0" pref="691" max="32767" attributes="0"/>
-          <Component id="jsp" alignment="0" pref="691" max="32767" attributes="0"/>
+          <Component id="jToolBar" alignment="0" pref="849" max="32767" attributes="0"/>
+          <Component id="jsp" alignment="0" pref="849" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -101,7 +98,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jToolBar" min="-2" pref="25" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="1"/>
-              <Component id="jsp" pref="446" max="32767" attributes="0"/>
+              <Component id="jsp" pref="545" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
