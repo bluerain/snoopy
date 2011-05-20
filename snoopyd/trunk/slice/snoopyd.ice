@@ -119,6 +119,7 @@ module com { module googlecode { module snoopyd {
  		interface IConfigurer
  		{
  			void reconfigure(StringMap configuration);
+ 			StringMap configuration();
  		};
  		
 	}; 
