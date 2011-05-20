@@ -17,9 +17,13 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import org.apache.log4j.Logger;
 
@@ -43,6 +47,23 @@ public class View extends javax.swing.JFrame implements Observer {
         
         
     }
+    public void addInternalFrame(JInternalFrame _frame) {
+        this.jdp.add(_frame);
+        _frame.setVisible(true);
+    }
+    
+    public void setActionsOnPopup(Map<String, ActionListener> _actions) {
+        treeModel.setPopupMenu(this.tree, _actions);
+        
+    }
+    
+    public javax.swing.JTree getTree() {
+        return this.tree;
+    }
+    
+    public String showInputDialog() {
+        return JOptionPane.showInputDialog(this, "Enter parameters for module:");
+    }
 
     public View(DomainController controller) {
         this();
@@ -55,7 +76,6 @@ public class View extends javax.swing.JFrame implements Observer {
 
         this.tree.setModel(treeModel);
         this.tree.setCellRenderer(new IconTreeCellRenderer());
-        treeModel.setPopupMenu(this.tree);
         //this.table.setModel(tableModel);
 
         this.layout = new FRLayout<String, String>(graphModel.graph(), new Dimension(300, 300));
@@ -149,11 +169,6 @@ public class View extends javax.swing.JFrame implements Observer {
         jMenuBar.add(menuEdit);
 
         menuNetwork.setText("Network");
-        menuNetwork.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuNetworkActionPerformed(evt);
-            }
-        });
 
         jMenuItem1.setText("view full map");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -183,15 +198,15 @@ public class View extends javax.swing.JFrame implements Observer {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
-            .addComponent(jsp, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+            .addComponent(jToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
+            .addComponent(jsp, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jsp, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE))
+                .addComponent(jsp, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE))
         );
 
         pack();
@@ -201,9 +216,6 @@ public class View extends javax.swing.JFrame implements Observer {
         AboutDialog ad = new AboutDialog(this, true);
         ad.setVisible(true);
     }//GEN-LAST:event_menuItemAboutActionPerformed
-
-    private void menuNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNetworkActionPerformed
-    }//GEN-LAST:event_menuNetworkActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
 

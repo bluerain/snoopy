@@ -1,14 +1,14 @@
 package com.googlecode.snoopycp.model;
 
 import Ice.Identity;
-import com.googlecode.snoopyd.driver.ISchedulerPrx;
+import java.util.Map;
 
 public class Node {
 
     public final Ice.Identity identity;
     public final String name;
     public String muid;
-    public ISchedulerPrx scheduler;
+    public Map<String, String> moduleStatuses;
 
     public enum Type {
 
@@ -29,10 +29,10 @@ public class Node {
         this.os = _os;
     }
     
-    public Node(Identity _identity, String _name, String _muid, Type _type, ISchedulerPrx _scheduler) {
+    public Node(Identity _identity, String _name, String _muid, Type _type, Map<String, String> _moduleStatuses) {
         this(_identity, _name, _type, null);
         muid = _muid;
-        scheduler = _scheduler;
+        moduleStatuses = _moduleStatuses;
     }
 
     @Override

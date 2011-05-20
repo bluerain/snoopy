@@ -22,6 +22,9 @@ public class netMapIFrame extends javax.swing.JInternalFrame {
     /** Creates new form netMapIFrame */
     public netMapIFrame() {
         initComponents();
+        this.setClosable(true);
+        this.setResizable(true);
+        this.setMaximizable(true);
         this.graphPanel.setLayout(new GridLayout(1, 1));
     }
     

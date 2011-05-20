@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -42,25 +43,26 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
     private TreePath selectedPath;
     private DefaultMutableTreeNode selectedNode;
     private Node userObj;           // User object initilation of node
+    private Map<String, ActionListener> actions;
 
     public TreeModel(Domain domain) {
         super(new DefaultMutableTreeNode(domain.name())); // call constructor of superclass
         this.domain = domain;
-        initPopup(); // build popup menu and bind actions
+        //initPopup(); // build popup menu and bind actions
     }
 
     public void update() {
         DefaultMutableTreeNode domainRoot = (DefaultMutableTreeNode) root;
         domainRoot.removeAllChildren(); // Clean tree
 
-        Set<String> hosts = domain.getHosts(); // get all host from cache
+        Set<String> hosts = domain.hosts(); // get all host from cache
         String osName = null;
         Node.OsType os;
 
 
         for (String host : hosts) {
-            Ice.Identity identity = domain.getEnviroment().get(host);
-            osName = domain.getOsPull().get(identity);
+            Ice.Identity identity = domain.enviroment().get(host);
+            osName = domain.osPull().get(identity);
             if (osName.indexOf("Win") != -1) {
                 os = Node.OsType.WIN;
             } else if (osName.indexOf("lin") != -1 || osName.indexOf("Lin") != -1) {
@@ -78,11 +80,11 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
             domainRoot.add(node); // add node in tree
 
             // Adding all modules of Node in the tree
-            HashMap<String, String> fullKeys = (HashMap) domain.getModuler(identity).fetch();
+            HashMap<String, String> fullKeys = (HashMap) domain.moduleName(identity);
             Set<String> keys = fullKeys.keySet();
             for (String moduleID : keys) {
                 node.add(new DefaultMutableTreeNode(
-                        new Node(identity, fullKeys.get(moduleID), moduleID, Node.Type.MODULE, domain.getScheduler(identity)), false));
+                        new Node(identity, fullKeys.get(moduleID), moduleID, Node.Type.MODULE, domain.moduleStatus(identity)), false));
             }
         }
     }
@@ -108,8 +110,10 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
      * Bind popup menu on _tree on mouse right click
      * @param _tree tree for popup menu binding
      */
-    public void setPopupMenu(JTree _tree) {
+    public void setPopupMenu(JTree _tree, Map<String, ActionListener> _actions) {
         final JTree tree = _tree;
+        actions = _actions;
+        initPopup();
         tree.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -141,22 +145,10 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         // Init popup menu for Module
         popupModule = new JPopupMenu();
         menuItem = new JMenuItem("Force start");
+        menuItem.addActionListener(actions.get("ForceStart"));
         popupModule.add(menuItem);
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                domain.forceStart(currentId, userObj.muid);
-            }
-        });
         menuItem = new JMenuItem("Properties");
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                domain.properties(currentId, userObj.name);
-            }
-        });
+        menuItem.addActionListener(actions.get("Properties"));
         popupModule.add(menuItem);
         popupModule.setOpaque(true);
         popupModule.setLightWeightPopupEnabled(true);
@@ -164,29 +156,13 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         // Init popup menu for Node
         popupNode = new JPopupMenu();
         menuItem = new JMenuItem("Configure");
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
+        menuItem.addActionListener(actions.get("Configure"));
         popupNode.add(menuItem);
-        menuItem = new JMenuItem("Stop");
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-        popupNode.add(new JSeparator(SwingConstants.HORIZONTAL));
+        menuItem = new JMenuItem("Shutdown");
+        menuItem.addActionListener(actions.get("Shutdown"));
         popupNode.add(menuItem);
-        menuItem = new JMenuItem("Info");
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
+        menuItem = new JMenuItem("Properties");
+        menuItem.addActionListener(actions.get("Properties"));
         popupNode.add(menuItem);
 
         // Init popup menu for Domen (Not showing)

@@ -48,12 +48,14 @@ public class Domain extends Observable implements Runnable {
     private Map<Ice.Identity, Long> life;
     private Map<Ice.Identity, Map<String, String>> cache;
     private Map<Ice.Identity, IHosterPrx> hosters;
-//    private Map<Ice.Identity, IUserSessionPrx> sessions;
-//    private Map<Ice.Identity, IControllerPrx> controllers;
+    private Map<Ice.Identity, IUserSessionPrx> sessions;
+    private Map<Ice.Identity, IControllerPrx> controllers;
     private Map<Ice.Identity, Integer> hashes;
     private Map<Ice.Identity, String> osPull;
     private Map<Ice.Identity, IModulerPrx> modulers;
     private Map<Ice.Identity, ISchedulerPrx> schedulers;
+    private Map<Ice.Identity, Map<String, String>> modulesStatus;
+    private Map<Ice.Identity, Map<String, String>> modulesName;
 
     public Domain(Communicator communicator, String name) {
 
@@ -69,12 +71,14 @@ public class Domain extends Observable implements Runnable {
 
         this.cache = new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
 
-//        this.sessions = new ConcurrentHashMap<Ice.Identity, IUserSessionPrx>();
-//        this.controllers = new ConcurrentHashMap<Identity, IControllerPrx>();
-        this.hosters = new ConcurrentHashMap<Ice.Identity, IHosterPrx>();
-        this.osPull = new ConcurrentHashMap<Ice.Identity, String>();
-        this.modulers = new ConcurrentHashMap<Ice.Identity, IModulerPrx>();
-        this.schedulers = new ConcurrentHashMap<Ice.Identity, ISchedulerPrx>();
+        this.sessions =     new ConcurrentHashMap<Ice.Identity, IUserSessionPrx>();
+        this.controllers =  new ConcurrentHashMap<Ice.Identity, IControllerPrx>();
+        this.hosters =      new ConcurrentHashMap<Ice.Identity, IHosterPrx>();
+        this.osPull =       new ConcurrentHashMap<Ice.Identity, String>();
+        this.modulers =     new ConcurrentHashMap<Ice.Identity, IModulerPrx>();
+        this.schedulers =   new ConcurrentHashMap<Ice.Identity, ISchedulerPrx>();
+        this.modulesStatus= new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
+        this.modulesName =  new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
 
         this.hashes = new HashMap<Identity, Integer>();
 
@@ -116,26 +120,34 @@ public class Domain extends Observable implements Runnable {
                 hosts.add(context.get("hostname"));
 
                 enviroment.put(context.get("hostname"), identity);
-                
+
                 osPull.put(identity, context.get("os"));
 
                 String proxy = Identities.toString(identity) + ": " + context.get("primary");
 
                 ISessionierPrx remoteSessionier = ISessionierPrxHelper.checkedCast(communicator.stringToProxy(proxy));
+                logger.debug("Checked cast to remote session");
 
                 IUserSessionPrx remoteSessionPrx = remoteSessionier.createUserSession(identity(), null);
-//                sessions.put(identity, remoteSessionPrx);
+                sessions.put(identity, remoteSessionPrx);
 
-//                IHosterPrx remoteHoster = remoteSessionPrx.hoster();
-//                hosters.put(identity, remoteHoster);
+                IHosterPrx remoteHoster = remoteSessionPrx.hoster();
+                hosters.put(identity, remoteHoster);
                 
+                IControllerPrx remoteController = remoteSessionPrx.controller();
+                controllers.put(identity, remoteController);
+
                 IModulerPrx remoteModuler = remoteSessionPrx.moduler();
                 modulers.put(identity, remoteModuler);
-                
+                modulesName.put(identity, remoteModuler.fetch());
+
                 ISchedulerPrx remoteScheduler = remoteSessionPrx.scheduler();
                 schedulers.put(identity, remoteScheduler);
 
+                modulesStatus.put(identity, schedulers.get(identity).statetable());
+
                 changed = true;
+                logger.debug(newSize + " hosts in domain");
             }
 
             if ((hashes.get(identity) == null ? 0 : hashes.get(identity)) != context.hashCode()) {
@@ -146,15 +158,16 @@ public class Domain extends Observable implements Runnable {
             if (changed) {
                 setChanged();
                 notifyObservers();
+                //logger.debug("Domain is changed. Observers notified.");
             }
         }
     }
 
-    public Set<String> getHosts() {
+    public Set<String> hosts() {
         return hosts;
     }
-    
-    public Map<Ice.Identity, String> getOsPull() {
+
+    public Map<Ice.Identity, String> osPull() {
         return osPull;
     }
 
@@ -162,71 +175,86 @@ public class Domain extends Observable implements Runnable {
         return !enviroment.containsValue(identity);
     }
 
-    public Map<String, Ice.Identity> getEnviroment() {
+    public Map<String, Ice.Identity> enviroment() {
         return Collections.unmodifiableMap(enviroment);
     }
 
-    public Map<String, String> getCache(Ice.Identity identity) {
+    public Map<String, String> cache(Ice.Identity identity) {
         return cache.get(identity);
     }
 
-
-    public IHosterPrx getHoster(Ice.Identity identity) {
+    public IHosterPrx hoster(Ice.Identity identity) {
         return hosters.get(identity);
     }
-    public IModulerPrx getModuler(Ice.Identity _identity) {
+
+    public IModulerPrx moduler(Ice.Identity _identity) {
         return modulers.get(_identity);
     }
-    
-    public ISchedulerPrx getScheduler(Ice.Identity _identity) {
+
+    public ISchedulerPrx scheduler(Ice.Identity _identity) {
         return schedulers.get(_identity);
     }
-    
-//    public IUserSessionPrx session(Ice.Identity identity) {
-//        return sessions.get(identity);
-//    }
 
-//    public IControllerPrx controller(Ice.Identity identity) {
-//        return controllers.get(identity);
-//    }
-    
+    public IControllerPrx controller(Ice.Identity identity) {
+        return controllers.get(identity);
+    }
+
+    public Map<String, String> moduleStatus(Ice.Identity _ident) {
+        return modulesStatus.get(_ident);
+    }
+
+    public Map<String, String> moduleName(Ice.Identity _ident) {
+        return modulesName.get(_ident);
+    }
+    public IUserSessionPrx session(Ice.Identity identity) {
+        return sessions.get(identity);
+    }
+
     public void run() {
 
         for (;;) {
 
             boolean changed = false;
+            modulesStatus.clear();
             for (String host : hosts) {
                 Ice.Identity id = enviroment.get(host);
 
-                if (id == null) continue;
+                if (id == null) {
+                    continue;
+                }
 
                 if (System.currentTimeMillis() - life.get(id) > 10000) {
                     enviroment.remove(host);
-
+                    logger.debug("Host " + host + " didn`t response more then 10 sec and was removed from domain");
                     changed = true;
                 }
+                modulesStatus.put(id, schedulers.get(id).statetable());
             }
 
             if (changed) {
                 setChanged();
                 notifyObservers();
+                logger.debug("Domain is changed. Observers notified.");
             }
 
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
-                
             }
         }
 
     }
-    public void forceStart(Ice.Identity _ident, String _moduleID) {
-        
-        
-        this.getModuler(_ident).force(_moduleID, JOptionPane.showInputDialog(null, name).split(";"));
-    }
 
+    
     public void properties(Identity currentId, String name) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+//    public void shutdown(Identity currentId) {
+//    }
+
+    public void notifyObserver() {
+        setChanged();
+        notifyObservers();
     }
 }
