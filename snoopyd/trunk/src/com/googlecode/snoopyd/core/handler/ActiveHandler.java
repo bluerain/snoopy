@@ -55,10 +55,10 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
-		
+
 		kernel.childs().clear();
 		kernel.parents().clear();
-		
+
 		String proxy = Identities.toString(kernel.identity()) + ": "
 				+ kernel.primaryEndpoints();
 
@@ -84,7 +84,7 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
-		
+
 		kernel.cache().clear();
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}
@@ -93,27 +93,31 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 	public void handle(ScheduleTimeComeEvent event) {
 
 		final ScheduleTimeComeEvent fevent = event;
-		
+
 		kernel.handle(new InvokationEvent() {
-			
+
 			@Override
 			public void run() {
 				try {
-					
-					IKernelSessionPrx session = (IKernelSessionPrx) kernel.childs().get(fevent.identity());
+
+					IKernelSessionPrx session = (IKernelSessionPrx) kernel
+							.childs().get(fevent.identity());
 					IModulerPrx moduler = session.moduler();
-					
+
 					try {
-					
-						String result[] = moduler.launch(fevent.muid(), fevent.params());
-						kernel.handle(new ResultRecievedEvent(fevent.identity(), fevent.muid(), result));
-					
+
+						String result[] = moduler.launch(fevent.muid(),
+								fevent.params());
+						kernel.handle(new ResultRecievedEvent(
+								fevent.identity(), fevent.muid(), result));
+
 					} catch (com.googlecode.snoopyd.driver.ModuleNotFoundException ex) {
-						
+
 					}
-					
+
 				} catch (ConnectionRefusedException ex) {
-					kernel.handle(new ExceptionEvent(new KernelException("could not connect to module manager")));
+					kernel.handle(new ExceptionEvent(new KernelException(
+							"could not connect to module manager")));
 				}
 			}
 		});
@@ -122,8 +126,17 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ResultRecievedEvent event) {
 		super.handle(event);
-		
+
 		Resulter resulter = (Resulter) kernel.driver(Resulter.class);
-		resulter.store(event.identity(), event.muid(), event.result());
+
+		String hostname = kernel.cache().get(event.identity()).get("hostname");
+		String osname = kernel.cache().get(event.identity()).get("os");
+		
+		IKernelSessionPrx remoteSession = (IKernelSessionPrx) kernel.childs()
+				.get(event.identity());
+		
+		String module = remoteSession.moduler().fetch().get(event.muid());
+		
+		resulter.store(hostname, osname, module, event.result());
 	}
 }
