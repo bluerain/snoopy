@@ -15,7 +15,9 @@
  */
 package com.googlecode.snoopyd.driver;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -33,4 +35,16 @@ public class Configurer extends AbstractDriver implements Driver {
 	public void reconfigure(Map<String, String> configuration) {
 		kernel.handle(new KernelReconfiguredEvent(configuration));
 	}
+	
+	public Map<String, String> configuration() {
+		Properties prop =  kernel.configuration();
+
+		Map<String, String> result = new HashMap<String, String>();
+		for (Object key: prop.keySet()) {
+			result.put(key.toString(), prop.getProperty(key.toString()).toString());
+		}
+		
+		return result;
+	}
+	
 }

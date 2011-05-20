@@ -34,4 +34,9 @@ public class ConfigurerAdapter extends _IConfigurerDisp {
 	public void reconfigure(Map<String, String> configuration, Current __current) {
 		configurer.reconfigure(configuration);
 	}
+
+	@Override
+	public Map<String, String> configuration(Current __current) {
+		return configurer.configuration();
+	}
 }

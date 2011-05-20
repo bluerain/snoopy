@@ -92,7 +92,6 @@ public class Resulter extends AbstractDriver implements Driver, Startable,
 		}
 	}
 
-	@Override
 	public synchronized void start() {
 		logger.debug("starting " + name);
 
