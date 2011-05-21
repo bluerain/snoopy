@@ -10,17 +10,20 @@
  */
 package com.googlecode.snoopycp.ui;
 
+import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.controller.DomainController;
 import com.googlecode.snoopycp.model.GraphModel;
 import com.googlecode.snoopycp.model.TreeModel;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -44,8 +47,11 @@ public class View extends javax.swing.JFrame implements Observer {
     public View() {
         initComponents();
         this.setLocationRelativeTo(null);
-        
-        
+        this.goodLook();
+    }
+    
+    private void goodLook(){
+        this.menuItemExit.setIcon(getImageIcon("door-open.png"));
     }
     public void addInternalFrame(JInternalFrame _frame) {
         this.jdp.add(_frame);
@@ -65,10 +71,10 @@ public class View extends javax.swing.JFrame implements Observer {
         return JOptionPane.showInputDialog(this, "Enter parameters for module:");
     }
 
-    public View(DomainController controller) {
+    public View(DomainController _controller) {
         this();
 
-        this.controller = controller;
+        this.controller = _controller;
 
 //        this.tableModel = controller.createTableModel();
         this.treeModel = controller.createTreeModel();
@@ -78,12 +84,16 @@ public class View extends javax.swing.JFrame implements Observer {
         this.tree.setCellRenderer(new IconTreeCellRenderer());
         //this.table.setModel(tableModel);
 
-        this.layout = new FRLayout<String, String>(graphModel.graph(), new Dimension(300, 300));
+        this.layout = new FRLayout<String, String>(graphModel.graph(), new Dimension(200, 200));
+        //layout.setSize(new Dimension(100, 100));
         this.visualizationViewer = new VisualizationViewer<String, String>(layout);
         this.visualizationViewer.getRenderContext().setVertexLabelTransformer(controller.createLabelTransformer());
         this.visualizationViewer.getRenderContext().setVertexFillPaintTransformer(controller.createFillTransformer());
 
         //nmif.graphPanel
+        //visualizationViewer.setSize(new Dimension(100, 100));
+        visualizationViewer.setPreferredSize(new Dimension(50, 100));
+        visualizationViewer.setBackground(Color.WHITE);
         nmif.add(visualizationViewer);
         //this.graphPanel.updateUI();
 
@@ -111,6 +121,7 @@ public class View extends javax.swing.JFrame implements Observer {
         tree = new javax.swing.JTree();
         jMenuBar = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
         menuItemExit = new javax.swing.JMenuItem();
         menuEdit = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -149,6 +160,14 @@ public class View extends javax.swing.JFrame implements Observer {
         jsp.setLeftComponent(jscp);
 
         menuFile.setText("File");
+
+        jMenuItem3.setText("jMenuItem3");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        menuFile.add(jMenuItem3);
 
         menuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         menuItemExit.setText("Exit");
@@ -218,10 +237,10 @@ public class View extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_menuItemAboutActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-
+        // FIXME double statr crash
         nmif.setClosable(true);
         nmif.setResizable(true);
-        nmif.setSize(400, 150);
+        nmif.setSize(400, 400);
         int x = (this.jdp.getSize().width / 2) - (nmif.getSize().width / 2);
         int y = (this.jdp.getSize().height / 2) - (nmif.getSize().height / 2);
         nmif.setLocation(x, y);
@@ -232,6 +251,10 @@ public class View extends javax.swing.JFrame implements Observer {
     private void menuItemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExitActionPerformed
         System.exit(0);
     }//GEN-LAST:event_menuItemExitActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        this.jdp.add(new TestInternalFrame());
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
     /**
      * @param args the command line arguments
      */
@@ -242,6 +265,7 @@ public class View extends javax.swing.JFrame implements Observer {
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JToolBar jToolBar;
     private javax.swing.JDesktopPane jdp;
     private javax.swing.JScrollPane jscp;
@@ -267,5 +291,9 @@ public class View extends javax.swing.JFrame implements Observer {
         nmif.updatePanel();
 
         pack();
+    }
+    
+    private ImageIcon getImageIcon(String _iconName) {
+        return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
     }
 }

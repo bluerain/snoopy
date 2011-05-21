@@ -46,10 +46,11 @@ public class Coordinator {
         public void actionPerformed(ActionEvent e) {
             DefaultMutableTreeNode lastSelectNode = (DefaultMutableTreeNode) view.getTree().getLastSelectedPathComponent();
             Node node = (Node) lastSelectNode.getUserObject();
-            System.out.println();
+            //System.out.println();
             HashMap <String, String> map = (HashMap<String, String>) domain.hoster(node.identity).context();
             map.put("IP", domain.cache(node.identity).get("primary").split(" ")[2]);
-            view.addInternalFrame(new NodePropertiesInternalFrame(map));
+            view.addInternalFrame(new NodePropertiesInternalFrame(map, node.name, this.domain.configurer(node.identity)));
+            //System.out.println(domain.configurer(node.identity).configuration().get("connectionstring"));
         }
     }
 
@@ -90,6 +91,8 @@ public class Coordinator {
             for (String host : domain.hosts()) {
                 if (Identities.equals(domain.enviroment().get(host), node.identity)) {
                     domain.hosts().remove(host);
+                    //domain.enviroment().remove(host);
+                    //domain.enviroment().put(host, null);
                     logger.debug("Host: " + host + " was removed. " + domain.hosts().size());
                 }
             }
@@ -100,16 +103,17 @@ public class Coordinator {
     public static Logger logger = Logger.getLogger(Coordinator.class);
     private Domain domain;
     private View view;
-    private IModulerPrx moduler;
-    //private Map<String, ActionListener> actions;
-
-    public Coordinator(Domain domain, View view) {
-        this.domain = domain;
+    
+    public Coordinator(Domain _domain, View view) {
+        this.domain = _domain;
         this.view = view;
-
         this.view.setActionsOnPopup(this.packActions());
         domain.addObserver(view);
     }
+    
+//    public Domain domain() {
+//        return this.domain;
+//    }
 
     private Map<String, ActionListener> packActions() {
         Map<String, ActionListener> actions = new HashMap<String, ActionListener>();
@@ -140,12 +144,5 @@ public class Coordinator {
         synchronized (this) {
             notify();
         }
-    }
-    public Ice.Identity currentIdentity() {
-        Object obj = view.getTree().getLastSelectedPathComponent();
-        DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) obj;
-        obj = dmtn.getUserObject();
-        Node node = (Node) obj;
-        return node.identity;
     }
 }

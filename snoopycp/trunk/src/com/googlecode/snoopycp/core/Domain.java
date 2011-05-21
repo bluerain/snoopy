@@ -19,6 +19,7 @@ import Ice.Communicator;
 import Ice.Identity;
 import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.util.Identities;
+import com.googlecode.snoopyd.driver.IConfigurerPrx;
 import com.googlecode.snoopyd.driver.IControllerPrx;
 import com.googlecode.snoopyd.driver.IHosterPrx;
 import com.googlecode.snoopyd.driver.IModulerPrx;
@@ -56,6 +57,7 @@ public class Domain extends Observable implements Runnable {
     private Map<Ice.Identity, ISchedulerPrx> schedulers;
     private Map<Ice.Identity, Map<String, String>> modulesStatus;
     private Map<Ice.Identity, Map<String, String>> modulesName;
+    private Map<Ice.Identity, IConfigurerPrx> configurers;
 
     public Domain(Communicator communicator, String name) {
 
@@ -77,6 +79,7 @@ public class Domain extends Observable implements Runnable {
         this.osPull =       new ConcurrentHashMap<Ice.Identity, String>();
         this.modulers =     new ConcurrentHashMap<Ice.Identity, IModulerPrx>();
         this.schedulers =   new ConcurrentHashMap<Ice.Identity, ISchedulerPrx>();
+        this.configurers =   new ConcurrentHashMap<Ice.Identity, IConfigurerPrx>();
         this.modulesStatus= new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
         this.modulesName =  new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
 
@@ -88,6 +91,7 @@ public class Domain extends Observable implements Runnable {
         this.adapter.activate();
 
         Thread self = new Thread(this);
+        // FIXME too early start
         self.start();
     }
 
@@ -146,6 +150,9 @@ public class Domain extends Observable implements Runnable {
 
                 modulesStatus.put(identity, schedulers.get(identity).statetable());
 
+                IConfigurerPrx remoteConfigurer = remoteSessionPrx.configurer();
+                configurers.put(identity, remoteConfigurer);
+                
                 changed = true;
                 logger.debug(newSize + " hosts in domain");
             }
@@ -198,6 +205,10 @@ public class Domain extends Observable implements Runnable {
     public IControllerPrx controller(Ice.Identity identity) {
         return controllers.get(identity);
     }
+    
+    public IConfigurerPrx configurer(Ice.Identity identity) {
+        return configurers.get(identity);
+    }
 
     public Map<String, String> moduleStatus(Ice.Identity _ident) {
         return modulesStatus.get(_ident);
@@ -210,6 +221,7 @@ public class Domain extends Observable implements Runnable {
         return sessions.get(identity);
     }
 
+    @Override
     public void run() {
 
         for (;;) {
@@ -225,9 +237,10 @@ public class Domain extends Observable implements Runnable {
 
                 if (System.currentTimeMillis() - life.get(id) > 10000) {
                     enviroment.remove(host);
-                    logger.debug("Host " + host + " didn`t response more then 10 sec and was removed from domain");
+                    logger.debug("Host " + host + " didn`t response and was removed from domain");
                     changed = true;
                 }
+                // FIXME exeprion connection refused
                 modulesStatus.put(id, schedulers.get(id).statetable());
             }
 
