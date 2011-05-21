@@ -143,6 +143,10 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		}
 
 		childs.put(identity, childSchedule);
+		
+		for (Ice.Identity child: childs.keySet()) {
+			logger.debug(" ... schedule for " + Identities.toString(child) + " " + childSchedule);
+		}
 
 		update();
 	}
@@ -226,10 +230,17 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		
 		logger.debug("cancel scheduing for " + Identities.toString(identity));
 		
-		Schedule schedule = childs.get(identity);
-		for (String muid: schedule.timetable().keySet()) {
-			timers.get(muid).cancel();
-		}
+//		Schedule schedule = childs.get(identity);
+//		for (String muid: schedule.timetable().keySet()) {
+//			
+//			if (schedule.statetable().get(muid) == ScheduleState.ON) {
+//				logger.debug("cancel scheduling for module " + muid);
+//				timers.get(muid).cancel();
+//			}
+//		}
+		
+		childs.remove(identity);
+		update();
 	}
 
 	@Override
@@ -299,11 +310,17 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 			timers.clear();
 
 			for (Ice.Identity identity : childs.keySet()) {
+				
+				logger.debug("set scheduler for node " + Identities.toString(identity));
+				
 				Schedule childSchedule = childs.get(identity);
 
 				final Ice.Identity fidentity = identity;
 
 				for (String muid : childSchedule.timetable().keySet()) {
+					
+					logger.debug("set schedule for module " + muid);
+					
 					if (childSchedule.statetable().get(muid) == ScheduleState.ON) {
 						final String fmuid = muid;
 						final String[] fprms = childSchedule

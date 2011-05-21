@@ -16,6 +16,7 @@
 
 package com.googlecode.snoopyd.core.handler;
 
+import Ice.ConnectionLostException;
 import Ice.ConnectionRefusedException;
 
 import com.googlecode.snoopyd.core.Kernel;
@@ -90,10 +91,10 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 		kernel.parents().remove(event.identity());
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}
-	
+
 	@Override
 	public void handle(ChildNodeDeadedEvent event) {
-		
+
 		kernel.childs().remove(event.identity());
 		Scheduler scheduler = (Scheduler) kernel.driver(Scheduler.class);
 		scheduler.cancel(event.identity());
@@ -122,12 +123,14 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 								fevent.identity(), fevent.muid(), result));
 
 					} catch (com.googlecode.snoopyd.driver.ModuleNotFoundException ex) {
-
+					
 					}
-
+					
 				} catch (ConnectionRefusedException ex) {
-					kernel.handle(new ExceptionEvent(new KernelException(
-							"could not connect to module manager")));
+					// kernel.handle(new ExceptionEvent(new
+					// KernelException("could not connect to module manager")));
+				} catch (Exception ex) {
+					
 				}
 			}
 		});
@@ -141,12 +144,12 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
 		String hostname = kernel.cache().get(event.identity()).get("hostname");
 		String osname = kernel.cache().get(event.identity()).get("os");
-		
+
 		IKernelSessionPrx remoteSession = (IKernelSessionPrx) kernel.childs()
 				.get(event.identity());
-		
+
 		String module = remoteSession.moduler().fetch().get(event.muid());
-		
+
 		resulter.store(hostname, osname, module, event.result());
 	}
 }
