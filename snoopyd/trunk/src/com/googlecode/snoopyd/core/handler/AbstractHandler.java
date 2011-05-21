@@ -169,10 +169,15 @@ public abstract class AbstractHandler implements KernelHandler {
 		
 		for (Ice.Identity identity: kernel.parents().keySet()) {
 			
-			IKernelSessionPrx parentSession = (IKernelSessionPrx) kernel.parents().get(identity);
-			ISchedulerPrx parentScheduler = parentSession.scheduler();
+			try {
+				
+				IKernelSessionPrx parentSession = (IKernelSessionPrx) kernel.parents().get(identity);
+				ISchedulerPrx parentScheduler = parentSession.scheduler();
 			
-			parentScheduler.synchronize(kernel.identity(), kernel.self().scheduler());
+				parentScheduler.synchronize(kernel.identity(), kernel.self().scheduler());
+				
+			} catch (Exception ex) {
+			}
 		}
 	}
 	
