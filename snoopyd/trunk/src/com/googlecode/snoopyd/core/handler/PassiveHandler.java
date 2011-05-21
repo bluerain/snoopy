@@ -91,6 +91,7 @@ public class PassiveHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
 		kernel.cache().clear();
+		kernel.parents().remove(event.identity());
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
 	}
 

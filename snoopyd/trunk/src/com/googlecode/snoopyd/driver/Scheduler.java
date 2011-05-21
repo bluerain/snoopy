@@ -143,10 +143,6 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		}
 
 		childs.put(identity, childSchedule);
-		
-		for (Ice.Identity child: childs.keySet()) {
-			logger.debug(" ... schedule for " + Identities.toString(child) + " " + childSchedule);
-		}
 
 		update();
 	}
