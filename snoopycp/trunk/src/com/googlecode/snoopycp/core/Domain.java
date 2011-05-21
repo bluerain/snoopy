@@ -220,6 +220,19 @@ public class Domain extends Observable implements Runnable {
     public IUserSessionPrx session(Ice.Identity identity) {
         return sessions.get(identity);
     }
+    
+    public void updateModules(Ice.Identity _ident) {
+        this.modulesName.remove(_ident);
+        this.modulers.get(_ident).ice_ping();
+        HashMap<String, String> map = (HashMap<String, String>) this.sessions.get(_ident).moduler().fetch(); 
+        this.modulesName.put(_ident, map);
+        modulesStatus.clear();
+        modulesStatus.put(_ident, schedulers.get(_ident).statetable());
+        notifyObserver();
+        for (String str : map.values()) {
+            System.out.println(str);
+        }
+    }
 
     @Override
     public void run() {
