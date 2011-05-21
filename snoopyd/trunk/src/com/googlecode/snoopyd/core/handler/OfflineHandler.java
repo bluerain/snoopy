@@ -17,8 +17,7 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
-import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
@@ -58,6 +57,11 @@ public class OfflineHandler extends AbstractHandler implements
 
 	@Override
 	public void handle(ScheduleTimeComeEvent event) {
+		
+	}
+
+	@Override
+	public void handle(ChildNodeDeadedEvent event) {
 		
 	}
 }

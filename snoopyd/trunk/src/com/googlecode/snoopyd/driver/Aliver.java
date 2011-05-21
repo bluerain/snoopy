@@ -16,14 +16,13 @@
 
 package com.googlecode.snoopyd.driver;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ParentNodeDeadedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.KernelListener;
@@ -52,8 +51,6 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 
 			for (; started;) {
 
-				List<Ice.Identity> tobeRemoved = new ArrayList<Ice.Identity>();
-
 				Map<Ice.Identity, ISessionPrx> parents = kernel.parents();
 				for (Ice.Identity identity : parents.keySet()) {
 					IKernelSessionPrx parent = (IKernelSessionPrx) parents
@@ -67,11 +64,7 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 						logger.debug("parent node is dead: "
 								+ Identities.toString(identity));
 
-						tobeRemoved.add(identity);
-
-						if (kernel.parents().size() - tobeRemoved.size() == 0) {
-							kernel.handle(new ParentNodeDeadedEvent());
-						}
+						kernel.handle(new ParentNodeDeadedEvent(identity));
 					}
 				}
 
@@ -87,17 +80,10 @@ public class Aliver extends AbstractDriver implements Driver, Runnable,
 					} catch (Exception ex) {
 						logger.debug("child node is dead: "
 								+ Identities.toString(identity));
-
-						tobeRemoved.add(identity);
+						
+						kernel.handle(new ChildNodeDeadedEvent(identity));
 					}
 				}
-
-				// TODO: think, maybe it is not needed
-
-				// for (Ice.Identity identity: tobeRemoved) {
-				// //manager.removeChild(identity);
-				// //manager.removeParent(identity);
-				// }
 
 				Thread.sleep(Defaults.ALIVE_INTERVAL);
 			}

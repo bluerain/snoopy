@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.googlecode.snoopyd.core.event;
 
 import Ice.Identity;
 
-public class ParentNodeDeadedEvent implements KernelEvent {
+public class ChildNodeDeadedEvent implements KernelEvent {
 
 	private Ice.Identity identity;
 	
-	public ParentNodeDeadedEvent(Identity identity) {
+	public ChildNodeDeadedEvent(Identity identity) {
 		this.identity = identity;
 	}
-	
+
 	public Ice.Identity identity() {
 		return identity;
 	}
-
+	
 	@Override
 	public String name() {
 		return this.getClass().getSimpleName();
