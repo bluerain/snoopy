@@ -47,6 +47,7 @@ public class DomainController {
     public Transformer<String, String> createLabelTransformer() {
         return new Transformer<String, String>() {
 
+            @Override
             public String transform(String vertex) {
                 return vertex;
             }
@@ -56,6 +57,7 @@ public class DomainController {
     public Transformer<String, Paint> createFillTransformer() {
         return new Transformer<String, Paint>() {
 
+            @Override
             public Paint transform(String vertex) {
 
                 if (domain.enviroment().get(vertex) == null) {

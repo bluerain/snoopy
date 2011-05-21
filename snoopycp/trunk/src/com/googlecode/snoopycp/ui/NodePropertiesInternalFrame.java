@@ -10,7 +10,10 @@
  */
 package com.googlecode.snoopycp.ui;
 
+import com.googlecode.snoopyd.driver.IConfigurerPrx;
+import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,15 +21,22 @@ import java.util.Map;
  */
 public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
 
+    IConfigurerPrx config;
+
     /** Creates new form NodeInfoInternalFrame */
+    public NodePropertiesInternalFrame(Map<String, String> _info, String _nodeName, IConfigurerPrx _config) {
+        initComponents();
+        this.setClosable(true);
+        this.setTitle(_nodeName + " - properties");
+        initInfo(_info);
+        config = _config;
+    }
+
     public NodePropertiesInternalFrame(Map<String, String> _info) {
         initComponents();
         this.setClosable(true);
-        //this.setResizable(true);
-        //this.setMaximizable(true);
-        //this.jTable1.setModel(_model);
+        this.setTitle("Properties");
         initInfo(_info);
-        
     }
 
     /** This method is called from within the constructor to
@@ -41,6 +51,11 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
         btnCloseProperties = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        textDataSourceString = new javax.swing.JTextField();
+        btnDataSourceConfirm = new javax.swing.JButton();
+        jlExamplDataSourceStrting = new javax.swing.JLabel();
+        btnViewCurrent = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -64,6 +79,8 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
         jlGateway = new javax.swing.JLabel();
         jlPrimDNS = new javax.swing.JLabel();
 
+        setTitle("Properties");
+
         btnCloseProperties.setText("Close properties");
         btnCloseProperties.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -71,20 +88,59 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        jLabel7.setText("Data source:");
+
+        btnDataSourceConfirm.setText("Confirm");
+        btnDataSourceConfirm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDataSourceConfirmActionPerformed(evt);
+            }
+        });
+
+        jlExamplDataSourceStrting.setText("jdbc:mysql://<address>:<port>/<database name>");
+
+        btnViewCurrent.setText("View current");
+        btnViewCurrent.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnViewCurrentActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 294, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(textDataSourceString, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                    .addComponent(jLabel7)
+                    .addComponent(jlExamplDataSourceStrting)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(btnViewCurrent)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                        .addComponent(btnDataSourceConfirm)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 334, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textDataSourceString, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jlExamplDataSourceStrting)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnDataSourceConfirm)
+                    .addComponent(btnViewCurrent))
+                .addContainerGap(169, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Configure", jPanel1);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel1.setText("Hardware info");
 
         jLabel2.setText("CPU");
@@ -107,7 +163,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
 
         jlRAM.setText("jLabel11");
 
-        jLabel12.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel12.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel12.setText("Network");
 
         jLabel13.setText("Internet address");
@@ -197,9 +253,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jlCores)
                                 .addGap(20, 20, 20))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(60, 60, 60)
-                                .addComponent(jlFrequency)))
+                            .addComponent(jlFrequency))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jlRAM)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -224,7 +278,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
                         .addComponent(jlGateway)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jlPrimDNS)))
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("NodeInfo", jPanel2);
@@ -246,7 +300,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCloseProperties)
                 .addContainerGap())
@@ -262,8 +316,26 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
         this.dispose();
     }//GEN-LAST:event_btnClosePropertiesActionPerformed
 
+    private void btnDataSourceConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDataSourceConfirmActionPerformed
+        Map<String, String> map = new HashMap<String, String>();
+        String sourceString = this.textDataSourceString.getText();
+        if (sourceString.split(":")[0].equals("jdbc") && sourceString.split(":")[1].equals("mysql")) {
+            map.put("connectionstring", sourceString);
+            config.reconfigure(map);
+        } else {
+            // FIXME This window block all UI
+            JOptionPane.showMessageDialog(this, "Bad argument in Data source string");
+        }
+    }//GEN-LAST:event_btnDataSourceConfirmActionPerformed
+
+    private void btnViewCurrentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewCurrentActionPerformed
+        JOptionPane.showMessageDialog(null, "Current data source string: " + config.configuration().get("connectionstring"));
+    }//GEN-LAST:event_btnViewCurrentActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseProperties;
+    private javax.swing.JButton btnDataSourceConfirm;
+    private javax.swing.JButton btnViewCurrent;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
@@ -275,12 +347,14 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel jlCPU;
     private javax.swing.JLabel jlCores;
+    private javax.swing.JLabel jlExamplDataSourceStrting;
     private javax.swing.JLabel jlFrequency;
     private javax.swing.JLabel jlGateway;
     private javax.swing.JLabel jlHostname;
@@ -288,11 +362,12 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jlPrimDNS;
     private javax.swing.JLabel jlRAM;
     private javax.swing.JLabel jlVendor;
+    private javax.swing.JTextField textDataSourceString;
     // End of variables declaration//GEN-END:variables
 
     private void initInfo(Map<String, String> _info) {
-        this.jlCPU.setText(_info.get("Model").split("@")[0].split("CPU")[0] +
-                _info.get("Model").split("@")[0].split("CPU")[1]);
+        this.jlCPU.setText(_info.get("Model").split("@")[0].split("CPU")[0]
+                + _info.get("Model").split("@")[0].split("CPU")[1]);
         this.jlCores.setText(_info.get("TotalCores"));
         this.jlVendor.setText(_info.get("Vendor"));
         this.jlFrequency.setText(_info.get("Mhz") + " MHz");

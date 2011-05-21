@@ -15,6 +15,7 @@
  */
 package com.googlecode.snoopycp.model;
 
+import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.core.Domain;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -57,7 +59,7 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
 
         Set<String> hosts = domain.hosts(); // get all host from cache
         String osName = null;
-        Node.OsType os;
+        Node.OsType os = Node.OsType.UNKNOWN;
 
 
         for (String host : hosts) {
@@ -144,24 +146,24 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
     private void initPopup() {
         // Init popup menu for Module
         popupModule = new JPopupMenu();
-        menuItem = new JMenuItem("Force start");
+        menuItem = new JMenuItem("Force start", getImageIcon("work.png"));
         menuItem.addActionListener(actions.get("ForceStart"));
         popupModule.add(menuItem);
-        menuItem = new JMenuItem("Properties");
-        menuItem.addActionListener(actions.get("Properties"));
+        menuItem = new JMenuItem("Properties", getImageIcon("property.png"));
+        menuItem.addActionListener(actions.get("ModuleProperties"));
         popupModule.add(menuItem);
         popupModule.setOpaque(true);
         popupModule.setLightWeightPopupEnabled(true);
 
         // Init popup menu for Node
         popupNode = new JPopupMenu();
-        menuItem = new JMenuItem("Configure");
+        menuItem = new JMenuItem("Configure", getImageIcon("gear.png"));
         menuItem.addActionListener(actions.get("Configure"));
         popupNode.add(menuItem);
-        menuItem = new JMenuItem("Shutdown");
+        menuItem = new JMenuItem("Shutdown", getImageIcon("slash.png"));
         menuItem.addActionListener(actions.get("Shutdown"));
         popupNode.add(menuItem);
-        menuItem = new JMenuItem("Properties");
+        menuItem = new JMenuItem("Properties", getImageIcon("property.png"));
         menuItem.addActionListener(actions.get("Properties"));
         popupNode.add(menuItem);
 
@@ -183,5 +185,9 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
             }
         });
         popupDomen.add(menuItem);
+    }
+
+    private ImageIcon getImageIcon(String _iconName) {
+        return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
     }
 }
