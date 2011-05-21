@@ -20,6 +20,7 @@ import Ice.ConnectionRefusedException;
 
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.Kernel.KernelException;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.ExceptionEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
@@ -35,12 +36,12 @@ import com.googlecode.snoopyd.driver.IModulerPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrx;
 import com.googlecode.snoopyd.driver.ISessionierPrxHelper;
 import com.googlecode.snoopyd.driver.Resulter;
+import com.googlecode.snoopyd.driver.Scheduler;
 import com.googlecode.snoopyd.session.IKernelSessionPrx;
 import com.googlecode.snoopyd.session.IKernelSessionPrxHelper;
 import com.googlecode.snoopyd.session.KernelSession;
 import com.googlecode.snoopyd.session.KernelSessionAdapter;
 import com.googlecode.snoopyd.util.Identities;
-import com.googlecode.snoopymm.ModuleNotFoundException;
 
 public class ActiveHandler extends AbstractHandler implements KernelHandler {
 
@@ -86,7 +87,16 @@ public class ActiveHandler extends AbstractHandler implements KernelHandler {
 	public void handle(ParentNodeDeadedEvent event) {
 
 		kernel.cache().clear();
+		kernel.parents().remove(event.identity());
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
+	}
+	
+	@Override
+	public void handle(ChildNodeDeadedEvent event) {
+		
+		kernel.childs().remove(event.identity());
+		Scheduler scheduler = (Scheduler) kernel.driver(Scheduler.class);
+		scheduler.cancel(event.identity());
 	}
 
 	@Override

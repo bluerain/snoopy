@@ -17,6 +17,7 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;
@@ -91,6 +92,11 @@ public class PassiveHandler extends AbstractHandler implements KernelHandler {
 	public void handle(ParentNodeDeadedEvent event) {
 		kernel.cache().clear();
 		kernel.handle(new KernelStateChangedEvent(new OnlineState(kernel)));
+	}
+
+	@Override
+	public void handle(ChildNodeDeadedEvent event) {
+		
 	}
 
 	@Override

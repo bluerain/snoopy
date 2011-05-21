@@ -16,6 +16,7 @@
 
 package com.googlecode.snoopyd.core.handler;
 
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
@@ -51,6 +52,8 @@ public interface KernelHandler {
 	public void handle(DiscoverRecivedEvent event);
 	
 	public void handle(ParentNodeDeadedEvent event);
+	
+	public void handle(ChildNodeDeadedEvent event);
 	
 	public void handle(SnoopydStartedEvent event);
 	

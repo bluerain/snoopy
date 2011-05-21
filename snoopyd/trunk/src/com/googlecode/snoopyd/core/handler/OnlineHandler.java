@@ -16,10 +16,12 @@
 
 package com.googlecode.snoopyd.core.handler;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
@@ -43,17 +45,16 @@ import com.googlecode.snoopyd.util.Identities;
 
 public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
-	private Ice.Identity leaderIdentity;
-	private int leaderRate;
-	
+	private Map<Ice.Identity, Integer> leaders;
+
 	private long startTimeStamp;
 
 	public OnlineHandler(Kernel kernel) {
 		super(kernel);
-		
-		this.leaderIdentity = kernel.identity();
-		this.leaderRate = kernel.rate();
-		
+
+		this.leaders = new HashMap<Ice.Identity, Integer>();
+		this.leaders.put(kernel.identity(), kernel.rate());
+
 		this.startTimeStamp = System.currentTimeMillis();
 	}
 
@@ -64,10 +65,10 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(NetworkDisabledEvent event) {
-		
+
 		kernel.childs().clear();
 		kernel.parents().clear();
-		
+
 		kernel.handle(new KernelStateChangedEvent(new OfflineState(kernel)));
 	}
 
@@ -78,56 +79,85 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 		Ice.Identity eventIdentity = event.identity();
 		int eventRate = Integer.parseInt(event.context().get("rate"));
-		
-		if (eventRate > leaderRate) {
-			leaderIdentity = eventIdentity;
-			leaderRate = eventRate;
-		}
-		
+
+		leaders.put(eventIdentity, eventRate);
+
 		if ((System.currentTimeMillis() - startTimeStamp) > Defaults.DISCOVER_TIMEOUT) {
 
-			Map<String, String> targetContext = kernel.cache().get(leaderIdentity);
+			boolean connected = false;
+			while (!connected) {
 
-			String proxy = Identities.toString(leaderIdentity) + ": "
-					+ targetContext.get("primary");
+				Ice.Identity leaderIdentity = kernel.identity();
+				int leaderRate = kernel.rate();
+				for (Ice.Identity identity : leaders.keySet()) {
+					if (leaders.get(identity) > leaderRate) {
+						leaderIdentity = identity;
+						leaderRate = leaders.get(identity);
+					}
+				}
 
-			ISessionierPrx prx = ISessionierPrxHelper.checkedCast(kernel
-					.communicator().stringToProxy(proxy));
+				leaders.remove(leaderIdentity);
 
-			IKernelSessionPrx selfSession = IKernelSessionPrxHelper
-					.uncheckedCast(kernel.primary()
-							.addWithUUID(
+				Map<String, String> targetContext = kernel.cache().get(
+						leaderIdentity);
+				String proxy = Identities.toString(leaderIdentity) + ": "
+						+ targetContext.get("primary");
+
+				try {
+
+					ISessionierPrx prx = ISessionierPrxHelper
+							.checkedCast(kernel.communicator().stringToProxy(
+									proxy));
+
+					IKernelSessionPrx selfSession = IKernelSessionPrxHelper
+							.uncheckedCast(kernel.primary().addWithUUID(
 									new KernelSessionAdapter(new KernelSession(
 											kernel))));
 
-			IKernelSessionPrx leaderSession = prx.createKernelSession(
-					kernel.identity(), selfSession);
+					IKernelSessionPrx leaderSession = prx.createKernelSession(
+							kernel.identity(), selfSession);
 
-			kernel.handle(new ChildSessionSendedEvent(kernel.identity(), selfSession));
-			kernel.handle(new ParentSessionRecivedEvent(leaderIdentity, leaderSession));
+					kernel.handle(new ChildSessionSendedEvent(
+							kernel.identity(), selfSession));
+					kernel.handle(new ParentSessionRecivedEvent(leaderIdentity,
+							leaderSession));
+					
+					connected = true;
+
+				} catch (Exception ex) {
+					
+					connected = false;
+				
+				}
+			}
 		}
 	}
 
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
-		
+
+	}
+
+	@Override
+	public void handle(ChildNodeDeadedEvent event) {
+
 	}
 
 	@Override
 	public void handle(ScheduleTimeComeEvent event) {
-		
+
 	}
 
 	@Override
 	public void handle(ParentSessionRecivedEvent event) {
 		super.handle(event);
-		
+
 		if (event.identity().equals(kernel.identity())) {
 			kernel.handle(new KernelStateChangedEvent(new ActiveState(kernel)));
 		} else {
 			kernel.handle(new KernelStateChangedEvent(new PassiveState(kernel)));
 		}
-		
+
 		kernel.handle(new ScheduleUpdatedEvent());
 	}
 

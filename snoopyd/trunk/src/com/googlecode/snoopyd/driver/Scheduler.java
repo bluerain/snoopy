@@ -221,6 +221,16 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		
 		update();
 	}
+	
+	public void cancel(Ice.Identity identity) {
+		
+		logger.debug("cancel scheduing for " + Identities.toString(identity));
+		
+		Schedule schedule = childs.get(identity);
+		for (String muid: schedule.timetable().keySet()) {
+			timers.get(muid).cancel();
+		}
+	}
 
 	@Override
 	public synchronized void start() {

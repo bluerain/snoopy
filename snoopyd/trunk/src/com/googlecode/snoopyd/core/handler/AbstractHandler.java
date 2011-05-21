@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.Kernel.KernelException;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
@@ -79,6 +80,10 @@ public abstract class AbstractHandler implements KernelHandler {
 		} else if (event instanceof ParentNodeDeadedEvent) {
 		
 			handle((ParentNodeDeadedEvent) event);
+		
+		} else if (event instanceof ChildNodeDeadedEvent) {
+			
+			handle((ChildNodeDeadedEvent) event);
 		
 		} else if (event instanceof SnoopydStartedEvent) {
 		

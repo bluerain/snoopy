@@ -17,6 +17,7 @@
 package com.googlecode.snoopyd.core.handler;
 
 import com.googlecode.snoopyd.core.Kernel;
+import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionRecivedEvent;
 import com.googlecode.snoopyd.core.event.ChildSessionSendedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
@@ -92,6 +93,11 @@ public class SuspenseHandler extends AbstractHandler implements KernelHandler {
 	@Override
 	public void handle(ParentNodeDeadedEvent event) {
 
+	}
+
+	@Override
+	public void handle(ChildNodeDeadedEvent event) {
+		
 	}
 
 	@Override
