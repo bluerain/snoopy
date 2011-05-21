@@ -60,6 +60,8 @@ class ModuleManager(com.googlecode.snoopymm.IModuleManager):
 		modulesConfig = open(self.modulesConfig, "w") 
 		modulesConfig.write(xml.toxml())
 		modulesConfig.close()
+
+		self.modules = self.fetch()
 		
 	def undeploy(self, muid, current=None):
 		os.remove(os.path.join(self.modulesDir, muid + ".py"))
