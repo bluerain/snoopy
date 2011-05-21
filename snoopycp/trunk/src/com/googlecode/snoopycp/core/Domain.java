@@ -73,15 +73,15 @@ public class Domain extends Observable implements Runnable {
 
         this.cache = new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
 
-        this.sessions =     new ConcurrentHashMap<Ice.Identity, IUserSessionPrx>();
-        this.controllers =  new ConcurrentHashMap<Ice.Identity, IControllerPrx>();
-        this.hosters =      new ConcurrentHashMap<Ice.Identity, IHosterPrx>();
-        this.osPull =       new ConcurrentHashMap<Ice.Identity, String>();
-        this.modulers =     new ConcurrentHashMap<Ice.Identity, IModulerPrx>();
-        this.schedulers =   new ConcurrentHashMap<Ice.Identity, ISchedulerPrx>();
-        this.configurers =   new ConcurrentHashMap<Ice.Identity, IConfigurerPrx>();
-        this.modulesStatus= new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
-        this.modulesName =  new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
+        this.sessions = new ConcurrentHashMap<Ice.Identity, IUserSessionPrx>();
+        this.controllers = new ConcurrentHashMap<Ice.Identity, IControllerPrx>();
+        this.hosters = new ConcurrentHashMap<Ice.Identity, IHosterPrx>();
+        this.osPull = new ConcurrentHashMap<Ice.Identity, String>();
+        this.modulers = new ConcurrentHashMap<Ice.Identity, IModulerPrx>();
+        this.schedulers = new ConcurrentHashMap<Ice.Identity, ISchedulerPrx>();
+        this.configurers = new ConcurrentHashMap<Ice.Identity, IConfigurerPrx>();
+        this.modulesStatus = new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
+        this.modulesName = new ConcurrentHashMap<Ice.Identity, Map<String, String>>();
 
         this.hashes = new HashMap<Identity, Integer>();
 
@@ -137,7 +137,7 @@ public class Domain extends Observable implements Runnable {
 
                 IHosterPrx remoteHoster = remoteSessionPrx.hoster();
                 hosters.put(identity, remoteHoster);
-                
+
                 IControllerPrx remoteController = remoteSessionPrx.controller();
                 controllers.put(identity, remoteController);
 
@@ -148,11 +148,12 @@ public class Domain extends Observable implements Runnable {
                 ISchedulerPrx remoteScheduler = remoteSessionPrx.scheduler();
                 schedulers.put(identity, remoteScheduler);
 
+                // FIXME may be exeption
                 modulesStatus.put(identity, schedulers.get(identity).statetable());
 
                 IConfigurerPrx remoteConfigurer = remoteSessionPrx.configurer();
                 configurers.put(identity, remoteConfigurer);
-                
+
                 changed = true;
                 logger.debug(newSize + " hosts in domain");
             }
@@ -163,9 +164,7 @@ public class Domain extends Observable implements Runnable {
             }
 
             if (changed) {
-                setChanged();
-                notifyObservers();
-                //logger.debug("Domain is changed. Observers notified.");
+                notifyObserver();
             }
         }
     }
@@ -205,7 +204,7 @@ public class Domain extends Observable implements Runnable {
     public IControllerPrx controller(Ice.Identity identity) {
         return controllers.get(identity);
     }
-    
+
     public IConfigurerPrx configurer(Ice.Identity identity) {
         return configurers.get(identity);
     }
@@ -217,6 +216,7 @@ public class Domain extends Observable implements Runnable {
     public Map<String, String> moduleName(Ice.Identity _ident) {
         return modulesName.get(_ident);
     }
+
     public IUserSessionPrx session(Ice.Identity identity) {
         return sessions.get(identity);
     }
@@ -228,26 +228,31 @@ public class Domain extends Observable implements Runnable {
 
             boolean changed = false;
             modulesStatus.clear();
-            for (String host : hosts) {
-                Ice.Identity id = enviroment.get(host);
+            synchronized (this) {
+                for (String host : hosts) {
+                    Ice.Identity id = enviroment.get(host);
 
-                if (id == null) {
-                    continue;
-                }
+                    if (id == null) {
+                        continue;
+                    }
 
-                if (System.currentTimeMillis() - life.get(id) > 10000) {
-                    enviroment.remove(host);
-                    logger.debug("Host " + host + " didn`t response and was removed from domain");
-                    changed = true;
+                    if (System.currentTimeMillis() - life.get(id) > 10000) {
+                        enviroment.remove(host);
+                        logger.debug("Host " + host + " didn`t response and was removed from domain");
+                        changed = true;
+                    }
+                    try {
+                        modulesStatus.put(id, schedulers.get(id).statetable());
+                    } catch (Ice.ConnectionRefusedException ex) {
+                        logger.debug(host + " node didn`t response: " + ex.getMessage());
+                        // TODO don`t remove - make [dead]
+                        removeHost(host);
+                    };
                 }
-                // FIXME exeprion connection refused
-                modulesStatus.put(id, schedulers.get(id).statetable());
             }
 
             if (changed) {
-                setChanged();
-                notifyObservers();
-                logger.debug("Domain is changed. Observers notified.");
+                notifyObserver();
             }
 
             try {
@@ -258,16 +263,16 @@ public class Domain extends Observable implements Runnable {
 
     }
 
-    
-    public void properties(Identity currentId, String name) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-//    public void shutdown(Identity currentId) {
-//    }
-
     public void notifyObserver() {
         setChanged();
         notifyObservers();
+        logger.debug("Domain is changed. Observers notified.");
+    }
+
+    public void removeHost(String _hostname) {
+        // TODO normal remove of host
+        this.hosts.remove(_hostname);
+        logger.debug("Host: " + _hostname + " was removed. " + hosts.size());
+        notifyObserver();
     }
 }

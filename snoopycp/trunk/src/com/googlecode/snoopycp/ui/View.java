@@ -19,11 +19,13 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -34,7 +36,6 @@ public class View extends javax.swing.JFrame implements Observer {
 
     public static Logger logger = Logger.getLogger(View.class);
     private DomainController controller;
-//    private TableModel tableModel;
     private TreeModel treeModel;
     private GraphModel graphModel;
     private VisualizationViewer<String, String> visualizationViewer;
@@ -43,30 +44,34 @@ public class View extends javax.swing.JFrame implements Observer {
     JPopupMenu popup;
     JMenuItem mi;
 
-    /** Creates new form View2 */
+    /** Creates new form View */
     public View() {
         initComponents();
         this.setLocationRelativeTo(null);
         this.goodLook();
     }
-    
-    private void goodLook(){
+
+    /**
+     * Set icons for menu, set nice names
+     */
+    private void goodLook() {
         this.menuItemExit.setIcon(getImageIcon("door-open.png"));
     }
+
     public void addInternalFrame(JInternalFrame _frame) {
         this.jdp.add(_frame);
+        _frame.setLocation(centralPosition(_frame));
         _frame.setVisible(true);
     }
-    
+
     public void setActionsOnPopup(Map<String, ActionListener> _actions) {
         treeModel.setPopupMenu(this.tree, _actions);
-        
     }
-    
+
     public javax.swing.JTree getTree() {
         return this.tree;
     }
-    
+
     public String showInputDialog() {
         return JOptionPane.showInputDialog(this, "Enter parameters for module:");
     }
@@ -76,26 +81,20 @@ public class View extends javax.swing.JFrame implements Observer {
 
         this.controller = _controller;
 
-//        this.tableModel = controller.createTableModel();
         this.treeModel = controller.createTreeModel();
         this.graphModel = controller.createGraphModel();
 
         this.tree.setModel(treeModel);
         this.tree.setCellRenderer(new IconTreeCellRenderer());
-        //this.table.setModel(tableModel);
 
         this.layout = new FRLayout<String, String>(graphModel.graph(), new Dimension(200, 200));
-        //layout.setSize(new Dimension(100, 100));
         this.visualizationViewer = new VisualizationViewer<String, String>(layout);
         this.visualizationViewer.getRenderContext().setVertexLabelTransformer(controller.createLabelTransformer());
         this.visualizationViewer.getRenderContext().setVertexFillPaintTransformer(controller.createFillTransformer());
 
-        //nmif.graphPanel
-        //visualizationViewer.setSize(new Dimension(100, 100));
         visualizationViewer.setPreferredSize(new Dimension(50, 100));
         visualizationViewer.setBackground(Color.WHITE);
         nmif.add(visualizationViewer);
-        //this.graphPanel.updateUI();
 
         update(null, null);
 
@@ -237,15 +236,16 @@ public class View extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_menuItemAboutActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        // FIXME double statr crash
-        nmif.setClosable(true);
-        nmif.setResizable(true);
-        nmif.setSize(400, 400);
-        int x = (this.jdp.getSize().width / 2) - (nmif.getSize().width / 2);
-        int y = (this.jdp.getSize().height / 2) - (nmif.getSize().height / 2);
-        nmif.setLocation(x, y);
-        this.jdp.add(nmif);
-        nmif.show();
+        // FIXME need call from Coordinator
+        if (!nmif.isShowing()) {
+            nmif.setClosable(true);
+            nmif.setResizable(true);
+            nmif.setSize(400, 400);
+            nmif.setLocation(centralPosition(nmif));
+            this.jdp.add(nmif);
+            //this.menuNetwork.setEnabled(false);
+            nmif.show();
+        }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void menuItemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExitActionPerformed
@@ -290,10 +290,17 @@ public class View extends javax.swing.JFrame implements Observer {
         visualizationViewer.updateUI();
         nmif.updatePanel();
 
+        this.setPreferredSize(this.getSize());
         pack();
     }
-    
+
     private ImageIcon getImageIcon(String _iconName) {
         return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
+    }
+
+    public Point centralPosition(JInternalFrame _frame) {
+        int x = (this.jdp.getSize().width / 2) - (_frame.getSize().width / 2);
+        int y = (this.jdp.getSize().height / 2) - (_frame.getSize().height / 2);
+        return new Point(x, y);
     }
 }
