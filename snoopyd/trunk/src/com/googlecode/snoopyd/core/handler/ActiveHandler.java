@@ -16,14 +16,11 @@
 
 package com.googlecode.snoopyd.core.handler;
 
-import Ice.ConnectionLostException;
 import Ice.ConnectionRefusedException;
 
 import com.googlecode.snoopyd.core.Kernel;
-import com.googlecode.snoopyd.core.Kernel.KernelException;
 import com.googlecode.snoopyd.core.event.ChildNodeDeadedEvent;
 import com.googlecode.snoopyd.core.event.DiscoverRecivedEvent;
-import com.googlecode.snoopyd.core.event.ExceptionEvent;
 import com.googlecode.snoopyd.core.event.InvokationEvent;
 import com.googlecode.snoopyd.core.event.KernelStateChangedEvent;
 import com.googlecode.snoopyd.core.event.NetworkDisabledEvent;

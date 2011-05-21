@@ -49,6 +49,7 @@ import org.xml.sax.SAXException;
 import com.googlecode.snoopyd.Defaults;
 import com.googlecode.snoopyd.core.Kernel;
 import com.googlecode.snoopyd.core.event.ScheduleTimeComeEvent;
+import com.googlecode.snoopyd.core.event.ScheduleUpdatedEvent;
 import com.googlecode.snoopyd.core.state.ActiveState;
 import com.googlecode.snoopyd.core.state.KernelListener;
 import com.googlecode.snoopyd.core.state.KernelState;
@@ -147,16 +148,26 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 		update();
 	}
 
-	public void schedule(String muid, long delay) {
+	public void schedule(String muid, long[] delays, String[] params) {
 
 		if (self.timetable().containsKey("muid")) {
-			self.timetable().get(muid).add(delay);
+			for (long delay: delays) {
+				self.timetable().get(muid).add(delay);
+			}
 		} else {
-			self.timetable().put(muid, Arrays.asList(delay));
+			self.timetable().put(muid, new ArrayList<Long>());
+			for (long delay: delays) {
+				self.timetable().get(muid).add(delay);
+			}
 			self.statetable().put(muid, ScheduleState.ON);
 		}
 		
-		update();
+		kernel.handle(new ScheduleUpdatedEvent());
+	}
+	
+	public void unschedule(String muid) throws ModuleNotFoundException {
+		
+		kernel.handle(new ScheduleUpdatedEvent());
 	}
 	
 	public void force(Ice.Identity identity, String muid, String[] params) {
@@ -219,21 +230,12 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 			self.statetable().put(muid, ScheduleState.OFF);
 		}
 		
-		update();
+		kernel.handle(new ScheduleUpdatedEvent());
 	}
 	
 	public void cancel(Ice.Identity identity) {
 		
 		logger.debug("cancel scheduing for " + Identities.toString(identity));
-		
-//		Schedule schedule = childs.get(identity);
-//		for (String muid: schedule.timetable().keySet()) {
-//			
-//			if (schedule.statetable().get(muid) == ScheduleState.ON) {
-//				logger.debug("cancel scheduling for module " + muid);
-//				timers.get(muid).cancel();
-//			}
-//		}
 		
 		childs.remove(identity);
 		update();
