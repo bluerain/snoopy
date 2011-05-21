@@ -48,6 +48,8 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 	private Map<Ice.Identity, Integer> leaders;
 
 	private long startTimeStamp;
+	
+	private boolean connected;
 
 	public OnlineHandler(Kernel kernel) {
 		super(kernel);
@@ -56,6 +58,8 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 		this.leaders.put(kernel.identity(), kernel.rate());
 
 		this.startTimeStamp = System.currentTimeMillis();
+		
+		this.connected = false;
 	}
 
 	@Override
@@ -74,8 +78,12 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 	@Override
 	public void handle(DiscoverRecivedEvent event) {
-
+		
 		kernel.cache().put(event.identity(), event.context());
+
+		if (connected) {
+			return;
+		}
 
 		Ice.Identity eventIdentity = event.identity();
 		int eventRate = Integer.parseInt(event.context().get("rate"));
@@ -84,7 +92,6 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 
 		if ((System.currentTimeMillis() - startTimeStamp) > Defaults.DISCOVER_TIMEOUT) {
 
-			boolean connected = false;
 			while (!connected) {
 
 				Ice.Identity leaderIdentity = kernel.identity();
@@ -117,18 +124,20 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 					IKernelSessionPrx leaderSession = prx.createKernelSession(
 							kernel.identity(), selfSession);
 
+					connected = true;
+
 					kernel.handle(new ChildSessionSendedEvent(
 							kernel.identity(), selfSession));
 					kernel.handle(new ParentSessionRecivedEvent(leaderIdentity,
 							leaderSession));
 					
-					connected = true;
-
-				} catch (Exception ex) {
-					
+				} catch (Ice.ConnectionLostException ex) {
 					connected = false;
-				
-				}
+				} catch (Ice.ConnectFailedException ex) {
+					connected = false;
+				} catch (Ice.ConnectionTimeoutException ex) {
+					connected = false;
+				} 
 			}
 		}
 	}
@@ -159,11 +168,5 @@ public class OnlineHandler extends AbstractHandler implements KernelHandler {
 		}
 
 		kernel.handle(new ScheduleUpdatedEvent());
-	}
-
-	@Override
-	public void handle(ParentSessionSendedEvent event) {
-		super.handle(event);
-		kernel.handle(new KernelStateChangedEvent(new ActiveState(kernel)));
 	}
 }
