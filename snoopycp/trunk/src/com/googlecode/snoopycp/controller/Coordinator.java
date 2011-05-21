@@ -19,10 +19,8 @@ import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.ui.View;
 import com.googlecode.snoopycp.core.Domain;
 import com.googlecode.snoopycp.model.Node;
-import com.googlecode.snoopycp.model.TableModel;
 import com.googlecode.snoopycp.ui.NodePropertiesInternalFrame;
 import com.googlecode.snoopycp.util.Identities;
-import com.googlecode.snoopyd.driver.IModulerPrx;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -90,10 +88,7 @@ public class Coordinator {
             domain.controller(node.identity).shutdown();
             for (String host : domain.hosts()) {
                 if (Identities.equals(domain.enviroment().get(host), node.identity)) {
-                    domain.hosts().remove(host);
-                    //domain.enviroment().remove(host);
-                    //domain.enviroment().put(host, null);
-                    logger.debug("Host: " + host + " was removed. " + domain.hosts().size());
+                    domain.removeHost(host);
                 }
             }
             domain.notifyObserver();

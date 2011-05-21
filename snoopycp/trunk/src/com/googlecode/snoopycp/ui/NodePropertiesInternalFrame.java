@@ -1,6 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright 2011 Snoopy Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /*
@@ -24,6 +35,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     IConfigurerPrx config;
 
     /** Creates new form NodeInfoInternalFrame */
+    // FIXME change way of transfer IConfigurerPrx
     public NodePropertiesInternalFrame(Map<String, String> _info, String _nodeName, IConfigurerPrx _config) {
         initComponents();
         this.setClosable(true);
@@ -321,17 +333,26 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
         String sourceString = this.textDataSourceString.getText();
         if (sourceString.split(":")[0].equals("jdbc") && sourceString.split(":")[1].equals("mysql")) {
             map.put("connectionstring", sourceString);
-            config.reconfigure(map);
+            try {
+                config.ice_ping();
+                config.reconfigure(map);
+            } catch (Ice.ConnectionRefusedException e) {
+                JOptionPane.showInternalMessageDialog(this, "Node not avalibele more " + e.getMessage());
+            }
         } else {
             // FIXME This window block all UI
-            JOptionPane.showMessageDialog(this, "Bad argument in Data source string");
+            JOptionPane.showInternalMessageDialog(this, "Bad argument in Data source string");
         }
     }//GEN-LAST:event_btnDataSourceConfirmActionPerformed
 
     private void btnViewCurrentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewCurrentActionPerformed
-        JOptionPane.showMessageDialog(null, "Current data source string: " + config.configuration().get("connectionstring"));
+        try {
+            config.ice_ping();
+            JOptionPane.showInternalMessageDialog(this, "Current data source string: " + config.configuration().get("connectionstring"));
+        } catch (Ice.ConnectionRefusedException e) {
+            JOptionPane.showInternalMessageDialog(this, "Node not avalibele more " + e.getMessage());
+        }
     }//GEN-LAST:event_btnViewCurrentActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseProperties;
     private javax.swing.JButton btnDataSourceConfirm;
@@ -366,8 +387,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     // End of variables declaration//GEN-END:variables
 
     private void initInfo(Map<String, String> _info) {
-        this.jlCPU.setText(_info.get("Model").split("@")[0].split("CPU")[0]
-                + _info.get("Model").split("@")[0].split("CPU")[1]);
+        this.jlCPU.setText(_info.get("Model"));// FIXME may be very long name
         this.jlCores.setText(_info.get("TotalCores"));
         this.jlVendor.setText(_info.get("Vendor"));
         this.jlFrequency.setText(_info.get("Mhz") + " MHz");

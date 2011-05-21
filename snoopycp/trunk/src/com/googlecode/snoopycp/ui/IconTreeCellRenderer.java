@@ -1,3 +1,18 @@
+/**
+ * Copyright 2011 Snoopy Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.Defaults;
@@ -7,7 +22,9 @@ import java.util.HashMap;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
+import sun.util.logging.resources.logging;
 
 public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -42,10 +59,15 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
                     }
                     break;
                 case MODULE:
-                    HashMap<String, String> map = (HashMap) userObj.moduleStatuses;
-                    if (map.get(userObj.muid).equalsIgnoreCase("on")) {
-                        setIcon(getImageIcon("status-online.png"));
-                    } else {
+                    try {
+                        HashMap<String, String> map = (HashMap) userObj.moduleStatuses;
+                        if (map.get(userObj.muid).equalsIgnoreCase("on")) {
+                            setIcon(getImageIcon("status-online.png"));
+                        } else {
+                            setIcon(getImageIcon("status-offline.png"));
+                        }
+                    } catch (NullPointerException e) {
+                        JOptionPane.showMessageDialog(null, "No module status for " + userObj.name);
                         setIcon(getImageIcon("status-offline.png"));
                     }
                     break;
