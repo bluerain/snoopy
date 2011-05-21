@@ -164,7 +164,7 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         menuItem.addActionListener(actions.get("Shutdown"));
         popupNode.add(menuItem);
         menuItem = new JMenuItem("Properties", getImageIcon("property.png"));
-        menuItem.addActionListener(actions.get("Properties"));
+        menuItem.addActionListener(actions.get("NodeProperties"));
         popupNode.add(menuItem);
 
         // Init popup menu for Domen (Not showing)

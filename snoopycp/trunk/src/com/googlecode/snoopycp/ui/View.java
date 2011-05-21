@@ -11,6 +11,7 @@
 package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.Defaults;
+import com.googlecode.snoopycp.controller.Coordinator;
 import com.googlecode.snoopycp.controller.DomainController;
 import com.googlecode.snoopycp.model.GraphModel;
 import com.googlecode.snoopycp.model.TreeModel;
@@ -25,7 +26,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -40,40 +40,17 @@ public class View extends javax.swing.JFrame implements Observer {
     private GraphModel graphModel;
     private VisualizationViewer<String, String> visualizationViewer;
     private Layout<String, String> layout;
-    private netMapIFrame nmif = new netMapIFrame();
-    JPopupMenu popup;
-    JMenuItem mi;
+    private netMapIFrame nmif = new netMapIFrame();;
+    
+    private Coordinator coordinator;
+    private JPopupMenu popup;
+    private JMenuItem mi;
 
     /** Creates new form View */
     public View() {
         initComponents();
         this.setLocationRelativeTo(null);
         this.goodLook();
-    }
-
-    /**
-     * Set icons for menu, set nice names
-     */
-    private void goodLook() {
-        this.menuItemExit.setIcon(getImageIcon("door-open.png"));
-    }
-
-    public void addInternalFrame(JInternalFrame _frame) {
-        this.jdp.add(_frame);
-        _frame.setLocation(centralPosition(_frame));
-        _frame.setVisible(true);
-    }
-
-    public void setActionsOnPopup(Map<String, ActionListener> _actions) {
-        treeModel.setPopupMenu(this.tree, _actions);
-    }
-
-    public javax.swing.JTree getTree() {
-        return this.tree;
-    }
-
-    public String showInputDialog() {
-        return JOptionPane.showInputDialog(this, "Enter parameters for module:");
     }
 
     public View(DomainController _controller) {
@@ -100,6 +77,35 @@ public class View extends javax.swing.JFrame implements Observer {
 
         pack();
     }
+    /**
+     * Set icons for menu, set nice names
+     */
+    private void goodLook() {
+        this.menuItemExit.setIcon(getImageIcon("door-open.png"));
+        //this.btnNotepad.setIcon(getImageIcon("document.png"));
+    }
+
+    public void addInternalFrame(JInternalFrame _frame) {
+        this.jdp.add(_frame);
+        _frame.setLocation(centralPosition(_frame));
+        _frame.setVisible(true);
+    }
+    
+    public void setCoordinator(Coordinator _coordinator) {
+        coordinator = _coordinator;
+    }
+
+    public void setActionsOnPopup(Map<String, ActionListener> _actions) {
+        treeModel.setPopupMenu(this.tree, _actions);
+    }
+
+    public javax.swing.JTree getTree() {
+        return this.tree;
+    }
+
+    public String showInputDialog() {
+        return JOptionPane.showInputDialog(this, "Enter parameters for module:");
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -111,7 +117,7 @@ public class View extends javax.swing.JFrame implements Observer {
     private void initComponents() {
 
         jToolBar = new javax.swing.JToolBar();
-        jButton1 = new javax.swing.JButton();
+        btnNotepad = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jsp = new javax.swing.JSplitPane();
@@ -133,11 +139,16 @@ public class View extends javax.swing.JFrame implements Observer {
 
         jToolBar.setRollover(true);
 
-        jButton1.setText("jButton1");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar.add(jButton1);
+        btnNotepad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/document.png"))); // NOI18N
+        btnNotepad.setFocusable(false);
+        btnNotepad.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnNotepad.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnNotepad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNotepadActionPerformed(evt);
+            }
+        });
+        jToolBar.add(btnNotepad);
 
         jButton2.setText("jButton2");
         jButton2.setFocusable(false);
@@ -160,7 +171,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
         menuFile.setText("File");
 
-        jMenuItem3.setText("jMenuItem3");
+        jMenuItem3.setText("Notepad");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem3ActionPerformed(evt);
@@ -237,6 +248,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // FIXME need call from Coordinator
+        //nmif = new netMapIFrame();
         if (!nmif.isShowing()) {
             nmif.setClosable(true);
             nmif.setResizable(true);
@@ -253,13 +265,17 @@ public class View extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_menuItemExitActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-        this.jdp.add(new TestInternalFrame());
+        this.addInternalFrame(new NotepadInternalFrame(coordinator.domain()));
     }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void btnNotepadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNotepadActionPerformed
+        this.jMenuItem3ActionPerformed(evt);
+    }//GEN-LAST:event_btnNotepadActionPerformed
     /**
      * @param args the command line arguments
      */
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton btnNotepad;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JMenuBar jMenuBar;

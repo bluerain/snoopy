@@ -19,6 +19,7 @@ import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.ui.View;
 import com.googlecode.snoopycp.core.Domain;
 import com.googlecode.snoopycp.model.Node;
+import com.googlecode.snoopycp.ui.ModulePropertyInternalFrame;
 import com.googlecode.snoopycp.ui.NodePropertiesInternalFrame;
 import com.googlecode.snoopycp.util.Identities;
 import java.awt.event.ActionEvent;
@@ -48,6 +49,28 @@ public class Coordinator {
             HashMap <String, String> map = (HashMap<String, String>) domain.hoster(node.identity).context();
             map.put("IP", domain.cache(node.identity).get("primary").split(" ")[2]);
             view.addInternalFrame(new NodePropertiesInternalFrame(map, node.name, this.domain.configurer(node.identity)));
+            //System.out.println(domain.configurer(node.identity).configuration().get("connectionstring"));
+        }
+    }
+    
+    public static class ModulePropertiesAL implements ActionListener {
+
+        private View view;
+        private Domain domain;
+
+        public ModulePropertiesAL(View view, Domain _domain) {
+            this.view = view;
+            this.domain = _domain;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DefaultMutableTreeNode lastSelectNode = (DefaultMutableTreeNode) view.getTree().getLastSelectedPathComponent();
+            Node node = (Node) lastSelectNode.getUserObject();
+            //System.out.println();
+            HashMap <String, String> map = (HashMap<String, String>) domain.hoster(node.identity).context();
+            map.put("IP", domain.cache(node.identity).get("primary").split(" ")[2]);
+            view.addInternalFrame(new ModulePropertyInternalFrame());
             //System.out.println(domain.configurer(node.identity).configuration().get("connectionstring"));
         }
     }
@@ -104,17 +127,19 @@ public class Coordinator {
         this.view = view;
         this.view.setActionsOnPopup(this.packActions());
         domain.addObserver(view);
+        view.setCoordinator(this);
     }
     
-//    public Domain domain() {
-//        return this.domain;
-//    }
+    public Domain domain() {
+        return this.domain;
+    }
 
     private Map<String, ActionListener> packActions() {
         Map<String, ActionListener> actions = new HashMap<String, ActionListener>();
-        actions.put("Properties", new NodePropertiesAL(view, domain));
+        actions.put("NodeProperties", new NodePropertiesAL(view, domain));
         actions.put("ForceStart", new NodeForceStartAL(view, domain));
         actions.put("Shutdown", new NodeShutdownAL(view, domain));
+        actions.put("ModuleProperties", new ModulePropertiesAL(view, domain));
         return actions;
     }
 
