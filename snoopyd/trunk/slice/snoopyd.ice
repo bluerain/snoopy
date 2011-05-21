@@ -66,6 +66,7 @@ module com { module googlecode { module snoopyd {
 		
 		dictionary<string, string> StringMap; 
 		sequence<string> StringArray;
+		sequence<long> LongArray;
 		
  		interface IDiscoverer 
  		{
@@ -108,7 +109,8 @@ module com { module googlecode { module snoopyd {
  			StringMap statetable();
  			StringMap paramtable();
  			
- 			void schedule(string muid, long delay);
+ 			void schedule(string muid, LongArray delays, StringArray params);
+ 			void unschedule(string muid) throws ModuleNotFoundException;
  			
  			void force(Ice::Identity identity, string muid, StringArray params);
  			

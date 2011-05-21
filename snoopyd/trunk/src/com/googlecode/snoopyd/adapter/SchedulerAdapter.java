@@ -21,6 +21,7 @@ import Ice.Current;
 import Ice.Identity;
 
 import com.googlecode.snoopyd.driver.ISchedulerPrx;
+import com.googlecode.snoopyd.driver.ModuleNotFoundException;
 import com.googlecode.snoopyd.driver.Scheduler;
 import com.googlecode.snoopyd.driver._ISchedulerDisp;
 
@@ -43,8 +44,15 @@ public class SchedulerAdapter extends _ISchedulerDisp {
 	}
 
 	@Override
-	public void schedule(String muid, long delay, Current __current) {
-		scheduler.schedule(muid, delay);
+	public void schedule(String muid, long[] delays, String[] params,
+			Current __current) {
+		scheduler.schedule(muid, delays, params);
+	}
+
+	@Override
+	public void unschedule(String muid, Current __current)
+			throws ModuleNotFoundException {
+		scheduler.unschedule(muid);
 	}
 
 	@Override
