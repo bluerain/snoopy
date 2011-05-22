@@ -124,6 +124,8 @@ public class Resulter extends AbstractDriver implements Driver, Startable,
 			connection.close();
 		} catch (SQLException ex) {
 
+		} catch (NullPointerException ex) {
+			
 		}
 
 		started = false;
