@@ -150,7 +150,7 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 
 	public void schedule(String muid, long[] delays, String[] params) {
 
-		if (self.timetable().containsKey("muid")) {
+		if (self.timetable().containsKey(muid)) {
 			for (long delay: delays) {
 				self.timetable().get(muid).add(delay);
 			}
@@ -159,9 +159,11 @@ public class Scheduler extends AbstractDriver implements Driver, Startable,
 			for (long delay: delays) {
 				self.timetable().get(muid).add(delay);
 			}
-			self.statetable().put(muid, ScheduleState.ON);
 		}
+	
+		self.paramstable().put(muid, Arrays.asList(params));
 		
+		self.statetable().put(muid, ScheduleState.ON);
 		kernel.handle(new ScheduleUpdatedEvent());
 	}
 	
