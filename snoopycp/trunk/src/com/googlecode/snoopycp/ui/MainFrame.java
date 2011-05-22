@@ -1,6 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright 2011 Snoopy Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /*
@@ -32,9 +43,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import org.apache.log4j.Logger;
 
-public class View extends javax.swing.JFrame implements Observer {
+public class MainFrame extends javax.swing.JFrame implements Observer {
 
-    public static Logger logger = Logger.getLogger(View.class);
+    public static Logger logger = Logger.getLogger(MainFrame.class);
     private DomainController controller;
     private TreeModel treeModel;
     private GraphModel graphModel;
@@ -46,14 +57,14 @@ public class View extends javax.swing.JFrame implements Observer {
     private JPopupMenu popup;
     private JMenuItem mi;
 
-    /** Creates new form View */
-    public View() {
+    /** Creates new form MainFrame */
+    public MainFrame() {
         initComponents();
         this.setLocationRelativeTo(null);
-        this.goodLook();
+        //this.goodLook();
     }
 
-    public View(DomainController _controller) {
+    public MainFrame(DomainController _controller) {
         this();
 
         this.controller = _controller;
@@ -81,7 +92,7 @@ public class View extends javax.swing.JFrame implements Observer {
      * Set icons for menu, set nice names
      */
     private void goodLook() {
-        this.menuItemExit.setIcon(getImageIcon("door-open.png"));
+        //this.menuItemExit.setIcon(getImageIcon("door-open.png"));
         //this.btnNotepad.setIcon(getImageIcon("document.png"));
     }
 
@@ -118,8 +129,8 @@ public class View extends javax.swing.JFrame implements Observer {
 
         jToolBar = new javax.swing.JToolBar();
         btnNotepad = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnNetMap = new javax.swing.JButton();
+        btnRefresh = new javax.swing.JButton();
         jsp = new javax.swing.JSplitPane();
         jdp = new javax.swing.JDesktopPane();
         jscp = new javax.swing.JScrollPane();
@@ -128,8 +139,6 @@ public class View extends javax.swing.JFrame implements Observer {
         menuFile = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
         menuItemExit = new javax.swing.JMenuItem();
-        menuEdit = new javax.swing.JMenu();
-        jMenuItem2 = new javax.swing.JMenuItem();
         menuNetwork = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         menuHelp = new javax.swing.JMenu();
@@ -139,7 +148,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
         jToolBar.setRollover(true);
 
-        btnNotepad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/document.png"))); // NOI18N
+        btnNotepad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/script--plus.png"))); // NOI18N
         btnNotepad.setFocusable(false);
         btnNotepad.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnNotepad.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -150,17 +159,27 @@ public class View extends javax.swing.JFrame implements Observer {
         });
         jToolBar.add(btnNotepad);
 
-        jButton2.setText("jButton2");
-        jButton2.setFocusable(false);
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar.add(jButton2);
+        btnNetMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/node-select-child.png"))); // NOI18N
+        btnNetMap.setFocusable(false);
+        btnNetMap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnNetMap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnNetMap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNetMapActionPerformed(evt);
+            }
+        });
+        jToolBar.add(btnNetMap);
 
-        jButton3.setText("jButton3");
-        jButton3.setFocusable(false);
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar.add(jButton3);
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/refresh.png"))); // NOI18N
+        btnRefresh.setFocusable(false);
+        btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnRefresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRefreshActionPerformed(evt);
+            }
+        });
+        jToolBar.add(btnRefresh);
 
         jsp.setDividerLocation(180);
         jsp.setRightComponent(jdp);
@@ -171,6 +190,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
         menuFile.setText("File");
 
+        jMenuItem3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/script--plus.png"))); // NOI18N
         jMenuItem3.setText("Notepad");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,7 +199,7 @@ public class View extends javax.swing.JFrame implements Observer {
         });
         menuFile.add(jMenuItem3);
 
-        menuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        menuItemExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/door-open.png"))); // NOI18N
         menuItemExit.setText("Exit");
         menuItemExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,15 +210,9 @@ public class View extends javax.swing.JFrame implements Observer {
 
         jMenuBar.add(menuFile);
 
-        menuEdit.setText("Edit");
-
-        jMenuItem2.setText("jMenuItem2");
-        menuEdit.add(jMenuItem2);
-
-        jMenuBar.add(menuEdit);
-
         menuNetwork.setText("Network");
 
+        jMenuItem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/node-select-child.png"))); // NOI18N
         jMenuItem1.setText("view full map");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -211,6 +225,7 @@ public class View extends javax.swing.JFrame implements Observer {
 
         menuHelp.setText("Help");
 
+        menuItemAbout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/googlecode/snoopycp/share/home.png"))); // NOI18N
         menuItemAbout.setText("About");
         menuItemAbout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -271,22 +286,28 @@ public class View extends javax.swing.JFrame implements Observer {
     private void btnNotepadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNotepadActionPerformed
         this.jMenuItem3ActionPerformed(evt);
     }//GEN-LAST:event_btnNotepadActionPerformed
+
+    private void btnNetMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNetMapActionPerformed
+        this.jMenuItem1ActionPerformed(evt);
+    }//GEN-LAST:event_btnNetMapActionPerformed
+
+    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+
+    }//GEN-LAST:event_btnRefreshActionPerformed
     /**
      * @param args the command line arguments
      */
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnNetMap;
     private javax.swing.JButton btnNotepad;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton btnRefresh;
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JToolBar jToolBar;
     private javax.swing.JDesktopPane jdp;
     private javax.swing.JScrollPane jscp;
     private javax.swing.JSplitPane jsp;
-    private javax.swing.JMenu menuEdit;
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenu menuHelp;
     private javax.swing.JMenuItem menuItemAbout;

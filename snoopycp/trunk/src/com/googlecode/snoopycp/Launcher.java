@@ -17,7 +17,7 @@
 package com.googlecode.snoopycp;
 
 import com.googlecode.snoopycp.core.Snoopycp;
-import com.googlecode.snoopycp.ui.View;
+import com.googlecode.snoopycp.ui.MainFrame;
 
 public class Launcher {
 

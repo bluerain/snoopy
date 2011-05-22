@@ -36,6 +36,7 @@ public class netMapIFrame extends javax.swing.JInternalFrame {
         this.setClosable(true);
         this.setResizable(true);
         this.setMaximizable(true);
+        this.setTitle("Network Map");
         this.graphPanel.setLayout(new GridLayout(1, 1));
     }
     

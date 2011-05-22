@@ -10,6 +10,11 @@
  */
 package com.googlecode.snoopycp.ui;
 
+import com.googlecode.snoopycp.core.Domain;
+import com.googlecode.snoopycp.model.ParamTableModel;
+import com.googlecode.snoopycp.model.TimeTableModel;
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author spiff
@@ -17,11 +22,23 @@ package com.googlecode.snoopycp.ui;
 public class ModulePropertyInternalFrame extends javax.swing.JInternalFrame {
 
     /** Creates new form ModulePropertyInternalFrame */
-    public ModulePropertyInternalFrame() {
+    public static final Logger logger = Logger.getLogger(ModulePropertyInternalFrame.class);
+    Domain domain;
+    Ice.Identity ident;
+    String muid;
+
+    public ModulePropertyInternalFrame(Domain _domain, Ice.Identity _ident, String _muid) {
         initComponents();
-        this.btnON.setSelected(true);
-        this.btnOFF.setSelected(false);
+        domain = _domain;
+        ident = _ident;
+        muid = _muid;
+
+        this.jTable2.setModel(new TimeTableModel(_domain, _ident, logger, _muid));
+        this.jTable1.setModel(new ParamTableModel(_domain, _ident, logger, _muid));
+
+        initStatus();
         this.setClosable(true);
+        this.setTitle("Properties");
     }
 
     /** This method is called from within the constructor to
@@ -36,6 +53,12 @@ public class ModulePropertyInternalFrame extends javax.swing.JInternalFrame {
         btnON = new javax.swing.JToggleButton();
         btnOFF = new javax.swing.JToggleButton();
         jLabel1 = new javax.swing.JLabel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
 
         btnON.setText("ON");
         btnON.addActionListener(new java.awt.event.ActionListener() {
@@ -51,20 +74,55 @@ public class ModulePropertyInternalFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14));
         jLabel1.setText("Status");
+
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null}
+            },
+            new String [] {
+                "Title 1"
+            }
+        ));
+        jScrollPane1.setViewportView(jTable2);
+
+        jTabbedPane1.addTab("Schedule", jScrollPane1);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null}
+            },
+            new String [] {
+                "Title 1"
+            }
+        ));
+        jScrollPane2.setViewportView(jTable1);
+
+        jTabbedPane1.addTab("Parameters", jScrollPane2);
+
+        jButton1.setText("Close properties");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addGap(97, 97, 97)
-                .addComponent(btnON, javax.swing.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnOFF)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(97, 97, 97)
+                        .addComponent(btnON, javax.swing.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnOFF))
+                    .addComponent(jButton1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -75,29 +133,59 @@ public class ModulePropertyInternalFrame extends javax.swing.JInternalFrame {
                     .addComponent(jLabel1)
                     .addComponent(btnOFF)
                     .addComponent(btnON))
-                .addContainerGap(232, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnOFFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOFFActionPerformed
-        if(this.btnON.isSelected()) {
+        if (this.btnON.isSelected()) {
             this.btnOFF.setSelected(true);
             this.btnON.setSelected(false);
         }
+        this.domain.scheduler(ident).toogle(muid);
+        domain.updateModules(ident);
     }//GEN-LAST:event_btnOFFActionPerformed
 
     private void btnONActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnONActionPerformed
-        if(this.btnOFF.isSelected()) {
+        if (this.btnOFF.isSelected()) {
             this.btnON.setSelected(true);
             this.btnOFF.setSelected(false);
         }
+        this.domain.scheduler(ident).toogle(muid);
+        domain.updateModules(ident);
     }//GEN-LAST:event_btnONActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnOFF;
     private javax.swing.JToggleButton btnON;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTable2;
     // End of variables declaration//GEN-END:variables
+
+    private void initStatus() {
+        String status = this.domain.scheduler(ident).statetable().get(muid);
+        if (status.equalsIgnoreCase("ON")) {
+            this.btnON.setSelected(true);
+            this.btnOFF.setSelected(false);
+        } else {
+            this.btnON.setSelected(false);
+            this.btnOFF.setSelected(true);
+        }
+
+
+    }
 }

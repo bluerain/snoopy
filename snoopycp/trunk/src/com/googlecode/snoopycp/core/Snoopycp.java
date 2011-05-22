@@ -17,7 +17,7 @@ package com.googlecode.snoopycp.core;
 
 import com.googlecode.snoopycp.controller.Coordinator;
 import com.googlecode.snoopycp.controller.DomainController;
-import com.googlecode.snoopycp.ui.View;
+import com.googlecode.snoopycp.ui.MainFrame;
 
 import org.apache.log4j.Logger;
 
@@ -50,7 +50,7 @@ public class Snoopycp extends Ice.Application {
 
         Domain domain = new Domain(communicator, properties.getProperty("Snoopy.Domain"));
         DomainController controller = new DomainController(domain);
-        View view = new View(controller);
+        MainFrame view = new MainFrame(controller);
         Coordinator coordinator = new Coordinator(domain, view);
 
         setInterruptHook(new ShutdownHook(coordinator));
