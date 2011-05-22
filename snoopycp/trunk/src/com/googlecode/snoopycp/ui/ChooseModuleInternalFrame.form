@@ -29,24 +29,22 @@
                           <Component id="jScrollPane1" min="-2" pref="100" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="btnMoveAll" pref="52" max="32767" attributes="1"/>
-                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="btnRemainAll" min="0" pref="0" max="32767" attributes="1"/>
-                              <Component id="btnRemain" min="0" pref="0" max="32767" attributes="1"/>
-                              <Component id="btnMoveOne" alignment="0" pref="52" max="32767" attributes="1"/>
-                          </Group>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="btnMoveAll" max="32767" attributes="1"/>
+                          <Component id="btnMoveOne" alignment="0" pref="52" max="32767" attributes="1"/>
+                          <Component id="btnRemain" alignment="0" max="32767" attributes="1"/>
+                          <Component id="btnRemainAll" alignment="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" alignment="0" min="-2" pref="101" max="-2" attributes="0"/>
+                          <Component id="jScrollPane2" alignment="0" pref="118" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jTextField1" pref="228" max="32767" attributes="0"/>
+                      <Component id="jTextField1" pref="245" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btnOkChooseModule" min="-2" max="-2" attributes="0"/>
@@ -79,9 +77,9 @@
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jScrollPane2" max="32767" attributes="1"/>
-                          <Component id="jScrollPane1" alignment="0" pref="195" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane2" pref="197" max="32767" attributes="1"/>
+                          <Component id="jScrollPane1" alignment="0" min="-2" pref="195" max="-2" attributes="1"/>
                       </Group>
                   </Group>
               </Group>
@@ -97,7 +95,7 @@
                   <Component id="btnOkChooseModule" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="21" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -131,7 +129,9 @@
     </Container>
     <Component class="javax.swing.JButton" name="btnMoveOne">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&gt;"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/com/googlecode/snoopycp/share/control.png"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMoveOneActionPerformed"/>
@@ -139,7 +139,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnMoveAll">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&gt;&gt;"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/com/googlecode/snoopycp/share/control-double.png"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMoveAllActionPerformed"/>
@@ -165,7 +167,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnRemain">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/com/googlecode/snoopycp/share/control-180.png"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRemainActionPerformed"/>
@@ -173,7 +177,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnRemainAll">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;&lt;"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/com/googlecode/snoopycp/share/control-double-180.png"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRemainAllActionPerformed"/>

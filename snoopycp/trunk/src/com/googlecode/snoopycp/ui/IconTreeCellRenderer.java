@@ -55,7 +55,7 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
                     } else if (userObj.os == Node.OsType.LIN) {
                         setIcon(getImageIcon("logo_lin.jpg"));
                     } else {
-                        setIcon(getImageIcon("logo_qst.jpg"));
+                        setIcon(getImageIcon("logo_qst.png"));
                     }
                     break;
                 case MODULE:
@@ -67,7 +67,7 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
                             setIcon(getImageIcon("status-offline.png"));
                         }
                     } catch (NullPointerException e) {
-                        JOptionPane.showMessageDialog(null, "No module status for " + userObj.name);
+                        //JOptionPane.showMessageDialog(null, "No module status for " + userObj.name);
                         setIcon(getImageIcon("status-offline.png"));
                     }
                     break;

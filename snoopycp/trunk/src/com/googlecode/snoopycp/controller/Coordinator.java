@@ -16,7 +16,7 @@
 package com.googlecode.snoopycp.controller;
 
 import com.googlecode.snoopycp.Defaults;
-import com.googlecode.snoopycp.ui.View;
+import com.googlecode.snoopycp.ui.MainFrame;
 import com.googlecode.snoopycp.core.Domain;
 import com.googlecode.snoopycp.model.Node;
 import com.googlecode.snoopycp.ui.ModulePropertyInternalFrame;
@@ -33,10 +33,10 @@ public class Coordinator {
 
     public static class NodePropertiesAL implements ActionListener {
 
-        private View view;
+        private MainFrame view;
         private Domain domain;
 
-        public NodePropertiesAL(View view, Domain _domain) {
+        public NodePropertiesAL(MainFrame view, Domain _domain) {
             this.view = view;
             this.domain = _domain;
         }
@@ -55,10 +55,10 @@ public class Coordinator {
     
     public static class ModulePropertiesAL implements ActionListener {
 
-        private View view;
+        private MainFrame view;
         private Domain domain;
 
-        public ModulePropertiesAL(View view, Domain _domain) {
+        public ModulePropertiesAL(MainFrame view, Domain _domain) {
             this.view = view;
             this.domain = _domain;
         }
@@ -70,17 +70,17 @@ public class Coordinator {
             //System.out.println();
             HashMap <String, String> map = (HashMap<String, String>) domain.hoster(node.identity).context();
             map.put("IP", domain.cache(node.identity).get("primary").split(" ")[2]);
-            view.addInternalFrame(new ModulePropertyInternalFrame());
+            view.addInternalFrame(new ModulePropertyInternalFrame(domain, node.identity, node.muid));
             //System.out.println(domain.configurer(node.identity).configuration().get("connectionstring"));
         }
     }
 
     public static class NodeForceStartAL implements ActionListener {
 
-        private View view;
+        private MainFrame view;
         private Domain domain;
 
-        public NodeForceStartAL(View view, Domain _domain) {
+        public NodeForceStartAL(MainFrame view, Domain _domain) {
             this.view = view;
             this.domain = _domain;
         }
@@ -96,10 +96,10 @@ public class Coordinator {
     
     public static class NodeShutdownAL implements ActionListener {
 
-        private View view;
+        private MainFrame view;
         private Domain domain;
 
-        public NodeShutdownAL(View view, Domain _domain) {
+        public NodeShutdownAL(MainFrame view, Domain _domain) {
             this.view = view;
             this.domain = _domain;
         }
@@ -120,9 +120,9 @@ public class Coordinator {
 
     public static Logger logger = Logger.getLogger(Coordinator.class);
     private Domain domain;
-    private View view;
+    private MainFrame view;
     
-    public Coordinator(Domain _domain, View view) {
+    public Coordinator(Domain _domain, MainFrame view) {
         this.domain = _domain;
         this.view = view;
         this.view.setActionsOnPopup(this.packActions());

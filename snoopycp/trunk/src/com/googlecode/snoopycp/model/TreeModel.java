@@ -61,33 +61,32 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         String osName = null;
         Node.OsType os = Node.OsType.UNKNOWN;
 
+        DefaultMutableTreeNode node;
 
         for (String host : hosts) {
             Ice.Identity identity = domain.enviroment().get(host);
-            osName = domain.osPull().get(identity);
-            if (osName.indexOf("Win") != -1) {
-                os = Node.OsType.WIN;
-            } else if (osName.indexOf("lin") != -1 || osName.indexOf("Lin") != -1) {
-                os = Node.OsType.LIN;
-            } else {
-                os = Node.OsType.UNKNOWN;
-            }
-
-            DefaultMutableTreeNode node;
-            if (identity == null) {
-                node = new DefaultMutableTreeNode(new Node(identity, host + " [died]", Node.Type.NODE, os), true);
-            } else {
+            if (identity != null) {
+                osName = domain.osPull().get(identity);
+                if (osName.indexOf("Win") != -1) {
+                    os = Node.OsType.WIN;
+                } else if (osName.indexOf("lin") != -1 || osName.indexOf("Lin") != -1) {
+                    os = Node.OsType.LIN;
+                } else {
+                    os = Node.OsType.UNKNOWN;
+                }
                 node = new DefaultMutableTreeNode(new Node(identity, host, Node.Type.NODE, os), true);
+                HashMap<String, String> fullKeys = (HashMap) domain.moduleName(identity);
+                Set<String> keys = fullKeys.keySet();
+                for (String moduleID : keys) {
+                    node.add(new DefaultMutableTreeNode(
+                            new Node(identity, fullKeys.get(moduleID), moduleID, Node.Type.MODULE, domain.moduleStatus(identity)), false));
+                }
+            } else {
+                node = new DefaultMutableTreeNode(new Node(identity, host + " [died]", Node.Type.NODE, os), true);
             }
             domainRoot.add(node); // add node in tree
 
             // Adding all modules of Node in the tree
-            HashMap<String, String> fullKeys = (HashMap) domain.moduleName(identity);
-            Set<String> keys = fullKeys.keySet();
-            for (String moduleID : keys) {
-                node.add(new DefaultMutableTreeNode(
-                        new Node(identity, fullKeys.get(moduleID), moduleID, Node.Type.MODULE, domain.moduleStatus(identity)), false));
-            }
         }
     }
 

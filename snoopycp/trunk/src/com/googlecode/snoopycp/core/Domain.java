@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 
 public class Domain extends Observable implements Runnable {
@@ -128,34 +127,50 @@ public class Domain extends Observable implements Runnable {
                 osPull.put(identity, context.get("os"));
 
                 String proxy = Identities.toString(identity) + ": " + context.get("primary");
+                try {
+                    ISessionierPrx remoteSessionier = ISessionierPrxHelper.checkedCast(communicator.stringToProxy(proxy));
+                    logger.debug("Checked cast to remote session");
 
-                ISessionierPrx remoteSessionier = ISessionierPrxHelper.checkedCast(communicator.stringToProxy(proxy));
-                logger.debug("Checked cast to remote session");
+                    remoteSessionier.ice_ping();
+                    IUserSessionPrx remoteSessionPrx = remoteSessionier.createUserSession(identity(), null);
+                    sessions.put(identity, remoteSessionPrx);
 
-                IUserSessionPrx remoteSessionPrx = remoteSessionier.createUserSession(identity(), null);
-                sessions.put(identity, remoteSessionPrx);
+                    remoteSessionPrx.ice_ping();
+                    IHosterPrx remoteHoster = remoteSessionPrx.hoster();
+                    hosters.put(identity, remoteHoster);
 
-                IHosterPrx remoteHoster = remoteSessionPrx.hoster();
-                hosters.put(identity, remoteHoster);
+                    remoteSessionPrx.ice_ping();
+                    IControllerPrx remoteController = remoteSessionPrx.controller();
+                    controllers.put(identity, remoteController);
 
-                IControllerPrx remoteController = remoteSessionPrx.controller();
-                controllers.put(identity, remoteController);
+                    remoteSessionPrx.ice_ping();
+                    IModulerPrx remoteModuler = remoteSessionPrx.moduler();
+                    modulers.put(identity, remoteModuler);
+                    remoteModuler.ice_ping();
+                    modulesName.put(identity, remoteModuler.fetch());
 
-                IModulerPrx remoteModuler = remoteSessionPrx.moduler();
-                modulers.put(identity, remoteModuler);
-                modulesName.put(identity, remoteModuler.fetch());
+                    remoteSessionPrx.ice_ping();
+                    ISchedulerPrx remoteScheduler = remoteSessionPrx.scheduler();
+                    schedulers.put(identity, remoteScheduler);
 
-                ISchedulerPrx remoteScheduler = remoteSessionPrx.scheduler();
-                schedulers.put(identity, remoteScheduler);
+                    schedulers.get(identity).ice_ping();
+                    modulesStatus.put(identity, schedulers.get(identity).statetable());
 
-                // FIXME may be exeption
-                modulesStatus.put(identity, schedulers.get(identity).statetable());
-
-                IConfigurerPrx remoteConfigurer = remoteSessionPrx.configurer();
-                configurers.put(identity, remoteConfigurer);
-
+                    remoteSessionPrx.ice_ping();
+                    IConfigurerPrx remoteConfigurer = remoteSessionPrx.configurer();
+                    configurers.put(identity, remoteConfigurer);
+                } catch (Ice.ConnectionRefusedException ex) {
+                    logger.warn("Problem with fetch information about remote node: " + ex.getMessage());
+                    // TODO do something with problem: del already added info
+                }
                 changed = true;
+                logger.debug("New host: " + context.get("hostname") + " was added");
                 logger.debug(newSize + " hosts in domain");
+            } else {
+                if (hosts.contains(context.get("hostname"))) {
+                    enviroment.put(context.get("hostname"), identity);
+                    changed = true;
+                }
             }
 
             if ((hashes.get(identity) == null ? 0 : hashes.get(identity)) != context.hashCode()) {
@@ -220,17 +235,23 @@ public class Domain extends Observable implements Runnable {
     public IUserSessionPrx session(Ice.Identity identity) {
         return sessions.get(identity);
     }
-    
+
     public void updateModules(Ice.Identity _ident) {
-        this.modulesName.remove(_ident);
-        this.modulers.get(_ident).ice_ping();
-        HashMap<String, String> map = (HashMap<String, String>) this.sessions.get(_ident).moduler().fetch(); 
-        this.modulesName.put(_ident, map);
-        modulesStatus.clear();
-        modulesStatus.put(_ident, schedulers.get(_ident).statetable());
-        notifyObserver();
-        for (String str : map.values()) {
-            System.out.println(str);
+        try {
+            this.sessions.get(_ident).ice_ping();
+            HashMap<String, String> map = (HashMap<String, String>) this.sessions.get(_ident).moduler().fetch();
+            this.modulesName.remove(_ident);
+            this.modulesName.put(_ident, map);
+            schedulers.get(_ident).ice_ping();
+            modulesStatus.remove(_ident);
+            modulesStatus.put(_ident, schedulers.get(_ident).statetable());
+            notifyObserver();
+//            for (String str : map.values()) {
+//                System.out.println(str);
+//            }
+            logger.debug("Modules list updated");
+        } catch (Ice.ConnectionRefusedException ex) {
+            logger.warn("Updating modules list failed: " + ex.getMessage());
         }
     }
 
@@ -240,7 +261,7 @@ public class Domain extends Observable implements Runnable {
         for (;;) {
 
             boolean changed = false;
-            modulesStatus.clear();
+            //modulesStatus.clear();
             synchronized (this) {
                 for (String host : hosts) {
                     Ice.Identity id = enviroment.get(host);
@@ -250,17 +271,19 @@ public class Domain extends Observable implements Runnable {
                     }
 
                     if (System.currentTimeMillis() - life.get(id) > 10000) {
+                        // FIXME Then node back to life adding new node
                         enviroment.remove(host);
                         logger.debug("Host " + host + " didn`t response and was removed from domain");
                         changed = true;
                     }
-                    try {
-                        modulesStatus.put(id, schedulers.get(id).statetable());
-                    } catch (Ice.ConnectionRefusedException ex) {
-                        logger.debug(host + " node didn`t response: " + ex.getMessage());
-                        // TODO don`t remove - make [dead]
-                        removeHost(host);
-                    };
+//                    try {
+//                        //modulesStatus.put(id, schedulers.get(id).statetable());
+//                    } catch (Ice.ConnectionRefusedException ex) {
+//                        logger.debug(host + " node didn`t response: " + ex.getMessage());
+//                        // TODO don`t remove - make [dead]
+//                        removeHost(host);
+//                    }
+
                 }
             }
 
@@ -271,6 +294,7 @@ public class Domain extends Observable implements Runnable {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
+                logger.warn("Thread cann`t fall in dream: " + ex.getMessage());
             }
         }
 
@@ -285,6 +309,7 @@ public class Domain extends Observable implements Runnable {
     public void removeHost(String _hostname) {
         // TODO normal remove of host
         this.hosts.remove(_hostname);
+        //this.enviroment.remove(_hostname);
         logger.debug("Host: " + _hostname + " was removed. " + hosts.size());
         notifyObserver();
     }
