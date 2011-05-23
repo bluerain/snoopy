@@ -320,6 +320,7 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
     public void update(Observable o, Object o1) {
         logger.debug("update ui");
 
+        // TODO Save expand status before update and restore it after
         treeModel.update();
         tree.updateUI();
 
@@ -331,9 +332,9 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
         pack();
     }
 
-    private ImageIcon getImageIcon(String _iconName) {
-        return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
-    }
+//    private ImageIcon getImageIcon(String _iconName) {
+//        return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
+//    }
 
     public Point centralPosition(JInternalFrame _frame) {
         int x = (this.jdp.getSize().width / 2) - (_frame.getSize().width / 2);

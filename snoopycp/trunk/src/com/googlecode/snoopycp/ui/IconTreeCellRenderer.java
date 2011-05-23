@@ -22,9 +22,7 @@ import java.util.HashMap;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
-import sun.util.logging.resources.logging;
 
 public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
 
