@@ -26,4 +26,10 @@ public final class Defaults {
 	public static final String DEFAULT_ADAPTER_NAME = "Adapter";
         
         public static final String PATH_TO_SHARE = "/com/googlecode/snoopycp/share/";
+
+//        public static final String DATABASEADDRESS = "10.0.110.239";
+//        public static final String DATABASEPORT = "3306";
+//        public static final String DATABASENAME = "snoopydb";
+//        public static final String DATABASEUSERNAME = "root";
+//        public static final String DATABASEPASSWORD = "root";
 }

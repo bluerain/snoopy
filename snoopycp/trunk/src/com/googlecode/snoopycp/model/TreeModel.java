@@ -17,8 +17,11 @@ package com.googlecode.snoopycp.model;
 
 import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.core.Domain;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -27,9 +30,7 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -140,6 +141,48 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
                 }
             }
         });
+        tree.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent ke) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent ke) {
+                if(ke.getKeyCode() == ke.VK_M) {
+                    Object obj = tree.getLastSelectedPathComponent();
+                        if (obj != null) {
+                            selectedNode = (DefaultMutableTreeNode) obj;
+                            final Object tmp = selectedNode.getUserObject();
+                            Point p = tree.getLocationOnScreen();
+                            if (tmp instanceof String) {
+                            } else {
+                                userObj = (Node) tmp;
+                                final Node.Type popupType = userObj.nodeType;
+                                currentId = userObj.identity;
+                                getPopupMenu(popupType).show(null, p.x, p.y);
+                            }
+                        }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke) {
+                    Object obj = tree.getLastSelectedPathComponent();
+                        if (obj != null) {
+                            selectedNode = (DefaultMutableTreeNode) obj;
+                            final Object tmp = selectedNode.getUserObject();
+                            Point p = tree.getLocationOnScreen();
+                            if (tmp instanceof String) {
+                            } else {
+                                userObj = (Node) tmp;
+                                final Node.Type popupType = userObj.nodeType;
+                                currentId = userObj.identity;
+                                getPopupMenu(popupType).setVisible(false);
+                            }
+                        }
+            }
+        });
     }
 
     private void initPopup() {
@@ -147,6 +190,9 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         popupModule = new JPopupMenu();
         menuItem = new JMenuItem("Force start", getImageIcon("work.png"));
         menuItem.addActionListener(actions.get("ForceStart"));
+        popupModule.add(menuItem);
+        menuItem = new JMenuItem("Results", getImageIcon("database.png"));
+        menuItem.addActionListener(actions.get("ModuleResults"));
         popupModule.add(menuItem);
         menuItem = new JMenuItem("Properties", getImageIcon("property.png"));
         menuItem.addActionListener(actions.get("ModuleProperties"));
@@ -156,11 +202,14 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
 
         // Init popup menu for Node
         popupNode = new JPopupMenu();
-        menuItem = new JMenuItem("Configure", getImageIcon("gear.png"));
-        menuItem.addActionListener(actions.get("Configure"));
-        popupNode.add(menuItem);
+//        menuItem = new JMenuItem("Configure", getImageIcon("gear.png"));
+//        menuItem.addActionListener(actions.get("Configure"));
+//        popupNode.add(menuItem);
         menuItem = new JMenuItem("Shutdown", getImageIcon("slash.png"));
         menuItem.addActionListener(actions.get("Shutdown"));
+        popupNode.add(menuItem);
+        menuItem = new JMenuItem("Results", getImageIcon("database.png"));
+        menuItem.addActionListener(actions.get("HostResults"));
         popupNode.add(menuItem);
         menuItem = new JMenuItem("Properties", getImageIcon("property.png"));
         menuItem.addActionListener(actions.get("NodeProperties"));

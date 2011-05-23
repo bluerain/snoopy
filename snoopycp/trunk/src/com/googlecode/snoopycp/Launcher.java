@@ -23,10 +23,14 @@ public class Launcher {
 
     public static void main(String args[]) {
 
+        int status = -1;
         Snoopycp snoopycp = new Snoopycp();
-        int status = snoopycp.main(Defaults.APP_NAME, args,
+        try{
+        status = snoopycp.main(Defaults.APP_NAME, args,
                 System.getProperty("snoopycp.configuration", Defaults.DEFAULT_CONFIGURATION));
-
+        } catch(Ice.FileException ex) {
+            System.out.println(ex.getMessage());
+        }
         System.exit(status);
         //new View2().setVisible(true);
 

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.googlecode.snoopycp.core;
 
 import Ice.Communicator;
@@ -167,7 +168,7 @@ public class Domain extends Observable implements Runnable {
                 logger.debug("New host: " + context.get("hostname") + " was added");
                 logger.debug(newSize + " hosts in domain");
             } else {
-                if (hosts.contains(context.get("hostname"))) {
+                if (hosts.contains(context.get("hostname")) && enviroment.get(context.get("hostname")) == null) {
                     enviroment.put(context.get("hostname"), identity);
                     changed = true;
                 }
@@ -307,7 +308,7 @@ public class Domain extends Observable implements Runnable {
     }
 
     public void removeHost(String _hostname) {
-        // TODO normal remove of host
+        // TOD normal remove of host
         this.hosts.remove(_hostname);
         //this.enviroment.remove(_hostname);
         logger.debug("Host: " + _hostname + " was removed. " + hosts.size());
