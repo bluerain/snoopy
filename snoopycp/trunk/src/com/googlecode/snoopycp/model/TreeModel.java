@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -54,8 +55,9 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
         //initPopup(); // build popup menu and bind actions
     }
 
-    public void update() {
+    public void update(JTree _tree) {
         DefaultMutableTreeNode domainRoot = (DefaultMutableTreeNode) root;
+        
         domainRoot.removeAllChildren(); // Clean tree
 
         Set<String> hosts = domain.hosts(); // get all host from cache
@@ -88,6 +90,23 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
             domainRoot.add(node); // add node in tree
 
             // Adding all modules of Node in the tree
+        }
+    }
+
+    public Enumeration<TreePath> getExpandedNodes(JTree _tree) {
+        Enumeration<TreePath> selPaths = null;
+        if (_tree.getSelectionPath() != null) {
+            TreePath path = _tree.getSelectionPath().getParentPath().getParentPath();
+            selPaths = _tree.getExpandedDescendants(path);
+        }
+        return selPaths;
+    }
+
+    public void setExpandedNodes (JTree _tree, Enumeration<TreePath> _paths) {
+        if (_paths != null) {
+            while (_paths.hasMoreElements()) {
+                _tree.expandPath(_paths.nextElement());
+            }
         }
     }
 
@@ -149,38 +168,38 @@ public class TreeModel extends DefaultTreeModel implements javax.swing.tree.Tree
 
             @Override
             public void keyPressed(KeyEvent ke) {
-                if(ke.getKeyCode() == ke.VK_M) {
+                if (ke.getKeyCode() == ke.VK_M) {
                     Object obj = tree.getLastSelectedPathComponent();
-                        if (obj != null) {
-                            selectedNode = (DefaultMutableTreeNode) obj;
-                            final Object tmp = selectedNode.getUserObject();
-                            Point p = tree.getLocationOnScreen();
-                            if (tmp instanceof String) {
-                            } else {
-                                userObj = (Node) tmp;
-                                final Node.Type popupType = userObj.nodeType;
-                                currentId = userObj.identity;
-                                getPopupMenu(popupType).show(null, p.x, p.y);
-                            }
+                    if (obj != null) {
+                        selectedNode = (DefaultMutableTreeNode) obj;
+                        final Object tmp = selectedNode.getUserObject();
+                        Point p = tree.getLocationOnScreen();
+                        if (tmp instanceof String) {
+                        } else {
+                            userObj = (Node) tmp;
+                            final Node.Type popupType = userObj.nodeType;
+                            currentId = userObj.identity;
+                            getPopupMenu(popupType).show(null, p.x, p.y);
                         }
+                    }
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent ke) {
-                    Object obj = tree.getLastSelectedPathComponent();
-                        if (obj != null) {
-                            selectedNode = (DefaultMutableTreeNode) obj;
-                            final Object tmp = selectedNode.getUserObject();
-                            Point p = tree.getLocationOnScreen();
-                            if (tmp instanceof String) {
-                            } else {
-                                userObj = (Node) tmp;
-                                final Node.Type popupType = userObj.nodeType;
-                                currentId = userObj.identity;
-                                getPopupMenu(popupType).setVisible(false);
-                            }
-                        }
+                Object obj = tree.getLastSelectedPathComponent();
+                if (obj != null) {
+                    selectedNode = (DefaultMutableTreeNode) obj;
+                    final Object tmp = selectedNode.getUserObject();
+                    Point p = tree.getLocationOnScreen();
+                    if (tmp instanceof String) {
+                    } else {
+                        userObj = (Node) tmp;
+                        final Node.Type popupType = userObj.nodeType;
+                        currentId = userObj.identity;
+                        getPopupMenu(popupType).setVisible(false);
+                    }
+                }
             }
         });
     }
