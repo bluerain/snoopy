@@ -64,10 +64,18 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
-        textDataSourceString = new javax.swing.JTextField();
+        textAddressString = new javax.swing.JTextField();
         btnDataSourceConfirm = new javax.swing.JButton();
         jlExamplDataSourceStrting = new javax.swing.JLabel();
         btnViewCurrent = new javax.swing.JButton();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        textPort = new javax.swing.JTextField();
+        textBasename = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        textUsername = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        textPassword = new javax.swing.JPasswordField();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -109,7 +117,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        jlExamplDataSourceStrting.setText("jdbc:mysql://<address>:<port>/<database name>");
+        jlExamplDataSourceStrting.setText("Basename");
 
         btnViewCurrent.setText("View current");
         btnViewCurrent.addActionListener(new java.awt.event.ActionListener() {
@@ -118,6 +126,14 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             }
         });
 
+        jLabel8.setText("Address");
+
+        jLabel9.setText(":");
+
+        jLabel10.setText("Username");
+
+        jLabel11.setText("Password");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -125,13 +141,29 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textDataSourceString, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
                     .addComponent(jLabel7)
-                    .addComponent(jlExamplDataSourceStrting)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(btnViewCurrent)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 112, Short.MAX_VALUE)
-                        .addComponent(btnDataSourceConfirm)))
+                        .addComponent(btnDataSourceConfirm))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel8)
+                            .addComponent(jlExamplDataSourceStrting)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel11))
+                        .addGap(35, 35, 35)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(textAddressString, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(textBasename, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(textPassword, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(textUsername, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -140,14 +172,28 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textDataSourceString, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jlExamplDataSourceStrting)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8)
+                    .addComponent(textAddressString, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jlExamplDataSourceStrting)
+                    .addComponent(textBasename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(textUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(textPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnDataSourceConfirm)
                     .addComponent(btnViewCurrent))
-                .addContainerGap(174, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Configure", jPanel1);
@@ -290,7 +336,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
                         .addComponent(jlGateway)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jlPrimDNS)))
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("NodeInfo", jPanel2);
@@ -312,7 +358,7 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCloseProperties)
                 .addContainerGap())
@@ -329,28 +375,50 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_btnClosePropertiesActionPerformed
 
     private void btnDataSourceConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDataSourceConfirmActionPerformed
-        Map<String, String> map = new HashMap<String, String>();
-        String sourceString = this.textDataSourceString.getText();
-        if (sourceString.split(":")[0].equals("jdbc") && sourceString.split(":")[1].equals("mysql")) {
-            map.put("connectionstring", sourceString);
-            try {
-                config.ice_ping();
-                config.reconfigure(map);
-            } catch (Ice.ConnectionRefusedException e) {
-                JOptionPane.showInternalMessageDialog(this, "Node not avalibele more " + e.getMessage());
-            }
+        if (!this.textAddressString.getText().equalsIgnoreCase("") && !this.textPort.getText().equalsIgnoreCase("")
+                && !this.textBasename.getText().equalsIgnoreCase("") && !this.textUsername.getText().equalsIgnoreCase("")) {
+            Map<String, String> map = new HashMap<String, String>();
+            //String sourceString = this.textDataSourceString.getText();
+                String address = this.textAddressString.getText();
+                String port = this.textPort.getText();
+                String basename = this.textBasename.getText();
+                String username = this.textUsername.getText();
+                String password = new String(this.textPassword.getPassword());
+                String url = "jdbc:mysql://" + address + ":" + port + "/" +
+                        basename + "?user=" + username + "&password=" + password;
+                //System.out.println(url);
+                map.put("connectionstring", url);
+                try {
+                    config.ice_ping();
+                    config.reconfigure(map);
+                } catch (Ice.ConnectionRefusedException e) {
+                    JOptionPane.showInternalMessageDialog(this, "Node not avalibele more " + e.getMessage());
+                }
         } else {
-            // FIXME This window block all UI
-            JOptionPane.showInternalMessageDialog(this, "Bad argument in Data source string");
+            JOptionPane.showInternalMessageDialog(this, "Some field is empty");
         }
+
     }//GEN-LAST:event_btnDataSourceConfirmActionPerformed
 
     private void btnViewCurrentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewCurrentActionPerformed
+        String string = null;
         try {
+            string = config.configuration().get("connectionstring");
+            String[] strings = string.split("/");
+            String address = strings[2];
+            String[] tmp = strings[3].split("=");
+            String basename = tmp[0].substring(0, tmp[0].length() - 5);
+            String user = tmp[1].split("&")[0];
+            String pass = tmp[2];
+            String str = "\naddress: " + address + "\nbasename: " + basename
+                    + "\nusername: " + user + "\npassword: " + pass;
+            //System.out.println(config.configuration().get("connectionstring"));
             config.ice_ping();
-            JOptionPane.showInternalMessageDialog(this, "Current data source string: " + config.configuration().get("connectionstring"));
+            JOptionPane.showInternalMessageDialog(this, str, "Current data source string", JOptionPane.INFORMATION_MESSAGE);
         } catch (Ice.ConnectionRefusedException e) {
             JOptionPane.showInternalMessageDialog(this, "Node not avalibele more " + e.getMessage());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            JOptionPane.showInternalMessageDialog(this, string, "Current data source string", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_btnViewCurrentActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -358,6 +426,8 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton btnDataSourceConfirm;
     private javax.swing.JButton btnViewCurrent;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
@@ -369,6 +439,8 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
@@ -383,7 +455,11 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jlPrimDNS;
     private javax.swing.JLabel jlRAM;
     private javax.swing.JLabel jlVendor;
-    private javax.swing.JTextField textDataSourceString;
+    private javax.swing.JTextField textAddressString;
+    private javax.swing.JTextField textBasename;
+    private javax.swing.JPasswordField textPassword;
+    private javax.swing.JTextField textPort;
+    private javax.swing.JTextField textUsername;
     // End of variables declaration//GEN-END:variables
 
     private void initInfo(Map<String, String> _info) {

@@ -21,7 +21,6 @@
  */
 package com.googlecode.snoopycp.ui;
 
-import com.googlecode.snoopycp.Defaults;
 import com.googlecode.snoopycp.controller.Coordinator;
 import com.googlecode.snoopycp.controller.DomainController;
 import com.googlecode.snoopycp.model.GraphModel;
@@ -33,14 +32,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
+import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 public class MainFrame extends javax.swing.JFrame implements Observer {
@@ -51,11 +49,12 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
     private GraphModel graphModel;
     private VisualizationViewer<String, String> visualizationViewer;
     private Layout<String, String> layout;
-    private netMapIFrame nmif = new netMapIFrame();;
+    private netMapIFrame nmif = new netMapIFrame();
+
     
     private Coordinator coordinator;
-    private JPopupMenu popup;
-    private JMenuItem mi;
+    //private JPopupMenu popup;
+    //private JMenuItem mi;
 
     /** Creates new form MainFrame */
     public MainFrame() {
@@ -88,6 +87,7 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
 
         pack();
     }
+
     /**
      * Set icons for menu, set nice names
      */
@@ -101,7 +101,7 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
         _frame.setLocation(centralPosition(_frame));
         _frame.setVisible(true);
     }
-    
+
     public void setCoordinator(Coordinator _coordinator) {
         coordinator = _coordinator;
     }
@@ -292,7 +292,6 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_btnNetMapActionPerformed
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
-
     }//GEN-LAST:event_btnRefreshActionPerformed
     /**
      * @param args the command line arguments
@@ -321,8 +320,19 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
         logger.debug("update ui");
 
         // TODO Save expand status before update and restore it after
-        treeModel.update();
+        //Enumeration<TreePath> paths = treeModel.getExpandedNodes(tree);
+        Enumeration<TreePath> selPaths = null;
+        TreePath path = null;
+        if (tree.getSelectionPath() != null) {
+            path = tree.getSelectionPath().getParentPath();
+//            selPaths = tree.getExpandedDescendants(path);
+        }
+        treeModel.update(this.tree);
         tree.updateUI();
+        //treeModel.setExpandedNodes(tree, paths);
+        if (path != null) {
+            tree.expandPath(path);
+        }
 
         graphModel.update();
         visualizationViewer.updateUI();
@@ -335,7 +345,6 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
 //    private ImageIcon getImageIcon(String _iconName) {
 //        return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
 //    }
-
     public Point centralPosition(JInternalFrame _frame) {
         int x = (this.jdp.getSize().width / 2) - (_frame.getSize().width / 2);
         int y = (this.jdp.getSize().height / 2) - (_frame.getSize().height / 2);

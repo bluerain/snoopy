@@ -295,7 +295,7 @@ public class Domain extends Observable implements Runnable {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
-                logger.warn("Thread cann`t fall in dream: " + ex.getMessage());
+                logger.warn("Thread cann`t fall into dream: " + ex.getMessage());
             }
         }
 

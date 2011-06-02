@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.googlecode.snoopycp;
 
 import com.googlecode.snoopycp.core.Snoopycp;
-import com.googlecode.snoopycp.ui.MainFrame;
+import javax.swing.JOptionPane;
 
 public class Launcher {
 
@@ -25,14 +24,14 @@ public class Launcher {
 
         int status = -1;
         Snoopycp snoopycp = new Snoopycp();
-        try{
-        status = snoopycp.main(Defaults.APP_NAME, args,
-                System.getProperty("snoopycp.configuration", Defaults.DEFAULT_CONFIGURATION));
-        } catch(Ice.FileException ex) {
+        try {
+            status = snoopycp.main(Defaults.APP_NAME, args,
+                    System.getProperty("snoopycp.configuration", Defaults.DEFAULT_CONFIGURATION));
+        } catch (Ice.FileException ex) {
             System.out.println(ex.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage());
         }
         System.exit(status);
-        //new View2().setVisible(true);
-
     }
 }
