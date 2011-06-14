@@ -79,7 +79,7 @@ public class NotepadInternalFrame extends javax.swing.JInternalFrame {
         setMaximizable(true);
     }
 
-    public void deploy(Object[] hosts, boolean _activate, String _schedule) {
+    public void deploy(Object[] hosts, boolean _activate, String _schedule, String _params) {
         String hos = null;
         try {
             for (Object host : hosts) {
@@ -96,7 +96,7 @@ public class NotepadInternalFrame extends javax.swing.JInternalFrame {
                     delays[i] = (long) delay[i] * 1000;
                 }
                 domain.scheduler(ident).ice_ping();
-                domain.scheduler(ident).schedule(muid, delays, null);
+                domain.scheduler(ident).schedule(muid, delays, _params.split(";"));
                 if (!_activate) {
                     domain.scheduler(ident).toogle(muid);
                 }

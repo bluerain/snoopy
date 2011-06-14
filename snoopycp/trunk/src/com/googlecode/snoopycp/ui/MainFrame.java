@@ -292,6 +292,7 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
     }//GEN-LAST:event_btnNetMapActionPerformed
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+        this.update(null, null);
     }//GEN-LAST:event_btnRefreshActionPerformed
     /**
      * @param args the command line arguments

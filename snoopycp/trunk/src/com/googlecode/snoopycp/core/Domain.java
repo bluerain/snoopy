@@ -122,6 +122,11 @@ public class Domain extends Observable implements Runnable {
             if (oldSize != newSize) {
 
                 hosts.add(context.get("hostname"));
+//                Set<String> set = context.keySet();
+//                for(String str: set) {
+//                    System.out.print("OMG: " + str + " : ");
+//                    System.out.println(context.get(str));
+//                }
 
                 enviroment.put(context.get("hostname"), identity);
 
