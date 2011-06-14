@@ -148,6 +148,7 @@ public class ModulePropertyInternalFrame extends javax.swing.JInternalFrame {
             this.btnOFF.setSelected(true);
             this.btnON.setSelected(false);
         }
+        // TODO if node is dead
         this.domain.scheduler(ident).toogle(muid);
         domain.updateModules(ident);
     }//GEN-LAST:event_btnOFFActionPerformed

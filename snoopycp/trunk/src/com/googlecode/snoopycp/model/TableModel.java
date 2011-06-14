@@ -20,12 +20,10 @@ import com.googlecode.snoopycp.util.Identities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 public class TableModel extends AbstractTableModel implements javax.swing.table.TableModel {
 
-    //public static final Logger logger = Logger.getLogger(TableModel.class);
     public static final String[] COLUMNS = {"Property", "Value"};
     private Domain domain;
     private List<String> keys;
@@ -34,15 +32,13 @@ public class TableModel extends AbstractTableModel implements javax.swing.table.
 
     public TableModel(Domain domain) {
         super();
-
         this.domain = domain;
-
         this.keys = new ArrayList<String>();
         this.values = new ArrayList<String>();
-
         this.size = 0;
     }
 
+    @Override
     public int getColumnCount() {
         return COLUMNS.length;
     }

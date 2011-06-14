@@ -20,10 +20,6 @@ import com.googlecode.snoopycp.core.Domain;
 import org.apache.log4j.Logger;
 import javax.swing.table.AbstractTableModel;
 
-/**
- *
- * @author Leo
- */
 public class TimeTableModel extends AbstractTableModel {
 
     Domain domain;
@@ -46,6 +42,7 @@ public class TimeTableModel extends AbstractTableModel {
     @Override
     public int getRowCount() {
         try {
+            // FIXME if dead and window of property is opened
             domain.scheduler(ident).ice_ping();
             String[] strs = domain.scheduler(ident).timetable().get(muid).split(";");
             return strs.length;
