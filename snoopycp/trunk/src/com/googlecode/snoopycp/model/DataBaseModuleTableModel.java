@@ -17,10 +17,7 @@ package com.googlecode.snoopycp.model;
 
 import javax.swing.table.AbstractTableModel;
 
-/**
- *
- * @author Leo
- */
+
 public class DataBaseModuleTableModel extends AbstractTableModel {
 
     String[] names = {"Result", "Date"};

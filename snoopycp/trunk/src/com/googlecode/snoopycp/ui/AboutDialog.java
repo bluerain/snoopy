@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-/*
- * AboutDialog.java
- *
- * Created on 15.05.2011, 19:33:51
- */
+
 package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.Defaults;
 import javax.swing.ImageIcon;
 
-/**
- *
- * @author spiff
- */
+
 public class AboutDialog extends javax.swing.JDialog {
 
     /** Creates new form AboutDialog */
@@ -106,24 +99,7 @@ public class AboutDialog extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_btnCloseAboutActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-//    public static void main(String args[]) {
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//
-//            public void run() {
-//                AboutDialog dialog = new AboutDialog(new javax.swing.JFrame(), true);
-//                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-//
-//                    public void windowClosing(java.awt.event.WindowEvent e) {
-//                        System.exit(0);
-//                    }
-//                });
-//                dialog.setVisible(true);
-//            }
-//        });
-//    }
+   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseAbout;
     private javax.swing.JLabel jLabel1;

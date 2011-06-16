@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-/*
- * View2.java
- *
- * Created on 15.05.2011, 19:21:33
- */
+
 package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.controller.Coordinator;
@@ -53,14 +49,11 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
 
     
     private Coordinator coordinator;
-    //private JPopupMenu popup;
-    //private JMenuItem mi;
-
+   
     /** Creates new form MainFrame */
     public MainFrame() {
         initComponents();
         this.setLocationRelativeTo(null);
-        //this.goodLook();
     }
 
     public MainFrame(DomainController _controller) {
@@ -88,13 +81,6 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
         pack();
     }
 
-    /**
-     * Set icons for menu, set nice names
-     */
-    private void goodLook() {
-        //this.menuItemExit.setIcon(getImageIcon("door-open.png"));
-        //this.btnNotepad.setIcon(getImageIcon("document.png"));
-    }
 
     public void addInternalFrame(JInternalFrame _frame) {
         this.jdp.add(_frame);
@@ -263,14 +249,12 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // FIXME need call from Coordinator
-        //nmif = new netMapIFrame();
         if (!nmif.isShowing()) {
             nmif.setClosable(true);
             nmif.setResizable(true);
             nmif.setSize(400, 400);
             nmif.setLocation(centralPosition(nmif));
             this.jdp.add(nmif);
-            //this.menuNetwork.setEnabled(false);
             nmif.show();
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
@@ -343,9 +327,6 @@ public class MainFrame extends javax.swing.JFrame implements Observer {
         pack();
     }
 
-//    private ImageIcon getImageIcon(String _iconName) {
-//        return new ImageIcon(getClass().getResource(Defaults.PATH_TO_SHARE + _iconName));
-//    }
     public Point centralPosition(JInternalFrame _frame) {
         int x = (this.jdp.getSize().width / 2) - (_frame.getSize().width / 2);
         int y = (this.jdp.getSize().height / 2) - (_frame.getSize().height / 2);

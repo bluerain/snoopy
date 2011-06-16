@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-/*
- * Results.java
- *
- * Created on 23.05.2011, 3:37:36
- */
 
 package com.googlecode.snoopycp.ui;
 
 import javax.swing.table.AbstractTableModel;
 
-/**
- *
- * @author Leo
- */
+
 public class Results extends javax.swing.JInternalFrame {
 
     /** Creates new form Results */

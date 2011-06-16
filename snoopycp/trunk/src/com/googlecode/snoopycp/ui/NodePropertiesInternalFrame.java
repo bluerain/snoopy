@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-/*
- * NodeInfoInternalFrame.java
- *
- * Created on 18.05.2011, 0:45:54
- */
 package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopyd.driver.IConfigurerPrx;
@@ -26,10 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author spiff
- */
 public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
 
     IConfigurerPrx config;
@@ -386,7 +377,6 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
                 String password = new String(this.textPassword.getPassword());
                 String url = "jdbc:mysql://" + address + ":" + port + "/" +
                         basename + "?user=" + username + "&password=" + password;
-                //System.out.println(url);
                 map.put("connectionstring", url);
                 try {
                     config.ice_ping();
@@ -412,7 +402,6 @@ public class NodePropertiesInternalFrame extends javax.swing.JInternalFrame {
             String pass = tmp[2];
             String str = "\naddress: " + address + "\nbasename: " + basename
                     + "\nusername: " + user + "\npassword: " + pass;
-            //System.out.println(config.configuration().get("connectionstring"));
             config.ice_ping();
             JOptionPane.showInternalMessageDialog(this, str, "Current data source string", JOptionPane.INFORMATION_MESSAGE);
         } catch (Ice.ConnectionRefusedException e) {

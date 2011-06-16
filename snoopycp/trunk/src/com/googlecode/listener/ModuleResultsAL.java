@@ -1,7 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright 2011 Snoopy Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package com.googlecode.listener;
 
 import com.googlecode.snoopycp.controller.Coordinator;
@@ -28,13 +40,13 @@ import org.apache.log4j.Logger;
  */
 public class ModuleResultsAL implements ActionListener {
 
-    private MainFrame view;
-    private Coordinator coordinator;
-    private Logger logger;
-    private Domain domain;
-    private Connection conn = null;
+    private MainFrame view;             // View
+    private Coordinator coordinator;    // Controller
+    private Domain domain;              // Model
+    private Connection conn = null;     // connection to database
     private Statement stmt;
-    private ResultSet rs;
+    private ResultSet rs;               // Results of sql script executing
+    private Logger logger;              // Logger which prints to console
 
     public ModuleResultsAL(MainFrame view, Coordinator _coordinator, Logger _logger) {
         this.view = view;
@@ -44,20 +56,24 @@ public class ModuleResultsAL implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        // get selected node
         DefaultMutableTreeNode lastSelectNode = (DefaultMutableTreeNode) view.getTree().getLastSelectedPathComponent();
+        // get object with information about node
         Node node = (Node) lastSelectNode.getUserObject();
         logger.debug(node.identity + "  " + node.muid);
-        //String moduleName = coordinator.domain().enviroment().get(node.identity);
+        // get list of hosts registred in panel
         Set<String> hosts = coordinator.domain().hosts();
         String hostname = null;
-        for (String host : hosts) {
+        for (String host : hosts) { // for all hosts
             if (coordinator.domain().enviroment().get(host).equals(node.identity)) {
-                hostname = host;
+                hostname = host; // get host name of selected node
                 break;
             }
         }
+        // get data from database
         String[][] results = this.getModuleResults(hostname, node.name);
         if (results != null) {
+            // Display all in window
             view.addInternalFrame(new Results(new DataBaseModuleTableModel(results), node.name));
         } else {
             JOptionPane.showMessageDialog(view, "Cannot connect to database");
@@ -65,33 +81,33 @@ public class ModuleResultsAL implements ActionListener {
     }
 
     public String[][] getModuleResults(String hostname, String moduleName) {
+        // Sql script
         String sql = "select Result.`result`, Result.datestamp from `Result`, `Host`, `Module` where Host.`name`='" + hostname + "' and Host.idHost=Result.idHost and Module.idModule=Result.idModule and Module.`name`='" + moduleName + "'";
-//        String userName = Defaults.DATABASEUSERNAME;
-//        String password = Defaults.DATABASEPASSWORD;
-        String url = domain.configurer(domain.enviroment().get(hostname)).configuration().get("connectionstring");//.split("?")[0];
+        // String to connect
+        String url = domain.configurer(domain.enviroment().get(hostname)).configuration().get("connectionstring");
         logger.debug("Connect to datebase: " + url);
-        String[][] results = null;
+        String[][] results = null; // results
 
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            conn = DriverManager.getConnection(url);//, userName, password);
-            logger.debug("Database connection established");
+            Class.forName("com.mysql.jdbc.Driver").newInstance(); // load driver
+            conn = DriverManager.getConnection(url);                // connect
+            logger.debug("Database connection established");        // all is good
             stmt = conn.createStatement();
             if (stmt.execute(sql)) {
-                rs = stmt.getResultSet();
+                rs = stmt.getResultSet();   // get results from base
                 int i = 0;
                 results = new String[2][];
-                while (rs.next()) {
+                while (rs.next()) { // calculate row count
                     i++;
                 }
                 results[0] = new String[i];
                 results[1] = new String[i];
-                rs.beforeFirst();
+                rs.beforeFirst();           // reinit resultset
                 rs = stmt.getResultSet();
                 i = 0;
                 while (rs.next()) {
-                    results[0][i] = rs.getString(1);
-                    results[1][i] = rs.getString(2);
+                    results[0][i] = rs.getString(1);    // get data
+                    results[1][i] = rs.getString(2);    //   in string format
                     i++;
                 }
             } else {

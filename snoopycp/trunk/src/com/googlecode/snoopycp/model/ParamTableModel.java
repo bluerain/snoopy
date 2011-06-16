@@ -20,10 +20,7 @@ import com.googlecode.snoopycp.core.Domain;
 import javax.swing.table.AbstractTableModel;
 import org.apache.log4j.Logger;
 
-/**
- *
- * @author Leo
- */
+
 public class ParamTableModel extends AbstractTableModel {
 
     Domain domain;

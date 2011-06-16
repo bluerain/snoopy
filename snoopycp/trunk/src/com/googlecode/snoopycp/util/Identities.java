@@ -39,9 +39,6 @@ public final class Identities {
         return identity.category + "/" + identity.name;
     }
 
-//	public static Identity clone(Identity identity) {
-//		return null;
-//	}
 
     public static Identity stringToIdentity(String identity) {
         String args[] = identity.split("/");
