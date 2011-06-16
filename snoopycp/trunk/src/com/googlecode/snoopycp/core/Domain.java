@@ -313,9 +313,7 @@ public class Domain extends Observable implements Runnable {
     }
 
     public void removeHost(String _hostname) {
-        // TOD normal remove of host
         this.hosts.remove(_hostname);
-        //this.enviroment.remove(_hostname);
         logger.debug("Host: " + _hostname + " was removed. " + hosts.size());
         notifyObserver();
     }

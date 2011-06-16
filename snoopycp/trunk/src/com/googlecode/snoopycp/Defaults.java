@@ -19,11 +19,13 @@ package com.googlecode.snoopycp;
 public final class Defaults {
 
 	public static final String APP_NAME = "snoopycp";
-	public static final String APP_VER = "0.0.0";
+
+	public static final String APP_VER = "0.1";
 
 	public static final String DEFAULT_CONFIGURATION = "snoopycp.conf";
 
 	public static final String DEFAULT_ADAPTER_NAME = "Adapter";
-        
+
+        // path to icons, pics and other staff
         public static final String PATH_TO_SHARE = "/com/googlecode/snoopycp/share/";
 }

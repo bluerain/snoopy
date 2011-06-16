@@ -15,10 +15,7 @@ import com.googlecode.snoopycp.model.ParamTableModel;
 import com.googlecode.snoopycp.model.TimeTableModel;
 import org.apache.log4j.Logger;
 
-/**
- *
- * @author spiff
- */
+
 public class ModulePropertyInternalFrame extends javax.swing.JInternalFrame {
 
     /** Creates new form ModulePropertyInternalFrame */

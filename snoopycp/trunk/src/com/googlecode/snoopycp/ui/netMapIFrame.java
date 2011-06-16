@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-/*
- * netMapIFrame.java
- *
- * Created on 15.05.2011, 20:32:04
- */
+
 package com.googlecode.snoopycp.ui;
 
-/**
- *
- * @author spiff
- */
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import java.awt.GridLayout;
 

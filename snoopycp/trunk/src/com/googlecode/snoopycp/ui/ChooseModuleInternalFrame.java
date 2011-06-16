@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-/*
- * ChooseModuleInternalFrame.java
- *
- * Created on 19.05.2011, 22:15:56
- */
+
 package com.googlecode.snoopycp.ui;
 
 import com.googlecode.snoopycp.core.Domain;
 import javax.swing.DefaultListModel;
 import javax.swing.JInternalFrame;
 
-/**
- *
- * @author spiff
- */
+
 public class ChooseModuleInternalFrame extends javax.swing.JInternalFrame {
 
     private Domain domain;
